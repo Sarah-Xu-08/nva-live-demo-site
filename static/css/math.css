@@ -1,0 +1,30 @@
+/* Shared notation only. UI text, charts, controls and page layout retain their fonts. */
+@font-face {
+  font-family: "Latin Modern Math";
+  src: url("../fonts/latin-modern-math/latinmodern-math.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+math.nv-math {
+  font-family: "Latin Modern Math", math;
+  font-size: 1em;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: normal;
+  color: inherit;
+}
+
+/* Break long expressions only at authored mathematical boundaries. Each chunk
+   retains native MathML script placement, operator spacing and fraction layout. */
+.nv-math-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0;
+  row-gap: .45em;
+  max-width: 100%;
+}
+.nv-math-flow > math { flex: 0 0 auto; }

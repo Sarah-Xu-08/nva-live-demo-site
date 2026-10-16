@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anything Wrong?</title>
+    <meta name="color-scheme" content="light dark">
+    <script src="static/project/theme.js"></script>
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64" href="static/favicon-sage.ico?v=1">
+    <link rel="icon" type="image/png" sizes="64x64" href="static/favicon-sage.png?v=1">
+    <link rel="stylesheet" href="static/css/warm.css?v=focus-mode-v1">
+    <link rel="stylesheet" href="static/css/trial-editor.css?v=focus-mode-v1">
+    <link rel="stylesheet" href="static/css/participant-guide.css?v=5">
+    <link rel="stylesheet" href="static/css/playing.css?v=focus-mode-v1">
+    <link rel="stylesheet" href="static/css/research-ui.css?v=mode-art-v2">
+    <link rel="stylesheet" href="static/css/math.css?v=1">
+    <link rel="stylesheet" href="static/css/site-fullscreen.css?v=1"><script src="static/js/site-fullscreen.js?v=1" defer></script>
+  </head>
+  <body data-experiment-mode="play" data-public-replay="true">
+    <div class="display-viewport">
+    <div class="display-surface">
+    <div class="project-navigation">
+      <a class="project-brand" href="static/project/index.html" aria-label="Anything Wrong? overview"><span class="project-monogram" aria-hidden="true">a<span>?</span></span><strong>Anything Wrong?</strong></a>
+      <nav aria-label="Project navigation">
+        <a href="static/project/index.html">Overview</a>
+        <a href="static/project/theory.html">Theory</a>
+        <a href="static/project/experiment.html">Experiment</a>
+        <a href="static/project/decoder.html">Decoding</a>
+        <a href="demo.html?mode=play" aria-current="page">Explore demo <span aria-hidden="true">↗</span></a>
+      <a href="run-locally.html">Run locally</a></nav>
+      <div class="site-display-actions"><button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button><button class="workspace-light-switch" type="button" role="switch" aria-label="Light mode" aria-checked="true" data-light-switch hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg><span>Light</span><span class="workspace-light-track" aria-hidden="true"></span></button></div>
+    </div>
+    <header class="site-header hybrid-header">
+      <div class="workspace-intro">
+        <div class="workspace-intro-copy"><p class="workspace-eyebrow">RECORDED DEMO</p><h1>Observe. Replay.<br>Understand.</h1><p class="workspace-subtitle">Replay saved trials, recorded EEG and saved prediction results. No live decoding or recording runs on this website. <a href="run-locally.html">Run locally with your EEG or model →</a></p></div>
+        <figure class="workspace-mode-figure">
+          <svg id="workspace-mode-art" viewBox="80 90 1600 730" role="img" aria-labelledby="workspace-mode-art-title" focusable="false">
+            <title id="workspace-mode-art-title">Recording: an observer's brain signal is recorded while watching the human and AI chefs collaborate.</title>
+            <defs><clipPath id="workspace-mode-crop" clipPathUnits="userSpaceOnUse"><rect id="workspace-mode-crop-bounds" x="80" y="90" width="1600" height="730" /></clipPath></defs>
+            <image id="workspace-mode-image" href="static/assets/modes/recording.png" width="1774" height="887" clip-path="url(#workspace-mode-crop)" />
+          </svg>
+        </figure>
+      </div>
+      <div class="workspace-heading">
+        <div class="workspace-modes" role="group" aria-label="Experiment mode" hidden>
+          
+          
+          <button type="button" data-workspace-mode="play" aria-pressed="false">Playing</button>
+          <button type="button" data-workspace-mode="presentation" aria-pressed="false">Presentation</button>
+        </div>
+        <button type="button" id="workspace-focus" class="workspace-focus" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>Focus mode</span></button>
+      </div>
+      <section class="scenario-browser" aria-label="Demo setup">
+        <div class="scenario-dropdowns">
+          <label for="experiment-mode"><span>Experiment mode</span><select id="experiment-mode"><option value="play">Playing</option><option value="presentation">Presentation</option></select></label>
+          <label data-playing-field hidden><span>Playing session</span><select id="playing-session-type"><option value="pre_recorded">Pre-recorded session</option></select></label>
+          <label data-playing-field hidden><span>Participant</span><select id="playing-participant"><option value="xx_record">xx_record</option></select></label>
+          <label data-playing-recorded hidden><span>Condition</span><select id="playing-condition"><option value="All">All</option><option value="SPE">SPE</option><option value="RPE+SPE">RPE+SPE</option></select></label>
+          <label class="playing-recording-field" data-playing-recorded hidden><span>Picked recording</span><select id="playing-recording" aria-label="Picked recording"></select></label>
+          <label data-playing-recorded hidden><span>Playback speed</span><select id="playing-playback-rate" aria-label="Recorded playback speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× · original</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+          <label for="participant-id"><span>Participant ID</span><input id="participant-id" type="text" maxlength="64" autocomplete="off" placeholder="e.g. P001" required></label>
+          <label for="trial-category"><span>Trial category</span><select id="trial-category"><option value="recording_library">Current trial library</option><option value="human_ai_handoff">Human–AI examples</option></select></label>
+          <label for="recording-session" hidden><span>Recording session</span><select id="recording-session" aria-label="Recording session"></select></label>
+          <div id="recording-counts" class="recording-counts" hidden>
+            <label for="recording-nonpe-count"><span>nonPE trials</span><input id="recording-nonpe-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="recording-count-summary"></label>
+            <label for="recording-pe-count"><span>RPE+SPE / SPE · each</span><input id="recording-pe-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="recording-count-summary"></label>
+            <p id="recording-count-summary" role="status" aria-live="polite"></p>
+          </div>
+          <div id="participant-options" class="participant-options" hidden>
+            <label><input id="instructions-enabled" type="checkbox"> Enable instructions</label>
+            <label><input id="ratings-enabled" type="checkbox"> Collect trial ratings</label>
+          </div>
+          <label for="class-filter"><span id="condition-select-label">Condition</span><select id="class-filter"><option value="nonPE" selected>nonPE</option><option value="RPE">RPE</option><option value="SPE">SPE</option><option value="RPE+SPE">RPE+SPE</option></select></label>
+          <label class="event-picker" for="scenario-select"><span id="example-select-label">Example</span><select id="scenario-select" aria-label="Example"></select></label>
+          <label for="layout-select"><span>Kitchen layout</span><select id="layout-select"><option value="all" selected>All layouts</option></select></label>
+          <label class="eeg-source-field" for="eeg-stream-select"><span>EEG source</span><select id="eeg-stream-select" aria-label="Available EEG source"><option value="">Live EEG · auto-discover</option><option value="mock-eeg">Mock EEG · no hardware</option></select></label>
+          <button id="eeg-top-connect" class="eeg-top-connect" type="button">Connect EEG</button>
+          <label id="decoder-field" for="decoder-select" hidden><span>Pretrained decoder</span><select id="decoder-select" aria-label="Selected pretrained decoder"></select></label>
+        </div>
+      </section>
+      <div class="header-tools runtime-status" aria-live="polite">
+        <div class="system-pill" id="system-status"><span></span> Connecting</div>
+      </div>
+    </header>
+
+    <main id="trial-editor" class="trial-editor" hidden aria-label="Trial Editor">
+      <div class="editor-toolbar">
+        <label>Library<select id="editor-library"><option value="all">All saved designs</option></select></label>
+        <div class="editor-trial-navigation"><label>Trial<select id="editor-trial"></select></label><button id="editor-next-trial" type="button" disabled>Next trial →</button></div><label>Version<select id="editor-version"></select></label>
+        <label>Editor playback<select id="editor-speed"><option value="750" selected>750 ms per action</option></select></label>
+        <button id="editor-review-status-toggle" type="button" aria-expanded="false" aria-controls="editor-review-status-panel">Review status</button>
+      </div>
+      <section id="editor-review-status-panel" class="editor-card editor-review-status" hidden aria-labelledby="editor-review-status-heading">
+        <div class="editor-section-heading"><h3 id="editor-review-status-heading">Saved review status</h3><div class="editor-buttons"><button id="editor-review-status-refresh" type="button">Refresh status</button><button id="editor-review-status-close" type="button">Close</button></div></div>
+        <p class="editor-small">Saved JSON checks for the selected Library. Choose a trial or version to open it. Unsaved checks appear here after saving.</p>
+        <div class="editor-section-heading"><p id="editor-review-status-summary" class="editor-small" role="status"></p><label class="editor-inline">Playback / Subtasks<select id="editor-review-status-filter"><option value="all">All versions</option><option value="incomplete">Needs a check</option><option value="complete">Both checked</option></select></label></div>
+        <div class="editor-table-wrap editor-review-status-table-wrap"><table class="editor-review-status-table"><thead><tr><th scope="col">Trial</th><th scope="col">Version</th><th scope="col">Playback</th><th scope="col">Subtasks</th><th scope="col">Briefing</th></tr></thead><tbody id="editor-review-status-rows"></tbody></table></div>
+      </section>
+      <div id="editor-status" class="editor-status" role="status" aria-live="polite">Choose a saved trial to begin.</div>
+      <div class="editor-grid">
+        <section class="editor-card editor-playback"><div class="editor-section-heading"><h3>Draft playback</h3><span id="editor-dirty" class="editor-tag">Saved revision</span></div>
+          <div class="editor-buttons"><button id="editor-play" class="primary" type="button">Play draft</button><button id="editor-prev" type="button">← Action</button><button id="editor-next" type="button">Action →</button><button id="editor-initial" type="button">Initial state</button><label class="editor-inline">State<select id="editor-state-phase"><option value="after">After action</option><option value="before">Before action</option></select></label></div>
+          <div class="editor-section-heading editor-board-options"><span class="editor-small">Human · gray chef &nbsp; AI partner · blue robot</span><label class="editor-inline"><input id="editor-compare" type="checkbox"><span id="editor-compare-label">Compare saved revision</span></label></div>
+          <div id="editor-boards" class="editor-boards"><div><div id="editor-draft-board" class="editor-board"></div><p id="editor-draft-caption" class="editor-small"></p></div><div id="editor-original-panel" hidden><h4 id="editor-reference-title">Saved revision</h4><div id="editor-original-board" class="editor-board"></div><p id="editor-original-caption" class="editor-small"></p></div></div>
+          <div class="editor-section-heading"><h3>Action timeline</h3><span id="editor-playhead-label" class="editor-small"></span></div>
+          <input id="editor-playhead" type="range" min="0" max="1" value="0" aria-label="Editor action playhead">
+          <div id="editor-timeline" class="editor-timeline" aria-label="Joint action timeline"></div>
+          <div id="subtask-bands" class="subtask-bands" aria-label="Configured subtask timing"></div>
+          <div class="editor-legend"><span class="critical">Critical</span><span class="correction">Correction</span><span>nonPE preparation baseline</span><span>Action numbers start at 0</span></div>
+        </section>
+        <aside class="editor-card editor-inspector" aria-label="Trial inspector">
+          <div class="editor-tabs" role="tablist" aria-label="Editor tools"><button id="editor-tab-playback" type="button" role="tab" aria-selected="true" aria-controls="editor-panel-playback">Playback</button><button id="editor-tab-subtasks" type="button" role="tab" aria-selected="false" aria-controls="editor-panel-subtasks" tabindex="-1">Subtasks</button></div>
+          <div class="editor-buttons editor-history" aria-label="Draft history for Playback and Subtasks"><button id="editor-undo" type="button">Undo</button><button id="editor-redo" type="button">Redo</button></div>
+          <section id="editor-panel-playback" role="tabpanel" aria-labelledby="editor-tab-playback">
+            <label>Playback tool<select id="editor-tool"><option value="hint">Briefing</option><option value="actions">Actions</option></select></label>
+            <section data-editor-tool="actions" hidden>
+              <h3>Edit selected action</h3><p id="editor-row-scope" class="editor-small"></p>
+              <label hidden>Variant edit scope<select id="editor-scope"><option value="all">Shared sequence</option></select></label>
+              <div class="editor-action-fields"><label>Human<select id="editor-human"></select></label><label>AI partner<select id="editor-ai"></select></label></div>
+              <div class="editor-action-shortcuts">
+                <div class="editor-buttons" aria-label="Mark selected action"><button id="editor-mark-critical" type="button">As critical</button><button id="editor-mark-correction" type="button">As correction</button></div>
+                <div class="editor-buttons" aria-label="Trim at selected action"><button id="editor-set-start" type="button">As start</button><button id="editor-set-end" type="button">As end</button><button id="editor-trim" type="button">Apply trim</button></div>
+                <output id="editor-trim-summary" class="editor-small" aria-live="polite"></output>
+              </div>
+              <details id="editor-action-details" class="editor-details">
+                <summary>Marker details and trim bounds</summary>
+                <div class="editor-buttons"><button id="editor-show-critical" type="button">Show critical state</button><button id="editor-show-correction" type="button">Show correction state</button></div>
+                <div class="editor-timing"><label>Critical onset action<input id="editor-critical" type="range" min="0" max="1" value="0"><output id="editor-critical-time"></output></label><label>Correction onset action<input id="editor-correction" type="range" min="0" max="1" value="0"><output id="editor-correction-time"></output></label></div>
+                <div class="editor-buttons"><button id="editor-reset-critical" type="button">Reset critical to saved</button><button id="editor-reset-correction" type="button">Reset correction to saved</button></div>
+                <p class="editor-small">As critical/correction stores the current action and selected Before/After state. Show returns to that marked state; Reset restores its saved marker and phase.</p>
+                <div id="editor-speed-table"></div>
+                <div class="editor-action-fields"><label>First retained action<input id="editor-trim-start" type="number" min="0" value="0"></label><label>Last retained action<input id="editor-trim-end" type="number" min="0" value="0"></label></div>
+                <p class="editor-small">Beginning trims are made from nonPE and affect all versions; each must reach the same retained state. You can start at critical, with no minimum preparation time. Keep critical and a later correction in PE versions. Ending trims affect this version at every speed. Review removed subtask references afterwards.</p>
+              </details>
+              <label>Action note<textarea id="editor-note" rows="2"></textarea></label>
+              <div class="editor-buttons"><button id="editor-apply-action" class="primary" type="button">Apply actions</button><button id="editor-insert" type="button">Insert after</button><button id="editor-delete" type="button">Delete action</button></div>
+            </section>
+            <section data-editor-tool="hint"><h3>Briefing</h3><p class="editor-small">Shared across every version. Briefing changes flag reviewed subtasks for review.</p><textarea id="editor-hint" rows="8" aria-label="Edit Briefing text"></textarea><details class="editor-details"><summary>Preview Briefing</summary><div class="editor-hint-preview"><strong>Briefing</strong><p id="editor-hint-preview"></p></div></details></section>
+          </section>
+          <section id="editor-panel-subtasks" role="tabpanel" aria-labelledby="editor-tab-subtasks" hidden>
+            <details class="editor-details"><summary>Current Briefing</summary><p id="subtask-hint" class="editor-small"></p></details>
+            <p id="subtask-summary" class="editor-small" role="status"></p>
+            <label>Subtask blocks<select id="subtask-select" aria-label="Select subtask block"></select></label>
+            <div class="editor-buttons"><button id="subtask-remove" type="button">Mark selected block Undecided</button></div>
+            <form id="subtask-form" hidden>
+              <div class="subtask-range editor-action-fields"><label>Begin step<select id="subtask-begin"></select></label><label>End step<select id="subtask-finish"></select></label></div>
+              <div class="editor-buttons"><button id="subtask-begin-current" type="button">Use current as begin</button><button id="subtask-finish-current" type="button">Use current as end</button></div>
+              <p id="subtask-range-status" class="editor-small" role="status"></p>
+              <label>Apply to versions<select id="subtask-version-scope"><option value="selected">Selected version only</option><option value="matched">All matched versions with corresponding steps</option></select></label>
+              <label hidden>Apply to speeds<select id="subtask-speed-scope"><option value="all">Shared sequence</option></select></label>
+              <details class="editor-details"><summary>Load an existing task as a template</summary><label>Task template<select id="subtask-template"></select></label></details>
+              <div class="editor-action-fields"><label>Subtask type<select id="subtask-type"></select></label><label>Required item<select id="subtask-item"></select></label></div>
+              <p id="subtask-direction" class="editor-small"></p><label id="subtask-recipe-field" hidden>Soup recipe<select id="subtask-recipe"><option value="any">Any allowed recipe</option><option value="onion">Onion soup</option><option value="tomato">Tomato soup</option></select></label>
+              <details class="editor-details subtask-group" open><summary>Goal and preferred action</summary>
+                <label>Accepted goal targets<select id="subtask-goal-mode"><option value="any">All standard targets for this task</option><option value="selected">Selected targets only</option></select></label>
+                <label id="subtask-goals-field">Targets <span class="editor-small">· select one or several</span><select id="subtask-goals" multiple size="4" aria-label="Accepted goal targets"></select></label>
+                <p id="subtask-goal-help" class="editor-small"></p>
+                <label>Preferred action<select id="subtask-action-mode"><option value="unspecified">Not specified</option><option value="target">Use a preferred target</option><option value="action">Use a preferred immediate action</option><option value="reference">Use selected nonPE action sequence</option></select></label>
+                <label id="subtask-target-field" hidden>Preferred target<select id="subtask-target"></select></label>
+                <label id="subtask-action-field" hidden>Preferred immediate action<select id="subtask-action"></select></label>
+                <label id="subtask-reference-field" hidden>nonPE reference actions<select id="subtask-reference" multiple size="4"></select></label>
+                <label>Coordination preference<select id="subtask-coordination"></select></label>
+              </details>
+              <details class="editor-details subtask-group"><summary>Readiness check</summary>
+                <label>Readiness condition<select id="subtask-activation"></select></label><p class="editor-small">Readiness is checked against the displayed state. It does not change the selected block or substitute another task.</p>
+              </details>
+              <details class="editor-details subtask-group"><summary>Evidence establishing the preference</summary>
+                <label>Briefing statements<select id="subtask-hint-evidence" multiple size="3"></select></label><label>Shared preparation actions<select id="subtask-context-evidence" multiple size="3"></select></label><label>Successful nonPE actions<select id="subtask-nonpe-evidence" multiple size="4"></select></label>
+              </details>
+              <label>Version review status<select id="subtask-review"><option value="draft">Draft · needs author review</option><option value="reviewed">Reviewed against Briefing and demonstration</option><option value="needs_review">Needs review after changes</option></select></label>
+              <label>After the configured sequence<select id="subtask-ending"><option value="not_specified">Further AI task is not specified</option><option value="complete">Assigned work is complete</option></select></label>
+              <div id="subtask-review-notes" class="editor-small"></div>
+              <div class="editor-buttons subtask-applybar"><button id="subtask-apply" class="primary" type="submit">Apply to selected block</button><button id="subtask-reset" type="button">Reset form</button></div>
+              <p id="subtask-form-status" class="editor-small" role="status"></p>
+            </form>
+            <details class="editor-details"><summary>Draft from successful playback</summary><p class="editor-small">Suggests the full workflow from observed nonPE interactions, including preparation. It cannot establish the human’s preferences. Replaces the draft sequence and can be undone.</p><button id="subtask-suggest" type="button">Draft from nonPE</button></details>
+            <div id="subtask-warnings" class="subtask-warnings" role="status"></div>
+          </section>
+        </aside>
+      </div>
+      <section class="editor-card editor-savebar"><div class="editor-section-heading"><div><h3>Save trial revision</h3><p class="editor-small">Apply subtask edits, validate, then save JSON. Reload applies saved revisions to new sessions.</p></div><div class="editor-buttons"><button id="editor-validate" type="button">Validate all versions / speeds</button><button id="editor-save" class="primary" type="button" disabled>Save JSON revision</button><button id="editor-reload" type="button">Reload library</button></div></div>
+        <div class="editor-review-checks" aria-label="Review completion for selected trial version"><label class="editor-inline"><input id="editor-check-playback" type="checkbox">Playback checked</label><label class="editor-inline"><input id="editor-check-subtasks" type="checkbox">Subtasks checked</label><label class="editor-inline"><input id="editor-check-hint" type="checkbox" aria-describedby="editor-hint-check-help">Briefing checked</label></div>
+        <p id="editor-hint-check-help" class="editor-small">Briefing checked applies to nonPE and PE. Checking or unchecking it saves this trial draft automatically.</p>
+        <div id="editor-validation"></div><div class="editor-buttons editor-checkpoint-approval"><label class="editor-inline"><input id="editor-review-confirm" type="checkbox">I reviewed these states and the listed collisions.</label><button id="editor-accept-checks" type="button" disabled>Use reviewed checkpoints and collisions</button></div><div class="editor-buttons editor-file-actions"><button id="editor-revert" type="button">Reopen saved</button><button id="editor-export" type="button">Export draft</button></div></section>
+      <details class="editor-card editor-advanced"><summary>Advanced inspection · checkpoints, action table and JSON</summary><details id="editor-review" class="editor-details"><summary>Review checkpoint states and collisions</summary><p class="editor-small">Inspect these states against your intended design. Accepting records assertions and declares collisions; it does not establish RPE or SPE validity.</p><div id="editor-review-versions"></div><div id="editor-review-data"></div></details><details class="editor-details"><summary>Action-by-action inspection</summary><div class="editor-table-wrap"><table class="editor-action-table"><thead><tr><th>Action</th><th>Time</th><th>Human</th><th>AI partner</th><th>Marker / scope</th><th>Expected subtask before action</th><th>Note</th></tr></thead><tbody id="editor-action-table"></tbody></table></div></details><details class="editor-details"><summary>Physical state at selected action</summary><pre id="editor-state-json"></pre></details><details class="editor-details"><summary>Inspect draft JSON</summary><pre id="editor-json"></pre></details></details>
+      <dialog id="editor-reopen-dialog" class="editor-reopen-dialog" aria-labelledby="editor-reopen-title" aria-describedby="editor-reopen-warning">
+        <form method="dialog">
+          <h2 id="editor-reopen-title">Reopen saved trial?</h2>
+          <p id="editor-reopen-trial" class="editor-reopen-trial"></p>
+          <p id="editor-reopen-warning">This loads the latest saved JSON. Unsaved edits and Playback/Subtasks checks for every version of this trial will be discarded.</p>
+          <div class="editor-buttons editor-reopen-actions">
+            <button id="editor-reopen-cancel" type="submit" value="cancel" autofocus>Cancel</button>
+            <button id="editor-reopen-confirm" class="editor-destructive" type="submit" value="reopen">Reopen saved</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <main class="page-shell">
+      <section class="stage" aria-label="Overcooked live game">
+        <div class="left-sidebar">
+          <div id="mismatch-panel" class="mismatch-panel" role="alert" aria-live="assertive" hidden>
+            <div class="mismatch-heading">
+              <span id="mismatch-type"></span>
+              <span id="mismatch-count"></span>
+            </div>
+            <div class="mismatch-result-body">
+              <h2 id="mismatch-title"></h2>
+              <p id="mismatch-detail"></p>
+              <p id="mismatch-tile" class="mismatch-tile"></p>
+              <p id="mismatch-resume" class="mismatch-resume">Simulation paused · Press <kbd>Enter</kbd> or use Resume to continue</p>
+            </div>
+          </div>
+        </div>
+        <div class="stage-center">
+          <div class="game-heading">
+            <div class="game-meta">
+              <div class="chef-legend">
+                <span><i class="hat human"></i> You</span>
+                <span><i class="hat ai"></i> AI partner</span>
+              </div>
+              <div class="trial-progress" aria-label="Trial progress" aria-live="polite">
+                <span>Trial</span> <strong id="session-progress">0/0</strong>
+              </div>
+              <button id="instructions-button" class="overlay-toggle" type="button" aria-haspopup="dialog" aria-controls="participant-instructions" hidden>Instructions</button>
+            </div>
+            <div class="order-strip" aria-label="Upcoming soup orders"><span>Orders</span><strong id="order-list">Onion</strong></div>
+            <div class="recipe-strip" aria-label="Allowed recipes">Recipes: 3 onions or 3 tomatoes · no mixed ingredients</div>
+          </div>
+          <div class="game-window">
+            <div id="example-review-control" class="game-hover-control example-review-control">
+              <button id="example-review-trigger" class="overlay-toggle example-review-trigger" type="button" aria-describedby="example-review">Check example</button>
+              <section id="example-review" class="example-review" role="tooltip">
+                <p class="review-eyebrow">CHECK ONE EXAMPLE</p>
+                <h2 id="example-class">nonPE</h2>
+                <p id="example-timing"></p>
+                <p id="example-repair"></p>
+                <p id="example-evidence" class="review-note"></p>
+                <p class="review-note">Error examples hold their error state for three extra steps before scripted correction. Speed shows the correction timing. Preview does not use EEG or produce decoder predictions.</p>
+                <p class="review-note">Choose another example yourself when ready. Nothing advances automatically.</p>
+              </section>
+            </div>
+            <div class="game-hover-control speed-hover-control">
+              <button id="speed-trigger" class="overlay-toggle speed-trigger" type="button" aria-controls="movement-speed-panel">Speed</button>
+              <div id="movement-speed-panel" class="movement-speed-control" role="group" aria-label="Movement speed settings">
+                <label for="movement-speed">Movement speed <output id="movement-speed-value" for="movement-speed">1.00× · both chefs</output></label>
+                <div class="movement-speed-track"><span>Slower</span><input id="movement-speed" type="range" min="0" max="3" step="1" value="1" aria-label="Movement speed for both chefs"><span>Faster</span></div>
+                <small id="movement-speed-timing">Set the speed before playing</small>
+              </div>
+            </div>
+            <div id="overcooked" aria-label="Overcooked kitchen with tile-value overlay"></div>
+            <div id="pre-scenario-overlay" class="pre-scenario-overlay" role="status" aria-label="Two-second fixation period" hidden>
+              <span class="fixation-cross" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="recording-briefing-slot">
+            <div class="game-hover-control hint-control">
+              <button id="hint-trigger" class="overlay-toggle hint-trigger" type="button" aria-describedby="trial-briefing">Briefing</button>
+              <aside id="trial-briefing" class="trial-briefing" role="tooltip" aria-label="Selected trial plan">
+                <h2 id="briefing-title" class="visually-hidden">Briefing</h2>
+                <p id="briefing-expectation" class="briefing-expectation">Choose an example to see what you expect from the AI partner.</p>
+                <button id="confirm-hint" class="primary" type="button" hidden>I’ve read the Briefing</button>
+              </aside>
+            </div>
+          </div>
+          <div class="map-overlay-controls">
+            <div id="heat-legend" class="heat-legend" aria-label="Value map color scale">
+              <span>Low value</span><i></i><span>High value</span>
+            </div>
+            <button id="value-map-toggle" class="overlay-toggle" type="button" aria-pressed="true">Value map: On</button>
+          </div>
+          <div class="control-panel" aria-label="Game controls">
+            <div class="control-status"><span></span><strong id="control-state">Ready</strong></div>
+            <div class="control-buttons">
+              <button id="start-recording-session" class="primary" type="button" hidden>Start session</button>
+              <button id="start-button" class="primary">Play</button>
+              <button id="pause-button" disabled hidden>Pause</button>
+              <button id="resume-button" disabled hidden>Resume</button>
+              <button id="reset-button" class="subtle">Reset</button>
+              <button id="playing-previous" type="button" hidden>← Previous</button>
+              <button id="playing-next" type="button" hidden>Next →</button>
+              <button id="playing-random" type="button" hidden>Random</button>
+            </div>
+            <div class="scene-progress" aria-live="polite">
+              <span id="playback-status">Choose an example, then play</span>
+            </div>
+          </div>
+          <dialog id="trial-response-panel" class="trial-response-panel" aria-labelledby="response-heading">
+            <h2 id="response-heading" tabindex="-1">Your rating</h2>
+            <p id="response-hint" class="response-hint"></p>
+            <form id="trial-response-form">
+              <fieldset><legend>How much did your AI partner’s behavior seem like a mistake?</legend>
+                <p id="rating-guidance">Think about what you expected after reading the Briefing. Consider the whole scene, including what happened next. There may be no mistake.</p>
+                <div class="rating-choices" aria-describedby="rating-guidance">
+                  <label><input type="radio" name="rating" value="0" required><span>0</span><small>No error</small></label>
+                  <label><input type="radio" name="rating" value="1"><span>1</span></label>
+                  <label><input type="radio" name="rating" value="2"><span>2</span></label>
+                  <label><input type="radio" name="rating" value="3"><span>3</span><small>Moderate error</small></label>
+                  <label><input type="radio" name="rating" value="4"><span>4</span></label>
+                  <label><input type="radio" name="rating" value="5"><span>5</span></label>
+                  <label><input type="radio" name="rating" value="6"><span>6</span><small>Extreme error</small></label>
+                </div>
+              </fieldset>
+              <label class="response-reason-label" for="response-reason">Briefly tell us why. <span id="response-reason-rule">Required for ratings 1–6; optional for 0.</span></label>
+              <textarea id="response-reason" maxlength="500" rows="2" aria-describedby="response-reason-rule"></textarea>
+              <p id="response-error" role="alert" hidden></p>
+              <div class="response-actions">
+                <button id="response-end-session" type="button">End session</button>
+                <button id="response-submit" class="primary" type="submit">Submit and continue</button>
+              </div>
+            </form>
+          </dialog>
+        </div>
+        <aside class="eeg-sidebar" aria-label="Human EEG and decoded response">
+          <div id="recording-eeg-controls" class="recording-eeg-controls">
+            <small>Display only · recording continues</small>
+            <button id="raw-eeg-toggle" class="raw-eeg-toggle" type="button" aria-pressed="true">Raw EEG: On</button>
+          </div>
+          <section id="raw-eeg-panel" class="eeg-panel-card eeg-signal-card">
+            <div class="eeg-card-heading">
+              <h2>EEG · last 1.8 s</h2>
+              <div class="eeg-status-chips" aria-label="EEG connection and signal quality">
+                <span class="status-chip connection-chip"><i></i><strong id="eeg-connection">Connecting</strong></span>
+                <span class="status-chip quality-chip"><i></i><strong id="eeg-quality">EQ unavailable</strong></span>
+                <button id="eeg-connect" class="eeg-reconnect" type="button" title="Reconnect EEG source" aria-label="Reconnect EEG source">↻</button>
+              </div>
+            </div>
+            <small id="eeg-quality-detail" class="eeg-quality-detail">Waiting for headset quality readings</small>
+            <canvas id="eeg-waveform" width="360" height="228" aria-label="Rolling 1.8-second, six-channel EEG waveform"></canvas>
+            <div class="lsl-marker-controls" aria-label="EmotivPRO LSL marker test">
+              <label for="marker-code"><span>Marker code</span><input id="marker-code" type="number" min="0" max="2147483647" value="1" inputmode="numeric"></label>
+              <button id="send-marker" type="button">Send test marker</button>
+              <small id="marker-status">Marker outlet starting…</small>
+            </div>
+            <div class="runtime-hooks" aria-hidden="true">
+              <span id="eeg-stream-label">Emotiv LSL / deterministic replay</span>
+              <span id="eeg-badge">CONNECTING</span>
+              <span id="eeg-buffer">0.0 s buffered</span>
+              <span id="eeg-sample-rate">—</span>
+              <span id="eeg-decoder-status">Waiting</span>
+            </div>
+          </section>
+
+          <section class="eeg-panel-card decoder-panel-card">
+            <div class="decoder-panel-heading">
+              <h3>RPE / SPE probability</h3>
+              <div class="probability-key" aria-label="Probability plot legend">
+                <span class="rpe"><i></i>RPE</span>
+                <span class="spe"><i></i>SPE</span>
+                <span class="nonpe playing-only"><i></i>nonPE</span>
+              </div>
+            </div>
+            <canvas id="probability-chart" width="360" height="170" aria-label="RPE and SPE probability changes across the last 1.8 seconds"></canvas>
+            <div class="probability-readout" aria-live="polite">
+              <span class="rpe"><small>RPE</small><strong id="rpe-value">—</strong></span>
+              <span class="spe"><small>SPE</small><strong id="spe-value">—</strong></span>
+              <span class="nonpe playing-only"><small>nonPE</small><strong id="nonpe-value">—</strong></span>
+              <span class="decoded-result">
+                <small>Saved prediction</small>
+                <strong id="decoded-class">Awaiting trial</strong>
+                <small id="decoder-confidence">No usable estimates yet</small>
+              </span>
+            </div>
+            <div id="undecided-panel" class="undecided-panel" hidden>
+              <strong>EEG result undecided</strong><p id="undecided-reason">Not enough valid windows.</p>
+              <button id="retry-event" type="button">Retry event</button>
+              <div class="manual-buttons" aria-label="Manual class override">
+                <button data-manual="nonPE">nonPE</button><button data-manual="RPE">RPE</button><button data-manual="SPE">SPE</button><button data-manual="RPE+SPE">RPE+SPE</button>
+              </div>
+            </div>
+            <span class="visually-hidden">RPE / SPE decoding across the 1.8 s event window</span>
+            <div class="runtime-hooks" aria-hidden="true">
+              <span id="decoder-source">Probability changes across the 1.8 s event window</span>
+              <span id="trial-phase-badge">READY</span>
+              <span id="nominal-ai-action">Waiting</span>
+              <span id="decoder-action">Waiting to start</span>
+              <span id="decoder-intent">Awaiting event</span>
+              <span id="revision-count">0</span>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <details class="details-panel">
+        <summary>Explore Q-values, actions, and event history</summary>
+        <div class="details-grid">
+          <section class="detail-card">
+            <h2>Decision stream</h2>
+            <div class="decision-grid">
+              <article><span>Human action</span><strong id="human-action">STAY</strong></article>
+              <article><span>AI action</span><strong id="ai-action">STAY</strong></article>
+              <article><span>Human phase</span><strong id="human-phase">Waiting</strong></article>
+              <article><span>AI phase</span><strong id="ai-phase">Waiting</strong></article>
+              <article><span>Interaction tile</span><strong id="q-target">—</strong></article>
+              <article class="wide"><span>Your plan</span><strong id="human-strategy">Choose an example to see the expected collaboration</strong></article>
+              <article class="wide"><span>Collaboration explanation</span><strong id="arbitration">Waiting for the first state</strong></article>
+            </div>
+          </section>
+          <section class="detail-card">
+            <h2>Action Q-values</h2>
+            <div id="q-values" class="q-values"><div class="q-empty">Q-values appear when the demo starts.</div></div>
+          </section>
+          <section class="detail-card option-section">
+            <h2>Three candidate plans</h2>
+            <div id="plan-options" class="plan-options" aria-live="polite">
+              <div class="plan-empty">Choose an event to compare the three plans.</div>
+            </div>
+          </section>
+          <section class="detail-card event-section">
+            <h2>Recent actions</h2>
+            <ol id="event-log" class="event-log"><li class="empty">Play this example to see its actions and markers.</li></ol>
+          </section>
+        </div>
+      </details>
+    </main>
+
+    <footer><span>Stored single-event scenes · scripted collaboration</span><span id="session-label">No active session</span></footer>
+    </div>
+    </div>
+    <div class="focus-mode-tools" role="group" aria-label="Display controls">
+      <button id="focus-mode-toggle" class="focus-mode-toggle" type="button" aria-pressed="false" aria-label="Enter focus mode" title="Fold the setup panel">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>Focus mode</span>
+      </button>
+      <button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button>
+    </div>
+    <dialog id="participant-instructions" class="participant-instructions" aria-labelledby="instructions-heading">
+      <div class="instructions-heading"><h2 id="instructions-heading" tabindex="-1" autofocus>Before you watch</h2></div>
+      <div class="instructions-content">
+        <section><h3>Your role</h3><p>Imagine you are the chef labeled <strong>You</strong>. Both chefs move automatically; you only watch.</p>
+          <p>The <strong>Briefing</strong> introduces the scene and your team’s plan. Read it before each scene and imagine this is <strong>how you want to work together</strong>. Then watch what your AI partner does.</p>
+          <div class="guide-chefs"><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-grayhat.png" role="img" aria-label="Gray human chef"></canvas><figcaption>You</figcaption></figure><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-bluehat.png" role="img" aria-label="Blue AI robot chef"></canvas><figcaption>AI partner</figcaption></figure></div>
+        </section>
+        <section id="guide-soup-section"><h3>Make and serve soup</h3>
+          <p>Check the orders above the kitchen. Each soup needs <strong>3 onions or 3 tomatoes</strong>. Both recipes follow these steps.</p>
+          <ol class="guide-cooking-steps">
+            <li class="guide-step"><h4><span class="guide-step-number">1</span> Choose an ingredient</h4>
+              <div class="guide-visual-row guide-sources">
+                <figure><canvas width="96" height="96" data-guide-art="terrain:onions.png" role="img" aria-label="Onion dispenser"></canvas><figcaption>Onion source</figcaption></figure>
+                <span class="guide-or">or</span>
+                <figure><canvas width="96" height="96" data-guide-art="terrain:tomatoes.png" role="img" aria-label="Tomato dispenser"></canvas><figcaption>Tomato source</figcaption></figure>
+              </div>
+              <p>Choose onions or tomatoes to match the order. <strong>Do not mix them in one pot.</strong></p>
+            </li>
+            <li class="guide-step"><h4><span class="guide-step-number">2</span> Fill a pot</h4>
+              <div class="guide-visual-row">
+                <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-1-cooking.png" role="img" aria-label="One onion in a pot"></canvas><figcaption>1 ingredient</figcaption></figure>
+                <span class="guide-arrow" aria-hidden="true">→</span>
+                <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-2-cooking.png" role="img" aria-label="Two onions in a pot"></canvas><figcaption>2 ingredients</figcaption></figure>
+              </div>
+              <p>Add ingredients one at a time. Cooking starts automatically after the <strong>third onion or tomato</strong>.</p>
+            </li>
+            <li class="guide-step guide-step-wide"><h4><span class="guide-step-number">3</span> Wait until the soup is ready</h4>
+              <div class="guide-ready-comparison">
+                <div class="guide-ready-recipe"><h5>Onion soup</h5><div class="guide-visual-row">
+                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-3-cooking.png" role="img" aria-label="Full onion pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <span class="guide-arrow" aria-hidden="true">→</span>
+                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-cooked.png" role="img" aria-label="Ready onion soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                </div></div>
+                <div class="guide-ready-recipe"><h5>Tomato soup</h5><div class="guide-visual-row">
+                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-tomato-3-cooking.png" role="img" aria-label="Full tomato pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <span class="guide-arrow" aria-hidden="true">→</span>
+                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-tomato-cooked.png" role="img" aria-label="Ready tomato soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                </div></div>
+              </div>
+              <p>A full pot is still cooking. Wait until it looks like the <strong>ready pot</strong> above.</p>
+            </li>
+            <li class="guide-step"><h4><span class="guide-step-number">4</span> Plate the ready soup</h4>
+              <div class="guide-visual-row">
+                <figure><canvas width="96" height="96" data-guide-art="terrain:dishes.png" role="img" aria-label="Plate dispenser"></canvas><figcaption>Plate source</figcaption></figure>
+                <span class="guide-arrow" aria-hidden="true">→</span>
+                <figure><canvas width="96" height="96" data-guide-art="objects:soup-onion-dish.png" role="img" aria-label="Onion soup collected on a plate"></canvas><figcaption>Plated soup</figcaption></figure>
+              </div>
+              <p>Take an <strong>empty plate</strong> to a ready pot to collect the soup.</p>
+            </li>
+            <li class="guide-step"><h4><span class="guide-step-number">5</span> Serve the order</h4>
+              <div class="guide-visual-row">
+                <figure><canvas width="96" height="96" data-guide-art="chefs:EAST-grayhat-soup-onion.png" role="img" aria-label="Chef carrying plated onion soup"></canvas><figcaption>Carry the soup</figcaption></figure>
+                <span class="guide-arrow" aria-hidden="true">→</span>
+                <figure><canvas width="96" height="96" data-guide-art="serving:serve.png" role="img" aria-label="Serving station"></canvas><figcaption>Serving station</figcaption></figure>
+              </div>
+              <p>Deliver the plated soup to the <strong>serving station</strong>. Make sure it matches the order.</p>
+            </li>
+          </ol>
+          <p class="guide-note">Chefs carry one item at a time and face a station to use it. They can leave items on counters or wait to let each other pass.</p>
+          <p class="guide-note"><strong>When chefs look stuck:</strong> If both chefs try to enter the same floor tile, they stay in place facing it. They are blocking each other because they cannot share a tile. The game has not frozen.</p>
+        </section>
+        <section id="guide-handoff-section"><h3>Handoff counters</h3>
+          <p><strong>A handoff counter is a counter both chefs can reach from their respective work areas.</strong> One chef places an item on it, and the other chef picks it up. Ingredients, empty plates, and ready soup can be passed this way.</p>
+          <div class="guide-map-card">
+            <div class="guide-map-heading"><span><i class="hat human"></i> Your work area</span><span><i class="hat ai"></i> AI partner’s work area</span></div>
+            <figure class="guide-kitchen"><canvas id="guide-kitchen" width="448" height="320" role="img" aria-label="Sample kitchen: the gray chef is on the left and the blue AI chef is on the right. Handoff counters A and B lie between them. Counter C is at the outer edge."></canvas></figure>
+            <div class="guide-map-key"><p><span class="guide-key-badge">A</span><span class="guide-key-badge">B</span> <strong>Handoff counters</strong> — both chefs can reach these.</p><p><span class="guide-key-badge guide-key-ordinary">C</span> <strong>Ordinary counter</strong> — only you can reach this one.</p></div>
+          </div>
+          <h4 class="guide-subheading">How an exchange works</h4>
+          <p>Here, your AI partner passes you an onion using the same counter.</p>
+          <ol class="guide-handoff-steps">
+            <li><canvas width="288" height="144" data-guide-exchange="place" role="img" aria-label="You wait on the left while the AI partner on the right holds an onion beside the counter"></canvas><h5>1. AI partner puts it down</h5><p>Your partner places the onion on the counter.</p></li>
+            <li><canvas width="288" height="144" data-guide-exchange="rest" role="img" aria-label="The onion rests on the central counter between two empty-handed chefs"></canvas><h5>2. Item rests on the counter</h5><p>The onion stays there until a chef picks it up.</p></li>
+            <li><canvas width="288" height="144" data-guide-exchange="take" role="img" aria-label="You now hold the onion on the left while the AI partner waits on the right"></canvas><h5>3. You pick it up</h5><p>You need empty hands to pick it up.</p></li>
+          </ol>
+          <div class="guide-access-grid">
+            <figure><canvas id="guide-opposite" width="288" height="192" role="img" aria-label="Two chefs face the same counter from opposite sides"></canvas><figcaption><strong>Opposite sides</strong><span>Both chefs reach the same counter from across it.</span></figcaption></figure>
+            <figure><canvas id="guide-corner" width="288" height="192" role="img" aria-label="A tomato rests on a handoff counter reached by the human chef on its left and the AI chef below it"></canvas><figcaption><strong>Adjacent sides</strong><span>Both chefs can also reach a counter around a corner.</span></figcaption></figure>
+          </div>
+          <p class="guide-note">There may be several handoff counters. The <strong>Briefing</strong> tells you which exchange is planned. It may call these “middle” or “shared” counters.</p>
+        </section>
+        <section data-guide-with-ratings hidden><h3>What did you think of your partner’s behavior?</h3>
+          <p>Think about what you expected after reading the <strong>Briefing</strong>. Consider the whole scene, including what happened next. There may be no mistake.</p>
+          <p>After each scene, we’ll ask: <strong>How much did your AI partner’s behavior seem like a mistake?</strong></p>
+          <p>Choose <strong>0–6</strong>: <strong>0 = No error</strong>, <strong>3 = Moderate error</strong>, <strong>6 = Extreme error</strong>.</p>
+          <p>For 1–6, briefly tell us why. For 0, this is optional. Take your time; your answer won’t change the scene.</p>
+        </section>
+        <section><h3>During the task</h3>
+          <ol><li>Read the Briefing and imagine how you want to work with your AI partner.</li><li>When ready, click <strong>I’ve read the Briefing</strong>.</li><li>Look at the cross for two seconds, then watch the scene quietly.</li><li data-guide-with-ratings hidden>Share your rating and a short explanation, then submit.</li><li>Read the next Briefing. The next scene waits until you’re ready.</li></ol>
+          <p>Focus on the scene<span data-guide-with-ratings hidden> and answer afterward</span>. Ask the researcher if you have a question or need a break.</p>
+        </section>
+        <p id="guide-art-status" role="status" hidden></p>
+        <div class="instructions-actions"><button id="instructions-acknowledge" type="button">I’ve read and understand the instruction</button></div>
+      </div>
+    </dialog>
+    <script src="static/vendor/overcooked-window.js?v=trial-renderer-v13-clocked"></script>
+    <script src="static/js/trial-clock.js?v=readable-previews-v13"></script>
+    <script src="static/js/participant-guide.js?v=5"></script>
+    <script src="static/js/presentation.js?v=5-all-correct"></script>
+    <script src="static/js/playing.js?v=focus-mode-v1"></script>
+    <script src="static/js/static-replay.js"></script>
+    <script src="static/js/q-demo.js?v=focus-mode-v1"></script>
+    <script src="static/js/research-ui.js?v=mode-art-v3"></script>
+  </body>
+</html>

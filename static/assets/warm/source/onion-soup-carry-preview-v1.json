@@ -1,0 +1,7 @@
+{
+  "tool": "built-in image_gen",
+  "purpose": "Preview-only onion-soup carrying artwork; recording chefs atlas unchanged",
+  "prompt": "Keep the exact 4-column by 2-row layout, chefs, directions, carrying poses, bowl rims and grips. Change only the soup to pale golden-yellow onion broth with visible cream onion rings. No orange/red tomato broth or green garnish. Preserve transparent background. Gray human top row and blue robot bottom row: front, right, back, left.",
+  "generated_file": "onion-soup-carry-preview-v1.png",
+  "reference": "Approved existing soup-carry poses assembled from source sheets; no source sheet overwritten."
+}

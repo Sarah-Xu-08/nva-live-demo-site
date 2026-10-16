@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Neural value alignment in human–AI collaboration: theory, controlled Overcooked experiments, and causal EEG decoding."><meta name="color-scheme" content="light dark"><title>Overview · Anything Wrong?</title><link rel="icon" type="image/svg+xml" href="favicon.svg"><script src="theme.js"></script><link rel="stylesheet" href="site.css?v=latin-modern-1"><link rel="stylesheet" href="../../static/css/math.css?v=1"><link rel="stylesheet" href="value-landscapes.css?v=2"><script src="value-landscapes.js?v=2" defer></script><link rel="stylesheet" href="../../static/css/site-fullscreen.css?v=1"><script src="../../static/js/site-fullscreen.js?v=1" defer></script></head>
+<body><div id="nva-project"><div class="nv-site"><a class="nv-skip" href="#main-content">Skip to content</a><header class="nv-header"><a class="nv-brand" href="index.html"><span class="nv-brand-mark" aria-hidden="true">a<span>?</span></span>Anything Wrong?</a><nav aria-label="Project pages"><a href="index.html" aria-current="page">Overview</a><a href="theory.html">Theory</a><a href="experiment.html">Experiment</a><a href="decoder.html">Decoding</a><a href="../../demo.html?mode=play" class="nv-launch">Explore demo ↗</a><a href="../../run-locally.html">Run locally</a></nav><div class="site-display-actions"><button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button><button class="nv-light-switch" type="button" role="switch" aria-label="Light mode" aria-checked="true" data-light-switch hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg><span>Light</span><span class="nv-light-track" aria-hidden="true"></span></button></div></header><main id="main-content">      <section class="nv-page" data-view="overview" aria-label="Overview">
+        <div class="nv-hero">
+          <p class="nv-eyebrow">NEURAL VALUE ALIGNMENT</p>
+          <h1>Anything Wrong?</h1>
+          <p class="nv-subtitle">Decoding human expectations in human–AI collaboration.</p>
+          <div class="nv-hero-actions"><a class="nv-primary" href="../../demo.html?mode=play">Explore demo <svg class="nv-icon" aria-hidden="true"><use href="icons.svg#arrow-up-right"></use></svg></a><a href="https://doi.org/10.1109/TCYB.2026.3722605" target="_blank" rel="noopener noreferrer">Read the NVA paper <svg class="nv-icon" aria-hidden="true"><use href="icons.svg#arrow-up-right"></use></svg></a></div>
+        </div>
+        <section class="nv-values" id="nv-value-landscapes" aria-labelledby="nv-values-heading">
+          <header class="nv-values-intro">
+            <p class="nv-eyebrow">THE IDEA</p>
+            <h2 id="nv-values-heading">Human value has two dimensions.</h2>
+            <p>NVA separates what we want to achieve from how we prefer actions to unfold.</p>
+          </header>
+          <div class="nv-values-toolbar">
+            <div class="nv-values-legend" aria-label="Select a value landscape to move">
+              <button type="button" data-value-select="human" aria-pressed="true"><i class="nv-values-human-line" aria-hidden="true"></i>Human value</button>
+              <button type="button" data-value-select="ai" aria-pressed="false"><i class="nv-values-ai-line" aria-hidden="true"></i>AI value</button>
+            </div>
+            <button type="button" class="nv-values-reset" data-value-reset>Reset</button>
+          </div>
+          <p class="nv-values-help" id="nv-values-help">Drag either landscape or its center. Use arrow keys when a center is focused.</p>
+          <div class="nv-values-stage" data-value-stage>
+            <svg class="nv-values-svg" data-value-svg role="img" aria-label="Human and AI value landscapes over goal and action, with their marginal distributions."></svg>
+            <button class="nv-values-handle" type="button" data-value-drag="human" aria-label="Move human value" aria-describedby="nv-values-help"><span></span></button>
+            <button class="nv-values-handle nv-values-handle-ai" type="button" data-value-drag="ai" aria-label="Move AI value" aria-describedby="nv-values-help"><span></span></button>
+          </div>
+          <noscript><p class="nv-values-help">Enable JavaScript to explore the interactive value landscapes.</p></noscript>
+          <div class="nv-values-results">
+            <div><span class="nv-dot nv-blue" aria-hidden="true"></span><strong>Goal misalignment</strong><span>Reward prediction error</span><output aria-label="Illustrative RPE proxy" aria-live="off" data-value-rpe>0.22</output><small>RPE proxy · 0–1</small></div>
+            <div><span class="nv-dot nv-pink" aria-hidden="true"></span><strong>Action misalignment</strong><span>State prediction error</span><output aria-label="Illustrative SPE proxy" aria-live="off" data-value-spe>0.30</output><small>SPE proxy · 0–1</small></div>
+          </div>
+          <div class="nv-values-announcement" role="status" aria-live="polite" data-value-status></div>
+        </section>
+      </section>
+</main></div></div></body></html>

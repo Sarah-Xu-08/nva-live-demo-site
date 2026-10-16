@@ -1,0 +1,152 @@
+/* These overrides apply only to Playing; Recording and Trial Editor keep their composition. */
+.playing-only { display: none; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) [hidden] { display: none !important; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-only { display: block; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage {
+  width: 1392px; grid-template-columns: 800px 568px; column-gap: 24px; row-gap: 14px;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage-center {
+  grid-column: 1; grid-row: 1; width: 800px; min-width: 0;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage > .eeg-sidebar {
+  grid-column: 2; grid-row: 1 / span 2; width: 568px; align-self: start; gap: 16px;
+  margin-top: 0;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .left-sidebar {
+  grid-column: 1; grid-row: 2; width: 800px; transform: none; align-self: start;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .game-window { margin-inline: auto; max-width: 800px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .page-shell { padding-top: 24px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .hybrid-header { grid-template-columns: 300px minmax(0, 1fr); gap: 16px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .brand h1 { font-size: 1.35rem; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .scenario-dropdowns { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-recording-field { grid-column: 1 / span 3; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .eeg-sidebar #eeg-waveform { width: 100%; height: 228px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .eeg-sidebar #probability-chart { width: 100%; height: 170px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .probability-readout { grid-template-columns: 72px 72px 72px minmax(0, 1fr); }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .probability-key .nonpe { display: inline-flex; }
+.probability-key .nonpe i { background: #7b8188; }
+.probability-readout .nonpe strong { color: #7b8188; }
+.playing-source { padding: 12px 16px; border: 1px solid var(--border, #dedbd5); border-radius: 14px; background: #f8f7f3; }
+.playing-source p { margin: 5px 0 0; font-size: 12px; color: #69716e; overflow-wrap: anywhere; }
+.playing-history { border-top: 1px solid #dedbd5; padding-top: 12px; font-size: 12px; }
+.playing-history > div { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.playing-history input { flex: 1; min-width: 0; accent-color: #758b79; }
+.playing-history button { padding: 5px 12px; }
+.playing-history small { color: #69716e; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .scene-progress { min-width: 0; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage-center .control-buttons { display: flex; flex-wrap: wrap; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot { margin-top: 14px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot .hint-control {
+  position: static; width: 100%;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot .hint-trigger { display: none; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot .trial-briefing {
+  position: static; width: 100%; max-width: none; max-height: none;
+  visibility: visible; pointer-events: auto; padding: 12px 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 225px; gap: 5px 16px;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot #briefing-title {
+  margin: 0; font-size: .9rem; grid-column: 1;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot .briefing-expectation {
+  grid-column: 1; margin: 0; padding: 0; border: 0; font-size: .85rem;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-briefing-slot #confirm-hint {
+  grid-column: 2; grid-row: 1 / span 2; align-self: center; margin: 0;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .speed-hover-control { left: auto; right: 12px; bottom: 12px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .movement-speed-control { left: auto; right: 0; }
+body[data-playing-state="FIXATION"] .playing-briefing-slot,
+body[data-playing-state="PAUSED"] .playing-briefing-slot,
+body[data-playing-state="RESTORING"] .playing-briefing-slot,
+body[data-playing-state="RUNNING"] .playing-briefing-slot { visibility: hidden; pointer-events: none; }
+body[data-playing-state="FIXATION"] .playing-briefing-slot .trial-briefing,
+body[data-playing-state="PAUSED"] .playing-briefing-slot .trial-briefing,
+body[data-playing-state="RESTORING"] .playing-briefing-slot .trial-briefing,
+body[data-playing-state="RUNNING"] .playing-briefing-slot .trial-briefing { visibility: hidden; pointer-events: none; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .map-overlay-controls { display: none; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage-center .control-panel { margin-top: 16px; }
+/* Focus mode keeps the reference composition and scales it as one unit. */
+#playing-setup-bar { display: none; }
+body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode #playing-setup-bar {
+  display: block; position: fixed; inset: 0 0 auto; z-index: 110;
+  width: 100%; height: max(20px, calc(22px * var(--display-scale)));
+  padding: 0; border: 0; border-bottom: 1px solid #d9ded8; border-radius: 0;
+  background: #edf1eb; color: #657968; cursor: pointer;
+  font: 600 calc(10px * var(--display-scale)) / 1 system-ui;
+}
+body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode #playing-setup-bar:focus-visible {
+  outline: 2px solid #4a9877; outline-offset: -2px;
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .page-shell {
+  padding-top: max(44px, calc((var(--display-viewport-height) - var(--playing-stage-height, 810px)) / 2));
+  padding-bottom: 20px;
+}
+body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .hybrid-header {
+  top: 32px; z-index: 100; max-height: calc(var(--display-viewport-height) - 64px);
+  margin-top: 0; padding-block: 10px; background: #fffdf8;
+  box-shadow: 0 10px 30px #27352b26;
+  visibility: hidden; opacity: 0; pointer-events: none;
+  transform: translate(-50%, -12px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode.playing-setup-open .display-surface .hybrid-header {
+  visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0);
+}
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .game-heading { position: static; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .stage > .eeg-sidebar { margin-top: 0; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .details-panel,
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface footer { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .hybrid-header { transition: none; }
+}
+/* Presentation shares Playing's scaled composition and adds a bounded story. */
+.presentation-only { display: none; }
+body[data-experiment-mode="presentation"] .presentation-only { display: block; }
+body[data-experiment-mode="presentation"] .display-surface .stage > .eeg-sidebar { gap: 10px; }
+body[data-experiment-mode="presentation"] .eeg-sidebar #eeg-waveform { height: 130px; }
+body[data-experiment-mode="presentation"] .eeg-sidebar #probability-chart { height: 156px; }
+body[data-experiment-mode="presentation"] .eeg-card,
+body[data-experiment-mode="presentation"] .probability-panel { padding-block: 12px; }
+.presentation-card { border: 1px solid #d9dfd4; border-radius: 14px; background: #fafbf7; padding: 14px 16px; height: 300px; overflow: auto; font-size: 12px; line-height: 1.4; }
+.presentation-card-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.presentation-card-title strong { font-size: 15px; }
+#presentation-condition { color: #63765b; }
+#presentation-story { display: grid; gap: 6px; }
+#presentation-story p, #presentation-evidence p { margin: 2px 0 6px; }
+#presentation-evidence:not(:empty) { padding-top: 8px; margin-top: 8px; border-top: 1px solid #d9dfd4; }
+#presentation-continue { position: sticky; bottom: 0; float: right; padding: 6px 18px; background: #eef4e9; box-shadow: 0 0 10px 5px #fafbf7; }
+#presentation-editor { width: min(1120px, 94vw); max-height: 92vh; overflow: auto; border: 1px solid #d9dfd4; border-radius: 18px; padding: 24px; color: #29392d; background: #fffdf8; font: 14px/1.4 system-ui; }
+#presentation-editor::backdrop { background: #23302688; }
+#presentation-editor label { display: grid; gap: 5px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+#presentation-editor input, #presentation-editor textarea, #presentation-editor select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ced6c8; border-radius: 6px; background: white; color: #253728; font: 13px/1.4 system-ui; }
+#presentation-editor select { text-overflow: ellipsis; }
+.presentation-editor-heading, .presentation-editor-footer, .presentation-editor-buttons { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.presentation-editor-heading h2 { margin: 0; }
+.presentation-editor-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 24px; }
+.presentation-editor-buttons { flex-wrap: wrap; justify-content: start; margin-bottom: 18px; }
+#presentation-editor .presentation-checkbox { display: flex; align-items: center; font-weight: 400; }
+#presentation-comparison { width: auto !important; }
+#presentation-preview { width: 100%; height: 190px; }
+#presentation-preview-detail, #presentation-editor-status { font-size: 12px; color: #68716c; }
+.presentation-editor-footer { border-top: 1px solid #d9dfd4; padding-top: 16px; }
+#presentation-editor-status { flex: 1; }
+@media (max-width: 760px) { .presentation-editor-layout { grid-template-columns: 1fr; } }
+body[data-experiment-mode="presentation"] .presentation-card { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden; }
+#presentation-story { min-height: 0; overflow: auto; }
+#presentation-evidence { max-height: 108px; overflow: auto; }
+#presentation-continue { position: static; float: none; justify-self: end; margin-top: 6px; box-shadow: none; }
+body[data-experiment-mode="presentation"] .eeg-panel-card { padding: 12px 16px; }
+.presentation-only[hidden] { display: none !important; }
+
+.presentation-story-row p { display: inline; }
+#presentation-story summary { cursor: pointer; font-weight: 600; }
+body[data-experiment-mode="presentation"] .display-surface .stage-center .control-panel { width: 800px; }
+#presentation-editor button, #presentation-continue {
+  border: 1px solid #cbd6c6; border-radius: 8px; padding: 7px 12px;
+  background: #f6f8f2; color: #334b37; font: 600 12px/1.3 system-ui; cursor: pointer;
+}
+#presentation-editor button:hover, #presentation-continue:hover { background: #e8efdf; }
+#presentation-editor #presentation-save { background: #4d795f; color: white; border-color: #4d795f; }
+#presentation-editor button:disabled { opacity: .5; cursor: default; }

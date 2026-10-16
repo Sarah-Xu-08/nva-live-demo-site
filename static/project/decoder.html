@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Neural value alignment in human–AI collaboration: theory, controlled Overcooked experiments, and causal neural signal decoding."><meta name="color-scheme" content="light dark"><title>Decoding · Anything Wrong?</title><link rel="icon" type="image/svg+xml" href="favicon.svg"><script src="theme.js"></script><link rel="stylesheet" href="site.css?v=latin-modern-1"><link rel="stylesheet" href="../../static/css/math.css?v=1"><script src="site.js?v=latin-modern-1" defer></script><link rel="stylesheet" href="../../static/css/site-fullscreen.css?v=1"><script src="../../static/js/site-fullscreen.js?v=1" defer></script></head>
+<body><div id="nva-project"><div class="nv-site"><a class="nv-skip" href="#main-content">Skip to content</a><header class="nv-header"><a class="nv-brand" href="index.html"><span class="nv-brand-mark" aria-hidden="true">a<span>?</span></span>Anything Wrong?</a><nav aria-label="Project pages"><a href="index.html">Overview</a><a href="theory.html">Theory</a><a href="experiment.html">Experiment</a><a href="decoder.html" aria-current="page">Decoding</a><a href="../../demo.html?mode=play" class="nv-launch">Explore demo ↗</a><a href="../../run-locally.html">Run locally</a></nav><div class="site-display-actions"><button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button><button class="nv-light-switch" type="button" role="switch" aria-label="Light mode" aria-checked="true" data-light-switch hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg><span>Light</span><span class="nv-light-track" aria-hidden="true"></span></button></div></header><main id="main-content">      <section class="nv-page" data-view="decoder" aria-label="Decoding">
+        <div class="nv-page-heading"><p class="nv-eyebrow">DECODING</p><h1>Neural signals in.<br>Probabilities out.</h1><p class="nv-subtitle">Current Playing implementation. Calibrated LDA. One update every 62.5 ms.</p></div>
+        <section class="nv-decoder-pipeline" aria-label="Neural signal processing pipeline">
+          <div class="nv-figure-heading"><span>CAUSAL INFERENCE PIPELINE</span><span class="nv-caption">Past samples only</span></div>
+          <div class="nv-decoder-flow">
+            <div class="nv-signal-node"><span class="nv-small-label">ACQUIRE</span><div class="nv-large-wave"><svg data-wave="input" role="img" aria-label="Schematic three-channel neural signals"></svg></div><strong>14 channels · 128 Hz</strong></div>
+            <span class="nv-flow-arrow" aria-hidden="true">→</span>
+            <div class="nv-filter-node"><span class="nv-small-label">FILTER</span><div class="nv-filter-illustration"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><strong>0.1–30 Hz</strong><span class="nv-caption">Persistent causal state</span></div>
+            <span class="nv-flow-arrow" aria-hidden="true">→</span>
+            <div class="nv-features-node"><span class="nv-small-label">REPRESENT</span><div class="nv-feature-grid" role="img" aria-label="Feature matrix illustration"></div><strong>140 voltage features</strong><span class="nv-caption">14 channels × 10 time bins</span></div>
+            <span class="nv-flow-arrow" aria-hidden="true">→</span>
+            <div class="nv-model-node"><span class="nv-small-label">ESTIMATE</span><div class="nv-model-illustration"><svg class="nv-icon" aria-hidden="true"><use href="icons.svg#network"></use></svg><span>LDA</span></div><strong>Calibrate & average</strong><span class="nv-caption">Three-class probabilities</span></div>
+          </div>
+        </section>
+        <div class="nv-decoder-lower">
+          <section class="nv-window-section"><div class="nv-section-heading"><h2>One causal window.</h2></div><div class="nv-window"><div><span>Baseline</span><strong>Previous 1 s</strong></div><div><span>Features</span><strong>Latest 1 s</strong></div></div><div class="nv-window-axis"><span><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mi>t</mi><mo form="infix">−</mo><mn>2</mn></math> s</span><span><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mi>t</mi><mo form="infix">−</mo><mn>1</mn></math> s</span><span><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mi>t</mi></math> / now</span></div><p class="nv-caption">Subtract the preceding-second mean → average 10 time bins per channel. Five seconds of valid input are required after filter initialization.</p></section>
+          <section class="nv-estimate-section"><div class="nv-section-heading"><h2>Three-class estimate.</h2><div class="nv-switch" aria-label="Probability example"><button type="button" data-estimate="clear" aria-pressed="true">Clear</button><button type="button" data-estimate="uncertain" aria-pressed="false">Close</button><button type="button" data-estimate="missing" aria-pressed="false">Missing</button></div></div><div class="nv-stacked-prob" role="img" aria-label="Illustrative probabilities: nonPE 12 percent, SPE 24 percent, RPE plus SPE 64 percent"><span class="nv-neutral" data-segment="0" style="width:12%"></span><span class="nv-pink" data-segment="1" style="width:24%"></span><span class="nv-blue" data-segment="2" style="width:64%"></span></div><div class="nv-prob-legend"><span><i class="nv-dot nv-neutral"></i>nonPE <b data-p="0">12%</b></span><span><i class="nv-dot nv-pink"></i>SPE-only <b data-p="1">24%</b></span><span><i class="nv-dot nv-blue"></i>RPE+SPE <b data-p="2">64%</b></span></div><div class="nv-decision" aria-live="polite"><strong data-verdict>RPE+SPE</strong><span data-margin>40 pp lead · ≥10 pp required</span></div><p class="nv-caption">Illustrative probabilities · update cadence is not end-to-end latency</p></section>
+        </div>
+        <details class="nv-details" id="training-epochs"><summary>How training epochs are selected <span>+</span></summary><div class="nv-details-body">
+          <div class="nv-epoch-explainer nv-probability-explainer" data-epoch-explainer>
+            <div class="nv-probability-flow-heading"><strong>From continuous EEG to labeled examples</strong><span>Current xx_record training</span></div>
+            <p>Choose the critical-action type, then <strong>drag the EEG window left or right</strong>. The bars mark eligible training epoch ends.</p>
+            <div class="nv-epoch-options">
+              <div class="nv-switch" role="group" aria-label="Critical-action type"><button type="button" data-epoch-critical="pe" aria-pressed="true">PE critical</button><button type="button" data-epoch-critical="nonpe" aria-pressed="false">nonPE critical</button></div>
+              <label class="nv-epoch-pe-type">PE label <select data-epoch-pe-label aria-label="PE critical-action label"><option value="SPE-only">SPE-only</option><option value="RPE+SPE">RPE+SPE</option></select></label>
+              <span id="epoch-drag-help">Drag the EEG or baseline block · arrow keys move 62.5 ms</span>
+            </div>
+            <figure class="nv-epoch-figure">
+              <div class="nv-epoch-scroll" tabindex="0" role="region" aria-label="Training epoch timeline; scroll horizontally on small screens">
+                <svg class="nv-epoch-timeline" viewBox="0 0 1040 350" role="group" aria-labelledby="epoch-timeline-title epoch-timeline-description">
+                  <title id="epoch-timeline-title">Eligible epoch end times around a critical action</title>
+                  <desc id="epoch-timeline-description">Illustrative trial from minus two to plus 2.5 seconds relative to critical onset C, with earlier continuous EEG shown to the left. Background ends run from gameplay plus 0.25 seconds to before C minus 0.125 seconds. PE response ends run from C plus 0.5 to before C plus one second. For a nonPE critical action, background ends resume at C plus 0.5 seconds until before trial end. Hatching marks excluded ends. Drag the bottom epoch, or use its arrow keys, to inspect its training label.</desc>
+                  <defs><pattern id="epoch-excluded-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M-2 2L2 -2 M0 8L8 0 M6 10L10 6" class="nv-epoch-hatch-line"/></pattern></defs>
+                  <text x="160" y="24" class="nv-epoch-muted">Earlier EEG</text><text x="160" y="44" class="nv-epoch-muted">Includes pre-gameplay</text>
+                  <text x="400" y="24" text-anchor="middle">Gameplay onset</text><text x="400" y="44" text-anchor="middle" class="nv-epoch-muted">−2 s in this example</text>
+                  <text x="640" y="24" text-anchor="middle">Critical action</text><text x="640" y="44" text-anchor="middle" class="nv-epoch-muted">C = 0 s</text>
+                  <text x="940" y="24" text-anchor="end">Trial end</text><text x="940" y="44" text-anchor="end" class="nv-epoch-muted">+2.5 s in this example</text>
+                  <path class="nv-epoch-axis" d="M160 68H940 M400 62V74 M640 62V74 M940 62V74"/>
+                  <path class="nv-epoch-critical" d="M640 80V328"/>
+                  <g data-epoch-track="pe">
+                  <text x="16" y="123">PE critical</text><text x="16" y="141" class="nv-epoch-muted">SPE or RPE+SPE</text>
+                  <rect x="400" y="110" width="540" height="34" rx="3" class="nv-epoch-excluded"/>
+                  <rect x="430" y="110" width="195" height="34" rx="3" class="nv-epoch-background"/>
+                  <text x="527.5" y="132" text-anchor="middle">nonPE</text>
+                  <rect x="700" y="110" width="60" height="34" rx="3" class="nv-epoch-positive"/>
+                  <text x="730" y="132" text-anchor="middle" class="nv-epoch-on-positive">PE</text>
+                  <text x="430" y="166" text-anchor="end" class="nv-epoch-muted">Start +0.25 s</text><text x="625" y="166" text-anchor="end" class="nv-epoch-muted">Before C −0.125 s</text>
+                  <text x="700" y="166" text-anchor="middle" class="nv-epoch-muted">C +0.5 s</text><text x="768" y="166" class="nv-epoch-muted">Before C +1 s</text>
+                  </g>
+                  <g data-epoch-track="nonpe" class="nv-epoch-track-inactive">
+                  <text x="16" y="216">nonPE critical</text>
+                  <rect x="400" y="195" width="540" height="34" rx="3" class="nv-epoch-excluded"/>
+                  <rect x="430" y="195" width="195" height="34" rx="3" class="nv-epoch-background"/>
+                  <text x="527.5" y="217" text-anchor="middle">nonPE</text>
+                  <rect x="700" y="195" width="240" height="34" rx="3" class="nv-epoch-background"/>
+                  <text x="820" y="217" text-anchor="middle">nonPE</text>
+                  <text x="700" y="251" text-anchor="middle" class="nv-epoch-muted">C +0.5 s</text>
+                  </g>
+                  <text x="16" y="300">Drag this epoch ↔</text>
+                  <g class="nv-epoch-drag" data-epoch-drag transform="translate(490 280)" role="slider" tabindex="0" aria-label="Example epoch end time" aria-orientation="horizontal" aria-valuemin="-2" aria-valuemax="2.5" aria-valuenow="0.75" aria-describedby="epoch-drag-help epoch-example-readout">
+                    <rect x="-4" y="-8" width="248" height="48" rx="4" class="nv-epoch-drag-hit"/>
+                    <rect width="120" height="32" rx="3" class="nv-epoch-baseline"/>
+                    <text x="60" y="21" text-anchor="middle" class="nv-epoch-muted">Baseline · 1 s</text>
+                    <rect x="120" width="120" height="32" rx="3" class="nv-epoch-positive"/>
+                    <text x="180" y="21" text-anchor="middle" class="nv-epoch-on-positive">EEG · 1 s ↔</text>
+                    <path d="M240 -8V40" class="nv-epoch-end"/>
+                  </g>
+                  <circle cx="730" cy="101" r="5" class="nv-epoch-dot" data-epoch-dot/>
+                  <text x="730" y="340" text-anchor="middle" class="nv-epoch-muted" data-epoch-end-label>Ends at C +0.75 s</text>
+                </svg>
+              </div>
+              <figcaption>Assumes continuous EEG, completed filter warm-up and no other PE or unresolved action. Times are illustrative; labels below are assigned training targets.</figcaption>
+            </figure>
+            <div class="nv-epoch-key"><span><i class="nv-epoch-key-background"></i>nonPE training</span><span><i class="nv-epoch-key-positive"></i>Critical PE label</span><span><i class="nv-epoch-key-excluded"></i>Excluded end times</span></div>
+            <div class="nv-epoch-feedback" id="epoch-example-readout" aria-live="polite" aria-atomic="true">
+              <div><span>EEG window</span><strong data-epoch-readout>−0.25 to +0.75 s</strong><small data-epoch-baseline-readout>Baseline: −1.25 to −0.25 s</small></div>
+              <div><span>Training epoch</span><strong data-epoch-eligibility>Eligible</strong><small data-epoch-reason>Ends in the critical-response interval.</small></div>
+              <div><span>Assigned training label</span><strong data-epoch-assigned-label>SPE-only</strong><small>From action timing, not a decoder prediction.</small></div>
+              <p><strong>Replay decoding: available</strong> with the complete EEG and warm-up assumed here, including positions excluded from training.</p>
+            </div>
+            <div class="nv-epoch-reasons">
+              <div><h3>Background before the event</h3><p>Start at gameplay +0.25 s; stop before C −0.125 s or the first PE/unresolved action, whichever is earlier. Small gaps avoid the immediate gameplay and critical boundaries.</p></div>
+              <div><h3>An early critical response</h3><p>Ends from C +0.5 s to before C +1 s include 0.5–1 s of post-event EEG. Stop earlier at a different PE type, an unresolved action or trial end.</p></div>
+              <div><h3>Leave ambiguous periods unlabeled</h3><p>For a nonPE critical action, add ends from C +0.5 s only while no PE/unresolved action has occurred. Other ends are excluded from training; replay still predicts throughout gameplay.</p></div>
+            </div>
+            <p class="nv-epoch-footnote">At most eight evenly spaced epochs per eligible interval enter the fitting pool, followed by class balancing. Missing data and filter warm-up are excluded. Every label interval stops by trial end.</p>
+            <p class="nv-epoch-footnote"><strong>Training choices, not biological boundaries.</strong> Early background windows and their baselines can include fixation. PE training keeps the 0.5–1 s response interval, while demo validity now checks predictions through trial end.</p>
+          </div>
+        </div></details>
+        <details class="nv-details" id="class-probabilities"><summary>How the probabilities are computed <span>+</span></summary><div class="nv-details-body">
+        <div class="nv-probability-explainer" data-probability-explainer>
+          <div class="nv-probability-flow-heading"><strong>Inside one model</strong><span>Illustrative numbers · move the slider to explore</span></div>
+          <div class="nv-probability-flow" aria-label="Score, calibrate, then normalize">
+            <section class="nv-probability-step" aria-labelledby="score-heading">
+              <span class="nv-probability-step-number">01</span><h3 id="score-heading">Score the neural signals</h3>
+              <p>Standardize the 140 features using training statistics. LDA combines them into one score per class.</p>
+              <div class="nv-score-formula"><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mtext>Score</mtext><mo>=</mo></math> <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mtext>weighted features</mtext><mo>+</mo><mtext>offset</mtext></math></div>
+              <dl class="nv-score-list"><div><dt>nonPE</dt><dd>−2.20</dd></div><div><dt>SPE-only</dt><dd>−1.39</dd></div><div><dt>RPE+SPE</dt><dd data-demo-score>0.00</dd></div></dl>
+              <label class="nv-score-slider-label" for="calibration-score">Try a different RPE+SPE score</label>
+              <input id="calibration-score" class="nv-score-slider" type="range" min="-4" max="4" step="0.05" value="0" aria-describedby="score-example-note">
+              <div class="nv-slider-endpoints"><span>−4</span><button type="button" data-reset-calibration>Reset to 0</button><span>+4</span></div>
+              <p id="score-example-note" class="nv-probability-note">Only this example changes. The other two scores stay fixed.</p>
+            </section>
+            <span class="nv-probability-flow-arrow" aria-hidden="true">→</span>
+            <section class="nv-probability-step" aria-labelledby="calibrate-heading">
+              <span class="nv-probability-step-number">02</span><h3 id="calibrate-heading">Calibrate each score</h3>
+              <p>A sigmoid maps each score to a 0–1 estimate for that class versus the other two.</p>
+              <svg class="nv-sigmoid-chart" data-sigmoid-chart viewBox="0 0 300 205" role="img" aria-label="Illustrative sigmoid: a score of zero maps to an estimate of 0.50">
+                <text x="40" y="14" class="nv-sigmoid-axis-label">Calibrated estimate</text>
+                <path class="nv-sigmoid-grid" d="M40 28H282 M40 93H282 M40 158H282"/>
+                <path class="nv-sigmoid-axis" d="M40 25V158H282"/>
+                <text x="31" y="32" text-anchor="end">1</text><text x="31" y="97" text-anchor="end">0.5</text><text x="31" y="162" text-anchor="end">0</text>
+                <text x="40" y="176" text-anchor="middle">−4</text><text x="161" y="176" text-anchor="middle">0</text><text x="282" y="176" text-anchor="middle">4</text><text x="161" y="199" text-anchor="middle">Class score</text>
+                <path class="nv-sigmoid-curve" data-sigmoid-curve/>
+                <path class="nv-sigmoid-guide" data-sigmoid-guide/>
+                <circle class="nv-sigmoid-point" data-sigmoid-point cx="161" cy="93" r="5"/>
+              </svg>
+              <div class="nv-sigmoid-readout" aria-live="polite"><span data-demo-score>0.00</span> → <strong data-demo-estimate>0.500</strong></div>
+              <p class="nv-probability-note">Example: <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true"><mi>q</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mi mathvariant="normal">score</mi></mrow></msup></mrow></mfrac></math>. Real curves learn their slope and shift from a separate calibration session.</p>
+            </section>
+            <span class="nv-probability-flow-arrow" aria-hidden="true">→</span>
+            <section class="nv-probability-step" aria-labelledby="normalize-heading">
+              <span class="nv-probability-step-number">03</span><h3 id="normalize-heading">Make the total 100%</h3>
+              <p>Divide each calibrated estimate by the sum of all three.</p>
+              <div class="nv-normalization-total">Total: <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mn>0.100</mn><mo>+</mo><mn>0.200</mn><mo>+</mo><mn data-demo-estimate="">0.500</mn></math> <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mo form="infix">=</mo><mn data-demo-total="">0.800</mn></math></div>
+              <div class="nv-normalized-classes" role="group" aria-label="This model’s normalized class probabilities">
+                <div><div><span>nonPE</span><strong data-normalized-value="0">12.5%</strong></div><span class="nv-normalized-calculation" data-normalized-calculation="0"><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true"><mfrac><mn data-normalized-numerator="0">0.100</mn><mn data-normalized-denominator="0">0.800</mn></mfrac></math></span><div class="nv-normalized-track"><span data-normalized-bar="0" style="width:12.5%"></span></div></div>
+                <div><div><span>SPE-only</span><strong data-normalized-value="1">25.0%</strong></div><span class="nv-normalized-calculation" data-normalized-calculation="1"><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true"><mfrac><mn data-normalized-numerator="1">0.200</mn><mn data-normalized-denominator="1">0.800</mn></mfrac></math></span><div class="nv-normalized-track"><span data-normalized-bar="1" style="width:25%"></span></div></div>
+                <div><div><span>RPE+SPE</span><strong data-normalized-value="2">62.5%</strong></div><span class="nv-normalized-calculation" data-normalized-calculation="2"><math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true"><mfrac><mn data-normalized-numerator="2">0.500</mn><mn data-normalized-denominator="2">0.800</mn></mfrac></math></span><div class="nv-normalized-track"><span data-normalized-bar="2" style="width:62.5%"></span></div></div>
+              </div>
+              <p class="nv-probability-note">All three now share a 100% total. Values shown are rounded.</p>
+            </section>
+          </div>
+          <p class="nv-probability-average"><strong>Final plotted probabilities:</strong> repeat these steps for all four models, then average their probabilities class by class.</p>
+        </div>
+        <p><strong>Then choose a label.</strong> The winner needs a lead of at least 10 percentage points; otherwise the label is “Uncertain.” This rule does not change the probabilities. Missing neural signals or incomplete warm-up is “Unavailable.”</p></div></details>
+        <section class="nv-review-grid"><div><span class="nv-small-label">PRE-RECORDED NEURAL SIGNALS</span><h2>One source-session model.</h2><p>Rebuild causal filter state from the recording’s prefix, then recompute from raw neural signals using that source session’s saved model. Replay speed changes presentation time, not model inputs.</p></div><div><span class="nv-small-label">REAL-TIME NEURAL SIGNALS</span><h2>Five model vectors.</h2><p>Compute one feature vector and average the five saved session-model probability vectors equally. Acquisition gaps and reconnects restart filter warm-up.</p></div></section>
+        <details class="nv-details"><summary>How to read the live output <span>+</span></summary><div class="nv-details-body nv-two"><div><strong>Three mutually exclusive classes</strong><p>The model outputs nonPE, SPE-only and RPE+SPE. On the current demo, the blue “RPE” trace displays <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mi mathvariant="normal">P</mi><mo stretchy="false">(</mo><mi mathvariant="normal">RPE</mi><mo form="infix">+</mo><mi mathvariant="normal">SPE</mi><mo stretchy="false">)</mo></math>, and the pink “SPE” trace displays <math class="nv-math" xmlns="http://www.w3.org/1998/Math/MathML"><mi mathvariant="normal">P</mi><mo>(</mo><mtext>SPE-only</mtext><mo>)</mo></math>. They are class probabilities, not two independent binary heads.</p></div><div><strong>Observational decoding</strong><p>Critical labels, game events and trial identities do not enter the inference module. The decoder does not choose actions; visible corrections follow the stored trial script. The 1.5-second display window is separate from the 1-second feature window.</p></div></div></details>
+        <div class="nv-page-next"><span>Current demo: observational decoding</span><a href="../../demo.html?mode=play">Explore demo <span>↗</span></a></div>
+      </section>
+</main><footer class="nv-footer"><span>Anything Wrong? <span class="nv-footer-divider">/</span> Neural Value Alignment</span><a href="https://doi.org/10.1109/TCYB.2026.3722605" target="_blank" rel="noopener noreferrer">Xu et al. · IEEE TCYB 2026 ↗</a></footer></div></div></body></html>

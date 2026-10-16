@@ -1,0 +1,97 @@
+.participant-options { display: grid; align-content: center; gap: 7px; }
+.scenario-dropdowns .participant-options label { display: flex; align-items: center; gap: 7px; font-size: .75rem; white-space: nowrap; }
+.hybrid-header .scenario-dropdowns .participant-options input { width: 16px; height: 16px; min-height: 16px; flex: none; padding: 0; margin: 0; accent-color: var(--green); }
+.participant-options[hidden], #instructions-button[hidden], [data-guide-with-ratings][hidden] { display: none; }
+.participant-instructions { width: min(850px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: var(--paper); box-shadow: 0 20px 80px #0003; }
+.participant-instructions::backdrop { background: #0007; }
+.instructions-heading { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 18px 24px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.instructions-heading h2 { margin: 0; font: 700 1.45rem Georgia, serif; }
+.trial-response-panel button { padding: 10px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.instructions-content { padding: 0 24px 24px; font-size: 16px; line-height: 1.6; }
+.instructions-actions { display: flex; justify-content: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
+.instructions-actions button { max-width: 100%; padding: 12px 20px; border: 1px solid var(--green); border-radius: 10px; background: var(--green); color: white; font: inherit; line-height: 1.5; text-align: center; cursor: pointer; }
+.instructions-content section + section { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 8px; }
+.instructions-content h3 { margin-bottom: 8px; color: var(--green); font-size: 1.1rem; }
+.instructions-content figure { margin: 0; text-align: center; }
+.instructions-content figcaption { font-size: .8rem; line-height: 1.4; }
+.instructions-content canvas { max-width: 100%; height: auto; image-rendering: pixelated; }
+.guide-chefs { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 18px 0; }
+.guide-chefs canvas { width: 80px; }
+.guide-cooking-steps, .guide-handoff-steps { padding: 0; margin: 20px 0; list-style: none; display: grid; gap: 14px; }
+.guide-cooking-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.guide-step, .guide-handoff-steps li { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 16px; }
+.guide-step h4 { display: flex; gap: 9px; align-items: baseline; margin: 0 0 12px; font-size: 1rem; line-height: 1.4; }
+.guide-step-number { flex: none; display: inline-grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--green); color: white; font-size: .8rem; }
+.guide-step p, .guide-handoff-steps p { margin: 12px 0 0; font-size: .9rem; line-height: 1.5; }
+.guide-step-wide { grid-column: 1 / -1; }
+.guide-visual-row { display: flex; justify-content: center; align-items: center; gap: 12px; }
+.guide-visual-row figure { min-width: 0; }
+.guide-visual-row canvas { display: block; width: 80px; margin: 0 auto 4px; }
+.guide-or { font-size: .85rem; color: var(--muted); }
+.guide-arrow { color: var(--green); font-size: 1.35rem; }
+.guide-ready-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.guide-ready-recipe h5 { margin: 0 0 8px; text-align: center; font-size: .9rem; }
+.guide-ready-recipe + .guide-ready-recipe { border-left: 1px solid var(--line); padding-left: 16px; }
+.guide-note { padding: 12px 16px; border-left: 3px solid var(--green); background: var(--cream); font-size: .9rem; }
+.guide-map-card { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.guide-map-heading { display: flex; justify-content: space-around; gap: 12px; max-width: 448px; margin: 0 auto 10px; font-size: .85rem; font-weight: 700; text-align: center; }
+.guide-map-heading span { display: flex; align-items: center; gap: 6px; }
+.guide-map-heading .hat { flex: none; }
+.guide-kitchen canvas { display: block; width: 448px; margin: 0 auto; }
+.guide-map-key { max-width: 448px; margin: 12px auto 0; font-size: .85rem; line-height: 1.5; }
+.guide-map-key p { margin: 8px 0 0; }
+.guide-key-badge { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; background: #237455; color: white; font-size: .75rem; font-weight: 700; }
+.guide-key-ordinary { background: #626a73; }
+.guide-subheading { margin: 24px 0 8px; font-size: 1rem; }
+.guide-handoff-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.guide-handoff-steps li { padding: 12px; }
+.guide-handoff-steps canvas { display: block; width: 100%; }
+.guide-handoff-steps h5 { font-size: .9rem; line-height: 1.4; margin: 8px 0 0; }
+.guide-handoff-steps p { font-size: .8rem; }
+.guide-access-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.guide-access-grid figure { padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.guide-access-grid canvas { display: block; width: 216px; margin: 0 auto 8px; }
+.guide-access-grid figcaption strong, .guide-access-grid figcaption span { display: block; }
+.guide-access-grid figcaption strong { margin-bottom: 4px; font-size: .9rem; }
+.trial-response-panel { position: fixed; inset: 0; width: min(680px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); box-sizing: border-box; overflow: auto; margin: auto; padding: 22px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 20px 80px #0004; font-size: 16px; line-height: 1.5; }
+.trial-response-panel::backdrop { background: rgb(0 0 0 / 40%); }
+html:has(.trial-response-panel[open]) { overflow: hidden; }
+.trial-response-panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.response-hint { padding: 10px 12px; background: var(--cream); border-radius: 8px; }
+.trial-response-panel fieldset { padding: 0; border: 0; margin: 16px 0; }
+.trial-response-panel legend { font-weight: 700; }
+#rating-guidance { color: var(--muted); font-size: .85rem; }
+.rating-choices { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.rating-choices label { display: flex; flex-direction: column; align-items: center; gap: 5px; min-height: 92px; padding: 10px 3px; border: 1px solid var(--line); border-radius: 8px; text-align: center; cursor: pointer; }
+.rating-choices label:has(input:checked) { border-color: var(--green); background: #edf6f0; }
+.rating-choices input { accent-color: var(--green); }
+.rating-choices small { font-size: 11px; }
+.response-reason-label { display: block; font-size: .9rem; }
+#response-reason-rule { color: var(--muted); }
+#response-reason { width: 100%; margin: 8px 0 14px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; resize: vertical; }
+.trial-response-panel button.primary { background: var(--green); color: #fff; }
+.response-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.response-actions button { border-radius: 8px; font: inherit; }
+#response-end-session { color: var(--muted); }
+#response-error { color: #973f30; }
+.participant-instructions :focus-visible, .trial-response-panel :focus-visible, #instructions-button:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+@media (max-width: 560px) {
+  .trial-response-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 18px; }
+  .rating-choices { gap: 4px; }
+  .rating-choices label { padding-inline: 2px; }
+  .response-actions button { padding-inline: 10px; font-size: .9rem; }
+  .instructions-heading { padding: 14px 16px; }
+  .instructions-heading h2 { font-size: 1.2rem; }
+  .instructions-content { padding-inline: 16px; }
+  .guide-cooking-steps, .guide-ready-comparison, .guide-handoff-steps, .guide-access-grid { grid-template-columns: minmax(0, 1fr); }
+  .guide-ready-recipe + .guide-ready-recipe { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+  .guide-handoff-steps canvas { width: 240px; margin: 0 auto; }
+  .guide-map-card { padding: 12px; }
+  .guide-map-heading { font-size: .75rem; }
+}
+@media (max-height: 700px) {
+  .trial-response-panel { padding-block: 16px; }
+  .trial-response-panel fieldset { margin-block: 12px; }
+  .response-hint { margin-block: 8px; }
+  .rating-choices label { min-height: 76px; padding-block: 6px; }
+}

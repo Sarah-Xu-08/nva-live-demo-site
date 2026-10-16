@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<symbol id="arrow-right" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+<symbol id="arrow-up-right" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
+<symbol id="cooking-pot" viewBox="0 0 24 24"><path d="M5 10h14v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM3 10h18M8 6c-2-3 3-2 1-5m5 5c-2-3 3-2 1-5"/></symbol>
+<symbol id="utensils" viewBox="0 0 24 24"><path d="M5 3v6a3 3 0 0 0 6 0V3M8 3v18m10 0V3c-4 3-4 9 0 9"/></symbol>
+<symbol id="route" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M8 5h8a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h7"/></symbol>
+<symbol id="message-square" viewBox="0 0 24 24"><path d="M4 3h16v14H8l-4 4zM8 7h8M8 11h5"/></symbol>
+<symbol id="list-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+<symbol id="activity" viewBox="0 0 24 24"><path d="M2 12h4l3-8 6 16 3-8h4"/></symbol>
+<symbol id="network" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M5 16v-4h14v4"/></symbol>
+</svg>

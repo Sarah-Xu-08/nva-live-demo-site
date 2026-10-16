@@ -1,0 +1,17 @@
+{
+  "frames": {
+    "serve.png": {
+      "frame": { "x": 148, "y": 164, "w": 958, "h": 958 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 958, "h": 958 },
+      "sourceSize": { "w": 958, "h": 958 }
+    }
+  },
+  "meta": {
+    "image": "serving-station.png",
+    "format": "RGBA8888",
+    "size": { "w": 1254, "h": 1254 },
+    "scale": "1"
+  }
+}

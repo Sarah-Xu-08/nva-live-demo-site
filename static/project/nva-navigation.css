@@ -1,0 +1,86 @@
+/* Scoped to the interactive NVA paper diagram. */
+#nva-project .nv-navigation {
+  --nav-expected: light-dark(#808080, #b1b1b1);
+  --nav-observed: light-dark(#b68f6a, #d0ab88);
+  border: 1px solid var(--nv-line); border-radius: 7px; padding: 14px 22px;
+  margin-bottom: 16px;
+}
+#nva-project .nv-navigation-legend { display: flex; flex-wrap: wrap; gap: 10px 25px; margin-bottom: 10px; font-size: 12px; color: var(--nv-muted); }
+#nva-project .nv-navigation-legend > span { display: inline-flex; gap: 8px; align-items: center; }
+#nva-project .nv-navigation-legend i { width: 25px; height: 0; display: inline-block; border-top: 2px solid var(--nav-expected); }
+#nva-project .nv-navigation-legend .nv-navigation-observed-line { border-top: 2px dashed var(--nav-observed); }
+#nva-project .nv-navigation-layout { display: grid; grid-template-columns: minmax(0, 448px) minmax(0, 1fr); gap: 40px; align-items: start; }
+#nva-project .nv-navigation-grid-panel { width: 100%; max-width: 448px; justify-self: center; }
+#nva-project .nv-navigation-board { width: 100%; aspect-ratio: 7 / 5; position: relative; isolation: isolate; }
+#nva-project .nv-navigation-cells { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(5, 1fr); }
+#nva-project .nv-navigation-cells button { width: 100%; height: 100%; border: 0; border-radius: 0; touch-action: none; }
+#nva-project .nv-navigation-cells button:not(:disabled):hover { background: var(--nv-soft); }
+#nva-project .nv-navigation-cells button:focus-visible { outline: 2px solid var(--nv-ink); outline-offset: -3px; }
+#nva-project .nv-navigation-cells button:disabled { opacity: 1; }
+#nva-project .nv-navigation-board[data-interactive=true] { touch-action: none; user-select: none; }
+#nva-project .nv-navigation-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#nva-project .nv-navigation-svg text { font: 500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; fill: var(--nv-ink); }
+#nva-project .nv-navigation-svg .nv-navigation-current-letter { fill: var(--nv-bg); }
+#nva-project .nv-navigation-svg .nv-navigation-expected-letter { fill: var(--nav-expected); }
+#nva-project .nv-navigation-state-key { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 8px; font-size: 11px; color: var(--nv-muted); }
+#nva-project .nv-navigation-state-key > span { display: inline-flex; gap: 7px; align-items: center; }
+#nva-project .nv-navigation-state-key b { width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center; background: var(--nv-ink); color: var(--nv-bg); font-size: 11px; }
+#nva-project .nv-navigation-state-key .nv-navigation-expected-marker { border: 1.5px solid var(--nav-expected); color: var(--nav-expected); background: var(--nv-bg); }
+#nva-project .nv-navigation-state-key .nv-navigation-goal-marker { border: 1.5px solid var(--nv-ink); border-radius: 4px; color: var(--nv-ink); background: var(--nv-soft); }
+#nva-project .nv-navigation-controls h3 { font-size: 13px; font-weight: 500; margin: 0 0 5px; }
+#nva-project .nv-navigation-controls p { color: var(--nv-muted); font-size: 11px; line-height: 1.6; }
+#nva-project .nv-navigation-route-actions { display: flex; gap: 8px; margin-top: 8px; }
+#nva-project .nv-navigation button.nv-navigation-button { padding: 8px 10px; border: 1px solid var(--nv-line); border-radius: 4px; font-size: 11px; text-align: center; }
+#nva-project .nv-navigation button.nv-navigation-confirm { background: var(--nv-nav-selected); color: var(--nv-nav-on); border-color: var(--nv-nav-selected); }
+#nva-project .nv-navigation button:disabled { cursor: default; }
+#nva-project .nv-navigation button:focus-visible { outline-color: var(--nv-ink); }
+#nva-project .nv-navigation-drawing, #nva-project .nv-navigation-movement { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--nv-line); }
+#nva-project .nv-navigation-reset-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 8px; }
+#nva-project .nv-navigation-results { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; border-top: 1px solid var(--nv-line); padding-top: 10px; margin-top: 10px; }
+#nva-project .nv-navigation-results > div > span:first-child { display: flex; align-items: baseline; gap: 10px; font-size: 13px; font-weight: 500; }
+#nva-project .nv-navigation-results output { font: 21px "Latin Modern Math", math; }
+#nva-project .nv-navigation-results p { color: var(--nv-muted); font-size: 11px; margin-top: 6px; line-height: 1.6; }
+#nva-project .nv-navigation-rpe { color: var(--nv-blue); }
+#nva-project .nv-navigation-spe { color: var(--nv-pink); }
+#nva-project .nv-navigation-status { font-size: 11px; color: var(--nv-muted); margin-top: 10px; min-height: 18px; }
+#nva-project .nv-navigation-history { margin-top: 8px; border-top: 1px solid var(--nv-line); font-size: 11px; color: var(--nv-muted); }
+#nva-project .nv-navigation-history summary { padding: 8px 0 0; width: fit-content; }
+#nva-project .nv-navigation-history table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; font-variant-numeric: tabular-nums; }
+#nva-project .nv-navigation-history th { font-weight: 500; color: var(--nv-ink); }
+#nva-project .nv-navigation-history th, #nva-project .nv-navigation-history td { padding: 7px 5px; border-bottom: 1px solid var(--nv-line); }
+#nva-project .nv-navigation-history th:first-child, #nva-project .nv-navigation-history td:first-child { padding-left: 0; }
+#nva-project .nv-navigation-history .nv-navigation-distance-column { text-align: right; }
+@media (max-width: 850px) {
+  #nva-project .nv-navigation-layout { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; }
+  #nva-project .nv-navigation { padding: 16px; }
+}
+@media (min-width: 851px) and (max-height: 760px) {
+  #nva-project .nv-navigation-layout { grid-template-columns: minmax(0,392px) minmax(0,1fr); }
+}
+@media (max-width: 680px) {
+  #nva-project .nv-navigation-layout { grid-template-columns: 1fr; gap: 23px; }
+  #nva-project .nv-navigation { padding: 18px; }
+  #nva-project .nv-navigation-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  #nva-project .nv-navigation-drawing, #nva-project .nv-navigation-movement { margin: 0; padding: 0; border: 0; }
+  #nva-project .nv-navigation-placement { grid-column: 1 / -1; padding-bottom: 14px; border-bottom: 1px solid var(--nv-line); }
+  #nva-project .nv-navigation-reset-actions { grid-column: 1 / -1; margin-top: 0; }
+  #nva-project .nv-navigation-status, #nva-project .nv-navigation-history { grid-column: 1 / -1; margin-top: 0; }
+  #nva-project .nv-navigation-route-actions { flex-wrap: wrap; }
+  #nva-project .nv-navigation-results { gap: 17px; }
+  #nva-project .nv-navigation-history .nv-navigation-distance-column { display: none; }
+}
+@media (max-width: 380px) {
+  #nva-project .nv-navigation { padding: 14px 12px; }
+  #nva-project .nv-navigation-controls { grid-template-columns: 1fr; }
+  #nva-project .nv-navigation-movement { padding-top: 14px; border-top: 1px solid var(--nv-line); }
+}
+@media (pointer: coarse) {
+  #nva-project .nv-navigation button.nv-navigation-button { min-height: 44px; }
+}
+
+#nva-project .nv-navigation-placement > button { margin-top: 8px; }
+#nva-project .nv-navigation-board[data-placing=true] [data-endpoint=start],
+#nva-project .nv-navigation-board[data-placing=true] [data-endpoint=goal] { cursor: grab; }
+#nva-project .nv-navigation-board[data-dragging=true],
+#nva-project .nv-navigation-board[data-dragging=true] button { cursor: grabbing; }
+#nva-project .nv-navigation-cells button[data-selected=true] { box-shadow: inset 0 0 0 2px var(--nav-expected); background: var(--nv-soft); }

@@ -1,0 +1,378 @@
+/* Project-page visual language. Trial timing, plots and mode behavior stay in
+   their existing controllers; this layer changes the workspace presentation. */
+:root {
+  color-scheme: light dark;
+  --paper: light-dark(#fff, #11151c);
+  --cream: light-dark(#f6f8fb, #19212c);
+  --surface: light-dark(#fff, #11151c);
+  --line: light-dark(#e2e7ed, #2d3644);
+  --ink: light-dark(#18202d, #edf1f8);
+  --muted: light-dark(#697483, #9ca8ba);
+  --brown: var(--muted);
+  --green: #46836c;
+  --ui-radius: 8px;
+  --nonpe-tint: light-dark(#f0f1f2, #222933);
+  --rpe-tint: light-dark(#eef5ff, #1c344f);
+  --spe-tint: light-dark(#fff0f6, #3a2633);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+body { background: var(--paper); font-size: 14px; line-height: 1.5; }
+[hidden] { display: none !important; }
+button, select, input, textarea { font-family: inherit; }
+button, select { border-radius: 5px; }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
+textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--rpe); outline-offset: 3px; }
+.project-navigation {
+  width: 1392px; margin-inline: auto; padding: 22px 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.project-navigation a { color: var(--muted); text-decoration: none; }
+.project-navigation a:hover { color: var(--ink); }
+.project-navigation .project-brand { display: flex; gap: 14px; align-items: center; color: var(--ink); white-space: nowrap; }
+.project-brand strong { font-size: 16px; font-weight: 600; letter-spacing: -.35px; }
+.project-monogram { width: 28px; font-size: 29px; font-weight: 600; letter-spacing: -4px; line-height: 1; }
+.project-monogram > span { color: var(--rpe); font-size: 19px; position: relative; top: -7px; left: 1px; }
+.project-navigation nav { display: flex; align-items: center; gap: 28px; font-size: 13px; }
+.project-navigation [aria-current="page"] { padding: 10px 14px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); }
+body .display-surface .site-header.hybrid-header {
+  display: block; width: 1392px; margin: 0 auto; padding: 24px 0 0;
+  min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--surface);
+}
+.workspace-heading { display: flex; align-items: center; gap: 30px; margin-bottom: 22px; }
+.workspace-eyebrow { margin: 0 0 5px; font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
+.workspace-heading h1 { margin: 0; font-size: 30px; letter-spacing: -1px; font-weight: 600; line-height: 1.2; }
+.workspace-modes { display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 6px; background: var(--cream); }
+.workspace-modes button {
+  border: 0; background: transparent; color: var(--muted); padding: 10px 16px;
+  font-size: 13px; font-weight: 400; line-height: 1.3; cursor: pointer; white-space: nowrap;
+}
+.workspace-modes button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.workspace-modes button:disabled { opacity: .5; cursor: default; }
+.workspace-modes button[aria-pressed="true"]:disabled { opacity: .8; }
+.workspace-focus { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 10px 0 10px 10px; border: 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.research-ui-ready label[for="experiment-mode"] { display: none; }
+.display-surface .hybrid-header .scenario-browser { display: block; width: 100%; padding: 17px 20px; border: 1px solid var(--line); border-radius: var(--ui-radius); background: var(--surface); }
+body .display-surface .scenario-dropdowns { gap: 14px; align-items: end; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .scenario-dropdowns { grid-template-columns: 1.2fr .8fr .9fr 2.5fr .8fr; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-recording-field { grid-column: auto; }
+body[data-experiment-mode="play"] .scenario-dropdowns:has(#playing-session-type option[value="real_time"]:checked) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body[data-experiment-mode="presentation"] .display-surface .scenario-dropdowns { grid-template-columns: .8fr 1.4fr 2.8fr .8fr; }
+body[data-experiment-mode="recording"] .display-surface .scenario-dropdowns { grid-template-columns: .8fr 1.7fr 1.7fr 1.3fr auto; }
+body[data-experiment-mode="recording"] .display-surface .scenario-dropdowns:has(#recording-counts[hidden]) { grid-template-columns: .8fr 1.7fr 1.7fr auto; }
+.scenario-dropdowns label, .trial-editor label { color: var(--muted); font-size: 12px; font-weight: 400; }
+body .scenario-dropdowns select, body .scenario-dropdowns input,
+.trial-editor select, .trial-editor textarea, .trial-editor input[type="number"],
+#presentation-editor input, #presentation-editor textarea, #presentation-editor select {
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink);
+  font: 400 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  padding: 9px 10px; box-shadow: none;
+}
+body .scenario-dropdowns select, body .scenario-dropdowns input:not([type="checkbox"]) { height: 38px; }
+.scenario-dropdowns select:disabled, .scenario-dropdowns input:disabled { opacity: .6; }
+.scenario-dropdowns .recording-counts { grid-column: auto; }
+.scenario-dropdowns .participant-options { display: flex; flex-wrap: wrap; gap: 18px; grid-column: 1 / -1; order: 10; padding-top: 10px; border-top: 1px solid var(--line); }
+.participant-options label { font-size: 12px; }
+.scenario-dropdowns .eeg-top-connect { min-height: 38px; margin-bottom: 0; }
+.scenario-dropdowns #decoder-field { grid-column: span 2; }
+body[data-experiment-mode="editor"] .display-surface .hybrid-header .scenario-browser { display: none; }
+body .display-surface .page-shell { padding-top: 24px; }
+/* Equal side tracks keep Recording's kitchen centered even with EEG hidden. */
+body[data-experiment-mode="recording"] .display-surface .stage { width: 1392px; grid-template-columns: 272px 800px 272px; gap: 24px; }
+body[data-experiment-mode="recording"] .display-surface .stage-center { grid-column: 2; grid-row: 1; width: 800px; }
+body[data-experiment-mode="recording"] .display-surface .stage > .eeg-sidebar { grid-column: 3; grid-row: 1 / span 2; width: 272px; margin-top: 0; align-self: start; }
+body[data-experiment-mode="recording"] .display-surface .left-sidebar { grid-column: 2; grid-row: 2; width: 800px; transform: none; }
+body[data-experiment-mode="recording"] .eeg-sidebar #eeg-waveform { width: 100%; height: 228px; }
+.display-surface .game-heading { margin-bottom: 10px; }
+.game-meta { color: var(--muted); font-size: 12px; }
+#session-progress { font-size: 12px; color: var(--muted); font-weight: 400; }
+.order-strip { font-size: 13px; gap: 14px; }
+.order-strip > span { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.recipe-strip { color: var(--muted); font-size: 12px; }
+#overcooked { border-radius: 7px; box-shadow: none; }
+/* The briefing's home is below the kitchen; Playing relocates it to its own
+   slot and restores it here when changing modes. Its original gate is kept. */
+.recording-briefing-slot:empty,
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .recording-briefing-slot { display: none; }
+.recording-briefing-slot { margin-top: 14px; min-height: 36px; }
+.recording-briefing-slot .hint-control { position: relative; right: auto; width: 100%; }
+.recording-briefing-slot .hint-control .trial-briefing { left: 0; right: auto; top: 44px; width: 100%; max-height: 260px; z-index: 32; }
+.recording-briefing-slot .hint-required .hint-trigger { display: none; }
+.recording-briefing-slot .hint-required .trial-briefing { position: static; max-height: none; }
+/* Recording exposes the Briefing only at the per-trial confirmation gate.
+   Removing the whole control prevents hover, click and keyboard reopening. */
+body[data-experiment-mode="recording"] .hint-control:not(.hint-required) { display: none; }
+/* A locked speed setting must not leave an interactive hover target behind. */
+.speed-hover-control:has(#movement-speed:disabled) { display: none; }
+.recording-briefing-slot #briefing-title { position: static !important; width: auto !important; height: auto !important; margin: 0 0 8px !important; overflow: visible !important; clip: auto !important; white-space: normal !important; }
+.trial-briefing, .eeg-panel-card, .detail-card, .presentation-card, .editor-card {
+  border: 1px solid var(--line); border-radius: var(--ui-radius); background: var(--surface); box-shadow: none;
+}
+.trial-briefing h2, .eeg-card-heading h2, .decoder-panel-heading h3, .detail-card h2,
+.editor-card h3, .presentation-card-title strong { font: 500 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; letter-spacing: -.2px; }
+.briefing-expectation { color: var(--muted); border-color: var(--line); font-size: 13px; }
+body .display-surface .eeg-panel-card { padding: 18px 20px; }
+body[data-experiment-mode="presentation"] .display-surface .eeg-panel-card { padding: 12px 16px; }
+.eeg-status-chips { gap: 5px; }
+.status-chip { border-color: var(--line); background: var(--cream); font-weight: 400; }
+.status-chip strong { font-weight: 400; }
+.eeg-quality-detail { color: var(--muted); }
+.probability-key { font-weight: 400; }
+body .display-surface .probability-readout { border-color: var(--line); gap: 0; }
+.probability-readout > span { padding: 0 12px; border-color: var(--line); }
+.probability-readout > span:first-child { padding-left: 0; }
+.display-surface .probability-readout > span > strong { font-family: inherit; font-size: 22px; line-height: 1.4; font-weight: 500; font-variant-numeric: tabular-nums; }
+.display-surface .probability-readout .decoded-result strong { font-size: 16px; }
+body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .probability-readout { grid-template-columns: 90px 90px 90px minmax(0, 1fr); }
+.probability-readout small { font-size: 11px; font-weight: 400; }
+.probability-readout #decoder-confidence { font-size: 10px; white-space: normal; }
+body .display-surface .stage-center .control-panel {
+  width: 100%; margin: 14px 0 0; padding: 0; min-height: 40px; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 16px;
+}
+.control-panel .control-status { grid-column: 1; font-size: 12px; font-weight: 400; }
+.control-status strong { font-weight: 400; }
+.control-panel .scene-progress { grid-column: 2; grid-row: 1; }
+.scene-progress span { font-size: 12px; font-weight: 400; color: var(--muted); }
+.control-panel .control-buttons { grid-column: 1 / -1; grid-row: 2; }
+body .display-surface .control-panel button { min-width: 90px; min-height: 38px; padding: 8px 14px; border-radius: 5px; font-size: 13px; font-weight: 400; }
+body .display-surface .stage-center .control-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.control-panel #playing-next { margin-left: auto; order: 10; }
+.control-panel #playing-random { margin-left: auto; }
+body[data-experiment-mode="play"] .control-panel #playing-next { margin-left: 0; }
+.control-panel button, .trial-editor button, #presentation-editor button,
+.playing-history button, .eeg-top-connect, .eeg-reconnect, .raw-eeg-toggle,
+.overlay-toggle, #send-marker, .focus-mode-toggle, .response-actions button {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: none; font-weight: 400; border-radius: 5px;
+}
+.control-panel button.subtle { border-color: var(--line); background: var(--surface); color: var(--ink); }
+.control-panel button.primary, #confirm-hint, .trial-editor button.primary,
+#presentation-editor #presentation-save, #presentation-continue,
+.response-actions button.primary { border-color: var(--ink); background: var(--ink); color: var(--paper); font-weight: 400; border-radius: 5px; }
+#confirm-hint { font-size: 13px; }
+.control-panel button:hover:not(:disabled), .trial-editor button:hover:not(:disabled) { transform: none; filter: none; border-color: var(--muted); }
+.control-panel button.primary:hover:not(:disabled), #confirm-hint:hover:not(:disabled) { background: light-dark(#2e3a4b, #ccd6e4); }
+.playing-source { padding: 8px 0 0; border: 0; border-radius: 0; background: transparent; }
+.playing-source strong { font-size: 12px; font-weight: 500; }
+.playing-source p { color: var(--muted); font-size: 11px; }
+.playing-history { border-color: var(--line); font-size: 12px; }
+.playing-history strong { font-weight: 500; }
+.playing-history small { color: var(--muted); font-size: 11px; }
+.playing-history input, .trial-editor input[type="range"] { accent-color: var(--ink); }
+.playing-history button { padding: 5px 10px; }
+.display-surface .details-panel { border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; background: var(--surface); box-shadow: none; margin-top: 26px; }
+.details-panel > summary { padding: 16px 0; color: var(--muted); font-size: 12px; font-weight: 400; }
+.display-surface footer { color: var(--muted); padding-top: 18px; font-size: 11px; }
+.lsl-marker-controls { border-color: var(--line); }
+.lsl-marker-controls input { border-color: var(--line); background: var(--surface); }
+.recording-eeg-controls { color: var(--muted); }
+.raw-eeg-toggle[aria-pressed="true"] { border-color: var(--line); background: var(--cream); color: var(--ink); }
+.overlay-toggle[aria-pressed="true"] { border-color: var(--line); background: var(--cream); color: var(--ink); }
+/* Focus view keeps the established scaled composition and hover setup. */
+body.research-ui-ready:not(.is-focus-mode) .focus-mode-toggle { display: none; }
+body.is-focus-mode .project-navigation { display: none; }
+body.is-focus-mode .display-surface .site-header.hybrid-header { padding: 18px 20px; width: 1392px; border: 1px solid var(--line); border-radius: var(--ui-radius); background: var(--surface); }
+body.is-focus-mode .workspace-heading { margin-bottom: 14px; }
+body.is-focus-mode .workspace-heading h1 { font-size: 24px; }
+body.is-focus-mode .workspace-eyebrow { display: none; }
+body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode #playing-setup-bar { background: var(--cream); color: var(--muted); border-color: var(--line); font-weight: 400; }
+body.is-focus-mode .focus-mode-toggle { border-color: var(--line); color: var(--ink); background: var(--surface); box-shadow: none; }
+body[data-experiment-mode="recording"].is-focus-mode .display-surface .page-shell { padding-top: max(44px, calc((var(--display-viewport-height) - var(--game-window-height)) / 2 - var(--game-heading-height, 100px) - 10px)); }
+body[data-experiment-mode="recording"].is-focus-mode .game-heading { position: static; }
+/* The editor remains fluid; the experiment retains its fixed monitor layout. */
+body[data-experiment-mode="editor"] .project-navigation,
+body[data-experiment-mode="editor"] .display-surface .site-header.hybrid-header { width: calc(100% - 56px); }
+.trial-editor { padding-top: 0; }
+.editor-toolbar { padding: 16px 18px; margin: 0 0 16px; border: 1px solid var(--line); border-radius: var(--ui-radius); align-items: end; }
+.editor-grid { grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr); gap: 24px; }
+.editor-status, .editor-tag { background: var(--cream); color: var(--muted); }
+.editor-small, .editor-legend { color: var(--muted); }
+.editor-board { background: var(--cream); border-radius: 5px; }
+.editor-tabs { border-color: var(--line); }
+.editor-tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.editor-timeline button.shared { background: var(--cream); }
+.editor-timeline button.selected { outline-color: var(--ink); }
+.editor-details, .editor-savebar, .editor-hint-preview { border-color: var(--line); background: var(--surface); }
+.editor-details > summary, .editor-advanced > summary { color: var(--muted); font-weight: 500; }
+.editor-savebar { border-radius: var(--ui-radius); box-shadow: none; }
+.presentation-card { color: var(--ink); }
+#presentation-condition, #presentation-preview-detail, #presentation-editor-status { color: var(--muted); }
+#presentation-evidence:not(:empty), .presentation-editor-footer { border-color: var(--line); }
+#presentation-editor, .trial-response-panel, .participant-instructions {
+  border-color: var(--line); border-radius: 10px; color: var(--ink); background: var(--surface);
+}
+#presentation-editor h2, .trial-response-panel h2, .participant-instructions h2 { font-family: inherit; font-weight: 600; letter-spacing: -.5px; }
+#presentation-editor::backdrop, .trial-response-panel::backdrop { background: #18202d66; }
+#presentation-editor button:hover { background: var(--cream); }
+#presentation-editor #presentation-save:hover { background: light-dark(#2e3a4b, #ccd6e4); }
+.instructions-actions button { border-color: var(--ink); background: var(--ink); color: var(--paper); border-radius: 5px; }
+.instructions-content h3, .guide-arrow { color: var(--ink); }
+.guide-step-number { background: var(--ink); color: var(--paper); }
+.guide-note { border-color: var(--line); }
+.rating-choices label:has(input:checked) { border-color: var(--ink); background: var(--cream); }
+@media (max-width: 900px) {
+  body[data-experiment-mode="editor"] .workspace-heading { flex-wrap: wrap; gap: 16px; }
+  body[data-experiment-mode="editor"] .project-navigation { flex-wrap: wrap; gap: 16px; }
+  body[data-experiment-mode="editor"] .project-navigation nav { gap: 16px; flex-wrap: wrap; }
+  .editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .editor-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 540px) {
+  body[data-experiment-mode="editor"] .project-navigation,
+  body[data-experiment-mode="editor"] .display-surface .site-header.hybrid-header { width: calc(100% - 32px); }
+  .trial-editor { padding-inline: 16px; }
+  .workspace-modes button { padding: 8px 10px; font-size: 12px; }
+  .editor-toolbar { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Normal pages share the existing research-page geometry. Focus view retains
+   the established 1440px reference layout and its focus-mode setup overlay. */
+body:not(.is-focus-mode) .display-viewport { width: 100%; height: auto; margin: 0; overflow: visible; }
+body:not(.is-focus-mode) .display-surface { width: min(1160px, 100%); margin: 0 auto; min-height: 100vh; transform: none; }
+body:not(.is-focus-mode) .project-navigation {
+  width: 100%; padding: 22px 40px; gap: 24px;
+  display: grid; grid-template-columns: auto 1fr auto;
+}
+.project-navigation .project-brand { gap: 11px; }
+.project-brand strong { font-size: 14px; }
+.project-monogram { width: 26px; font-size: 25px; }
+.project-monogram > span { font-size: 17px; top: -6px; color: #3879c9; }
+.project-navigation nav { justify-self: end; gap: 25px; font-size: 12px; }
+.project-navigation nav a { padding-block: 8px; }
+.project-navigation nav [aria-current="page"] { padding: 8px 14px; font-weight: 600; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 8px; }
+.workspace-light-switch { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 5px; font-size: 12px; white-space: nowrap; color: var(--ink); background: transparent; cursor: pointer; }
+.workspace-light-switch:hover { background: var(--cream); }
+.workspace-light-switch svg { width: 15px; height: 15px; flex-shrink: 0; }
+.workspace-light-track { display: inline-flex; align-items: center; width: 26px; height: 16px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); }
+.workspace-light-track::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+.workspace-light-switch[aria-checked="true"] .workspace-light-track { background: var(--ink); border-color: var(--ink); }
+.workspace-light-switch[aria-checked="true"] .workspace-light-track::before { transform: translateX(10px); background: var(--paper); }
+body:not(.is-focus-mode) .display-surface .site-header.hybrid-header { width: calc(100% - 80px); padding: 0; }
+.workspace-intro { position: relative; padding: 37px 0 29px; }
+.workspace-intro-copy { max-width: 55%; }
+.workspace-mode-figure {
+  position: absolute; right: 0; top: calc(50% + 8px); transform: translateY(-50%);
+  width: 40%; height: 188px; margin: 0; overflow: hidden;
+  border-radius: 10px; background: #fff;
+}
+.workspace-mode-figure svg { display: block; width: 100%; height: 100%; overflow: hidden; }
+.workspace-eyebrow { margin: 0 0 14px; font-size: 11px; letter-spacing: 2px; font-weight: 500; }
+.workspace-intro h1 { margin: 0; font-size: 44px; line-height: 1.1; letter-spacing: -1.9px; font-weight: 600; }
+.workspace-subtitle { margin: 14px 0 0; font-size: 14px; line-height: 1.6; color: var(--muted); }
+body:not(.is-focus-mode) .workspace-heading { gap: 16px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+body:not(.is-focus-mode) .workspace-modes { padding: 3px; gap: 3px; border-radius: 5px; }
+body:not(.is-focus-mode) .workspace-modes button { padding: 7px 12px; font-size: 12px; line-height: 1.5; border-radius: 3px; }
+body:not(.is-focus-mode) .workspace-focus { padding: 10px 13px; border: 1px solid var(--line); color: var(--ink); }
+body:not(.is-focus-mode) .display-surface .scenario-browser { padding: 16px 18px; }
+body:not(.is-focus-mode) .scenario-dropdowns label { font-size: 11px; }
+body:not(.is-focus-mode) .scenario-dropdowns select, body:not(.is-focus-mode) .scenario-dropdowns input:not([type="checkbox"]) { height: 36px; font-size: 12px; padding: 7px 9px; min-width: 0; }
+body:not(.is-focus-mode) .display-surface .page-shell,
+body:not(.is-focus-mode) .display-surface footer { width: calc(100% - 80px); }
+body:not(.is-focus-mode) .display-surface .stage { width: 100%; grid-template-columns: minmax(0, 800fr) minmax(0, 568fr); gap: 24px; }
+body:not(.is-focus-mode) .display-surface .stage-center { grid-column: 1; grid-row: 1; width: 100%; }
+body:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 2; grid-row: 1 / span 2; width: 100%; margin-top: 0; align-self: start; }
+body:not(.is-focus-mode) .display-surface .left-sidebar { grid-column: 1; grid-row: 2; width: 100%; transform: none; }
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 272fr) minmax(0, 800fr) minmax(0, 272fr); }
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage-center,
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .left-sidebar { grid-column: 2; }
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 3; }
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .lsl-marker-controls { grid-template-columns: minmax(0, 1fr); }
+body:not(.is-focus-mode) .display-surface .stage-center .control-panel,
+body:not(.is-focus-mode) .display-surface .map-overlay-controls { width: 100%; }
+body:not(.is-focus-mode) .display-surface .eeg-panel-card { padding: 16px; }
+body:not(.is-focus-mode) .eeg-sidebar #eeg-waveform { height: 172px; }
+body:not(.is-focus-mode) .eeg-sidebar #probability-chart { height: 156px; }
+body:not(.is-focus-mode) .display-surface .probability-readout { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); }
+body:not(.is-focus-mode) .probability-readout > span { padding-inline: 8px; }
+body:not(.is-focus-mode) .probability-readout > span:first-child { padding-left: 0; }
+body:not(.is-focus-mode) .probability-readout > span > strong { color: var(--ink); }
+body:not(.is-focus-mode) .playing-briefing-slot .trial-briefing { grid-template-columns: minmax(0, 1fr) minmax(140px, .65fr); }
+body:not(.is-focus-mode) .display-surface footer { padding-bottom: 24px; }
+body:not(.is-focus-mode) .trial-editor { padding: 0 40px 36px; }
+body:not(.is-focus-mode) .editor-grid { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); }
+body.is-focus-mode .workspace-intro { display: none; }
+
+/* Theme-aware secondary surfaces, including dialogs and editor tools. */
+.movement-speed-control, .example-review, .hint-trigger, .speed-trigger,
+.instructions-content, .guide-card, .rating-choices label { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.eeg-panel-card #eeg-waveform, .eeg-panel-card #probability-chart, #presentation-preview { background: var(--surface); color: var(--muted); border-color: var(--line); }
+.display-surface .hybrid-header .scenario-dropdowns select,
+.display-surface .hybrid-header .scenario-dropdowns input { background: var(--surface); color: var(--ink); border-radius: 4px; }
+.presentation-editor-footer, .editor-details, .editor-advanced { border-color: var(--line); }
+#presentation-continue { box-shadow: 0 0 10px 5px var(--surface); }
+.status-chip.is-working { background: light-dark(#f3faf5, #1a3028); color: light-dark(#4f735f, #9fc7b1); border-color: light-dark(#d8eadf, #345244); }
+.status-chip.is-warning { background: light-dark(#fff9ec, #352b19); color: light-dark(#80602b, #e0c186); border-color: light-dark(#eddcb9, #514329); }
+.trial-editor th, .editor-details pre, .editor-action-table tbody tr:hover,
+.editor-action-table tbody tr.selected, .editor-review-status-table tr.current,
+.editor-reopen-dialog .editor-reopen-trial { background: var(--cream); color: var(--ink); }
+.trial-editor td, .trial-editor th, .editor-review-item { border-color: var(--line); }
+.editor-reopen-dialog, #subtask-form .subtask-applybar { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.editor-timeline button.subtask-range-selected { background: light-dark(#e8e2fa, #342c48); }
+.subtask-bands button { background: light-dark(#f0f4ed, #202d27); }
+.subtask-bands button.active { background: light-dark(#dae8d6, #304538); }
+.subtask-bands button.undecided { background: light-dark(#fff0ee, #402725); color: light-dark(#992f2b, #f0aaa2); }
+.subtask-bands button.undecided.active { background: light-dark(#f9dcd8, #52312d); }
+#subtask-goals:disabled { background: var(--cream); color: var(--muted); }
+#subtask-goals:disabled option { color: var(--ink) !important; }
+#subtask-goals:disabled option:checked { background: var(--cream) !important; }
+.editor-review-badge.checked { color: light-dark(#426b43, #a1caa7); background: light-dark(#e5efdf, #233728); }
+.editor-review-badge.unchecked { color: var(--muted); background: var(--cream); }
+.editor-tag.dirty { background: light-dark(#f9eac7, #423722); }
+.editor-status.error { background: light-dark(#f7e9e4, #402725); color: light-dark(#8d382a, #f0aaa2); }
+.editor-validation-ok { color: light-dark(#426b43, #a1caa7); }
+.editor-validation-issues, .subtask-warnings, #subtask-form-status { color: light-dark(#894d31, #deb495); }
+body:not(.is-focus-mode) .speed-hover-control { left: auto; right: 12px; bottom: 12px; }
+body:not(.is-focus-mode) .movement-speed-control { left: auto; right: 0; }
+body:not(.is-focus-mode) .example-review-control { left: auto; right: 12px; }
+body:not(.is-focus-mode) .example-review { left: auto; right: 0; }
+
+@media (max-width: 1000px) {
+  body:not(.is-focus-mode) .project-navigation { gap: 16px; grid-template-columns: 1fr auto; }
+  body:not(.is-focus-mode) .project-navigation nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; justify-content: space-between; width: 100%; }
+  .workspace-light-switch { grid-column: 2; grid-row: 1; }
+  body:not(.is-focus-mode) .display-surface .scenario-dropdowns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body:not(.is-focus-mode) .scenario-dropdowns .playing-recording-field { grid-column: 1 / -1; }
+  body:not(.is-focus-mode) .editor-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+  /* Keep the centered kitchen and readable EEG controls on smaller pages. */
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 1fr); }
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage-center,
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .left-sidebar,
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 1; }
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-row: 3; }
+}
+@media (max-width: 760px) {
+  body:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 1fr); }
+  body:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 1; grid-row: 3; }
+  body:not(.is-focus-mode) .editor-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .workspace-intro-copy { max-width: none; }
+  .workspace-mode-figure {
+    position: static; transform: none; width: 90%; max-width: 432px;
+    height: auto; aspect-ratio: 2;
+    margin: 30px auto 0;
+  }
+}
+@media (max-width: 540px) {
+  body:not(.is-focus-mode) .project-navigation { padding: 19px 20px 12px; }
+  body:not(.is-focus-mode) .project-navigation nav { flex-wrap: wrap; justify-content: flex-start; gap: 10px 16px; }
+  body:not(.is-focus-mode) .project-navigation nav a { font-size: 11px; }
+  body:not(.is-focus-mode) .project-navigation nav [aria-current="page"] { padding: 6px 9px; margin-left: auto; }
+  .project-brand strong { font-size: 13px; }
+  .workspace-light-switch { font-size: 11px; gap: 6px; }
+  body:not(.is-focus-mode) .display-surface .site-header.hybrid-header,
+  body:not(.is-focus-mode) .display-surface .page-shell,
+  body:not(.is-focus-mode) .display-surface footer { width: calc(100% - 40px); }
+  .workspace-intro h1 { font-size: 36px; }
+  body:not(.is-focus-mode) .workspace-heading { flex-wrap: wrap; }
+  body:not(.is-focus-mode) .workspace-modes button { padding: 7px; font-size: 11px; }
+  body:not(.is-focus-mode) .workspace-focus { margin-left: 0; }
+  body:not(.is-focus-mode) .playing-briefing-slot .trial-briefing { grid-template-columns: minmax(0, 1fr); }
+  body:not(.is-focus-mode) .playing-briefing-slot #confirm-hint { grid-column: 1; grid-row: auto; }
+  body:not(.is-focus-mode) .display-surface .game-meta { flex-wrap: wrap; }
+  body:not(.is-focus-mode) .display-surface .map-overlay-controls { flex-wrap: wrap; }
+  body:not(.is-focus-mode) .trial-editor { padding-inline: 20px; }
+  body:not(.is-focus-mode) .editor-toolbar { grid-template-columns: minmax(0, 1fr); }
+}
