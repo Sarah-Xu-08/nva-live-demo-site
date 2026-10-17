@@ -1,5 +1,8 @@
 /* Shared page controls; fullscreen changes the browser, never the demo layout. */
 .site-display-actions { display: flex; align-items: center; gap: 8px; }
+/* The source markup starts in the header. Reveal only after the shared script
+   mounts the control in its fixed corner, so navigation cannot flash it above. */
+:is(#nva-project, body) :not(.site-display-tools) > .site-fullscreen-toggle { display: none; }
 :is(#nva-project, body) .site-fullscreen-toggle {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   min-height: 36px; padding: 6px 9px; border: 1px solid light-dark(#e2e7ed, #2d3644);
@@ -17,16 +20,18 @@
   color: light-dark(#18202d, #edf1f8); background: light-dark(#fff, #11151c); font: 12px/1.5 system-ui;
 }
 #site-fullscreen-status[hidden] { display: none; }
-.focus-mode-tools { display: none; }
-body.is-focus-mode .focus-mode-tools {
+.site-display-tools {
   position: fixed; z-index: 130; right: max(16px, env(safe-area-inset-right));
   bottom: max(16px, env(safe-area-inset-bottom)); display: flex; gap: 8px; align-items: center;
+  max-width: calc(100vw - 32px);
 }
-body .focus-mode-tools .focus-mode-toggle {
+.site-display-tools .site-fullscreen-toggle { box-shadow: 0 2px 12px rgb(0 0 0 / 10%); }
+body:not(.is-focus-mode) .site-display-tools .focus-mode-toggle { display: none; }
+body .site-display-tools .focus-mode-toggle {
   position: static; transform: none; min-height: 36px; padding: 6px 9px;
   border-radius: 5px; font-size: 12px; font-weight: 400;
 }
-.focus-mode-tools .focus-mode-toggle svg { width: 15px; height: 15px; }
+.site-display-tools .focus-mode-toggle svg { width: 15px; height: 15px; }
 @media (max-width: 760px) {
   #nva-project .nv-header { gap: 14px; }
   #nva-project .nv-header nav { order: 3; }
@@ -34,5 +39,5 @@ body .focus-mode-tools .focus-mode-toggle {
 }
 @media (max-width: 540px) {
   #nva-project .nv-header nav .nv-launch { position: static; }
-  .site-display-actions [data-site-fullscreen-label] { display: none; }
+  .site-display-tools .site-fullscreen-toggle { min-height: 44px; }
 }

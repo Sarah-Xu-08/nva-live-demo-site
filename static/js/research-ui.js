@@ -4,7 +4,10 @@
   const group = document.querySelector('.workspace-modes');
   const buttons = [...group.querySelectorAll('[data-workspace-mode]')];
   const focus = document.getElementById('workspace-focus');
-  const focusToggle = document.getElementById('focus-mode-toggle');
+  if (window.DemoLoading) mode.value = window.DemoLoading.current().mode;
+  // This runs immediately after the header, before the renderer bundle. A
+  // mode chosen during startup becomes the destination when boot completes.
+  mode.addEventListener('change', () => window.DemoLoading?.begin(mode.value));
   const artworkImage = document.getElementById('workspace-mode-image');
   const artworkTitle = document.getElementById('workspace-mode-art-title');
   // Keep one 1280 × 650 frame and the shared CSS 65% scale for all illustrations.
@@ -12,19 +15,19 @@
   // with the mode panel without independently enlarging the chefs.
   const illustrations = {
     recording: {
-      file: 'recording-gray-a-v1.png', x: -217, y: -94,
+      file: 'recording-gray-a-transparent-v1.png', x: -217, y: -94,
       description: "Recording: a separate observer watches the human and AI chefs on a screen while their brain signal appears in a recording trace.",
     },
     play: {
-      file: 'playing-gray-a-v1.png', x: -220, y: -111,
+      file: 'playing-gray-a-transparent-v1.png', x: -220, y: -111,
       description: "Playing concept: the human chef's brain signal passes through a network decoder, with blue and pink decoded signals pointing to the chip inside the smiling AI chef's head.",
     },
     editor: {
-      file: 'trial-editor-gray-a-v1.png', x: -106, y: -124,
+      file: 'trial-editor-gray-a-transparent-v1.png', x: -106, y: -124,
       description: 'Trial Editor: a human chef uses a pencil to design an onion-to-pot-to-plate action sequence beside the smiling AI chef.',
     },
     presentation: {
-      file: 'presentation-gray-a-v1.png', x: -231, y: -96,
+      file: 'presentation-gray-a-transparent-v1.png', x: -231, y: -96,
       description: 'Presentation: a paused human–AI cooking replay above one gray EEG signal entering a network decoder, with blue and pink output streams.',
     },
   };
@@ -32,6 +35,10 @@
   const sync = () => {
     if (illustratedMode !== mode.value) {
       const illustration = illustrations[mode.value] || illustrations.editor;
+      const figure = artworkImage.closest('figure');
+      figure.dataset.loading = 'true';
+      artworkImage.onload = () => { delete figure.dataset.loading; };
+      artworkImage.onerror = () => { delete figure.dataset.loading; };
       artworkImage.setAttribute('x', illustration.x);
       artworkImage.setAttribute('y', illustration.y);
       artworkImage.setAttribute('href', `static/assets/modes/${illustration.file}`);
@@ -56,7 +63,7 @@
     mode.dispatchEvent(new Event('change', {bubbles: true}));
     sync();
   });
-  focus.addEventListener('click', () => focusToggle.click());
+  focus.addEventListener('click', () => document.getElementById('focus-mode-toggle')?.click());
   mode.addEventListener('change', sync);
   document.addEventListener('focusmodechange', sync);
   new MutationObserver(sync).observe(mode, {attributes: true, attributeFilter: ['disabled'], childList: true});

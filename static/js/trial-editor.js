@@ -27,7 +27,14 @@
   function status(message, error = false) { el.status.textContent = TrialEditorTiles.text(message); el.status.classList.toggle("error", error); }
   function node(tag, text, className) { const n = document.createElement(tag); if (text != null) n.textContent = TrialEditorTiles.text(text); if (className) n.className = className; return n; }
   async function api(path, data) {
-    const response = await fetch(`/api/trial-editor/${path}`, data === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    const url = `/api/trial-editor/${path}`;
+    const response = await fetch(url, data === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    if (!(response.headers.get("Content-Type") || "").includes("application/json")) {
+      const help = response.status >= 500
+        ? "The local app returned a server error. Check its terminal output and try again."
+        : "Trial Editor requires the local app server. Start it with python live_demo/app.py and open the URL printed in its terminal.";
+      throw new Error(`${help} (${url}: HTTP ${response.status}, expected JSON.)`);
+    }
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`);
     return result;
@@ -354,15 +361,27 @@
     window.dispatchEvent(new CustomEvent("trial-library-reloaded", { detail: { alias: state.draft?.alias, version: version() } }));
     status(`Library reloaded (${result.designs} designs). New sessions use saved revisions; existing previews keep their frozen definition.`);
   }
-  async function open(detail) {
-    if (state.draft) { makeGames(); showTick(state.tick); return; }
-    await work(async () => {
-      state.catalog = await api("catalog"); populateLibraries();
-      const preferred = detail?.alias;
-      const design = state.catalog.designs.find(d => d.alias === preferred);
-      if (design && !design.recording_references.some(ref => ref.profile === "collaboration_50")) el.library.value = design.category ? `category:${design.category.id}` : "all";
-      populateTrials(preferred); await loadTrial(el.trial.value, detail?.version);
-    });
+  let opening;
+  function open(detail) {
+    if (opening) return opening;
+    opening = (async () => {
+      if (state.draft && state.preview) { makeGames(); showTick(state.tick); }
+      else {
+        let failure;
+        await work(async () => {
+          try {
+            state.catalog = await api("catalog"); populateLibraries();
+            const preferred = detail?.alias;
+            const design = state.catalog.designs.find(d => d.alias === preferred);
+            if (design && !design.recording_references.some(ref => ref.profile === "collaboration_50")) el.library.value = design.category ? `category:${design.category.id}` : "all";
+            populateTrials(preferred); await loadTrial(el.trial.value, detail?.version);
+          } catch (error) { failure = error; throw error; }
+        });
+        if (failure) throw failure;
+      }
+      await window.DemoLoading?.waitForRenderer(state.games, () => document.body.dataset.experimentMode !== "editor");
+    })().finally(() => { opening = null; });
+    return opening;
   }
   ["STAY", "NORTH", "SOUTH", "EAST", "WEST", "INTERACT"].forEach(action => { options(el.human, [...el.human.options].map(o => [o.value, o.textContent]).concat([[action, action]])); options(el.ai, [...el.ai.options].map(o => [o.value, o.textContent]).concat([[action, action]])); });
   el.trial.addEventListener("change", () => work(() => loadTrial(el.trial.value)));
@@ -489,7 +508,12 @@
   tabs.forEach(name => { const button = document.getElementById(`editor-tab-${name}`); button.addEventListener("click", () => tab(name)); button.addEventListener("keydown", e => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) { e.preventDefault(); const next = e.key === "Home" ? "playback" : e.key === "End" ? "subtasks" : tabs.find(id => id !== name); tab(next); document.getElementById(`editor-tab-${next}`).focus(); } }); });
   document.getElementById("editor-tool").addEventListener("change", e => { root.querySelectorAll("[data-editor-tool]").forEach(panel => { panel.hidden = panel.dataset.editorTool !== e.target.value; }); });
   root.querySelectorAll(".subtask-group").forEach(group => group.addEventListener("toggle", () => { if (group.open) root.querySelectorAll(".subtask-group").forEach(other => { if (other !== group) other.open = false; }); }));
-  window.addEventListener("trial-editor-open", e => open(e.detail));
+  window.addEventListener("trial-editor-open", e => {
+    window.TrialEditorReady = open(e.detail);
+    // The workspace controller displays this error; also handle the promise
+    // when an obsolete editor request completes after switching away.
+    window.TrialEditorReady.catch(() => {});
+  });
   window.addEventListener("trial-editor-close", () => { pause(); if (reopenDialog.open) { reopenDialog.returnValue = "cancel"; reopenDialog.close(); } });
   window.addEventListener("pagehide", pause);
   document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });

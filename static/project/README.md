@@ -4,12 +4,15 @@ Open `http://127.0.0.1:65008/static/project/index.html` with the existing demo
 server running. These buildless pages use Flask's existing static-file route;
 no server restart, frontend build, or new dependency is needed.
 
-The header's **Light** switch selects white (on) or dark (off) appearance on all
-project pages. `theme.js` applies the saved browser preference before paint
-and shares it across pages/tabs. Before a manual choice, appearance follows the
-system setting. Blocked browser storage does not prevent toggling the current page.
+The header’s circular appearance button shows a **sun in light mode** and a
+**moon in dark mode**, on both the project pages and the live workspace. It is
+36 px across (44 px for touch input), with an accessible Light mode switch
+label and a tooltip naming the next mode. `theme.js` applies the saved browser
+preference before paint and shares it across pages/tabs. Before a manual choice,
+appearance follows the system setting. Blocked browser storage does not prevent
+toggling the current page.
 
-- `index.html`: Overview with interactive goal/action value landscapes.
+- `index.html`: Overview with interactive goals, trajectories, and continuous prediction errors.
 - `theory.html`: General framework, NVA paper, and Overcooked extension. The
   sections also support `#general`, `#nva`, and `#overcooked` deep links.
 - `rpe-spe-methods.tex`: Self-contained, Overleaf-ready Methods document with
@@ -17,11 +20,28 @@ system setting. Blocked browser storage does not prevent toggling the current pa
   application, a notation table and a worked accepted-state-set example. Upload
   this one file to Overleaf and compile with pdfLaTeX; no external bibliography
   or image files are needed.
-- `experiment.html`: Source provenance, controlled comparisons, EEG protocol.
+- `experiment.html`: Two stages, using the Theory tab style: **Stage 1 · Trial
+  design** (`#trial-design`) covers provenance, controlled comparisons, behavioral
+  labels and review; **Stage 2 · Human experiment** (`#human-experiment`) covers
+  the participant session, continuous neural signal recording and optional ratings.
+  The shared introduction stays visible. Trial Editor and Recording links open
+  their local modes; the public exporter routes them to Run locally guidance.
 - `decoder.html`: Current Playing feature pipeline, calibration, model averaging,
   and decision margin.
-- `demo.html`: The Demo Introduction, with the four existing mode illustrations
+- `demo.html`: The Demo Introduction, with the four approved abstract symbols
   in a two-by-two grid (one column on mobile) and direct mode entry links.
+  Editor 2 uses a curved path of shapes; compact Size B centers each figure in
+  a shared 230 × 130 px frame. The transparent PNGs live in
+  `../assets/modes/symbols-v2/*-transparent-v1.png`; the original opaque PNGs and
+  previous `*-gray-a-v1.png` set remain available for restoration. The shared
+  `mode-art.js` SVG filters adjust neutral ink for light/dark backgrounds while
+  preserving blue/pink signal pixels. Figure containers have no white backing.
+
+Reserve blue for RPE and pink for SPE. Supporting graphics, including Decoding's
+raw signals, filter, feature matrix, model icon and causal feature window, use
+subdued warm gray through `--nv-support` and `--nv-support-soft` in both themes.
+Brand accents and keyboard focus indicators are neutral so the prediction-error
+colors remain the visual emphasis.
 
 The upper **Demo** link uses the same style as the other navigation items and
 opens `demo.html`, including when returning from a workspace mode. The cards
@@ -45,7 +65,7 @@ only at explicit mathematical boundaries. No external renderer or CDN is needed.
 Keep new notation in `<math class="nv-math">` with the MathML namespace. Use
 `msubsup` for a shared subscript/superscript base and `mfrac` for fractions, rather
 than adjacent HTML `sub`/`sup` or slash text. Decoder example updates target the
-numerator and denominator nodes so slider changes preserve the typesetting.
+MathML number nodes so slider changes preserve the typesetting.
 Font provenance and licensing are in `../fonts/latin-modern-math/`.
 
 The October 16 formulation uses `T` for the transition model and specifies
@@ -78,34 +98,86 @@ waveforms, navigation and handoff diagrams are explanatory schematics.
 The title, brain-reading subtitle, and TL;DR introduce internal mismatches that
 can be difficult to express in words or infer from behavior. The approved,
 gender-neutral human/robot illustration uses the same gray line-art style as
-the four Demo mode images. `overview.css` crops the supplied artwork into a
-wide diagram on desktop and readable sections on mobile. The diagram and
+the four Demo mode images. Its tangled speech bubble conveys difficulty putting
+a feeling into words. Blue and pink responses inside the brain feed one black
+signal stream, which the decoder separates into the two mismatch estimates.
+Only “Goal mismatch” and “Action mismatch” appear as text in the artwork.
+`overview.css` crops outer whitespace on desktop and stacks the scene and
+decoding route on mobile to keep the labels readable. The diagram and
 interactive panel are 800 px wide at most; the TL;DR is 730 px wide at most.
 The existing light/dark switch also styles the illustration.
 
-The interactive panel adapts NVA Fig. 2(a). Its `value-landscapes.css` and
-`value-landscapes.js` load only on Overview. Select either human or AI contours,
-center, or legend entry to edit it, including when both centers overlap:
+The **Find the mismatch** panel combines each agent’s goal-defined rewards and
+trajectory states into its value function. `value-landscapes.css`,
+`value-landscapes.js`, and `value-landscapes-model.mjs` load only on Overview.
+AI trajectories are black and human trajectories light grey; dark mode adjusts
+their contrast. Human goal/state centers are circles; AI centers are squares.
+Both agents use a solid current-to-next transition and a dashed
+possible continuation. Agent selection remains available when points overlap.
 
-- Drag the center or contour to move it; arrow keys move by 0.01 (Shift: 0.05).
-- Drag square perimeter handles to change goal/action spread. Arrow keys change
-  spread by 0.005 (Shift: 0.02).
-- Drag the round outer handle to rotate. Arrow keys rotate by 5° (Shift: 15°).
-- Compact plots provide labeled spread and tilt sliders instead of small handles.
-- Escape or the empty plot deselects. Reset restores both centers and shapes.
+- Drag a goal or next-state point freely in two dimensions. Both use the full
+  visible plot range with the same marker-sized edge margin; goals are not
+  restricted to the central unit square. A next state snaps
+  to the other agent’s next state when close; Shift disables snapping.
+- Click either goal or the human next-state point, or select its tolerance tab,
+  to edit width, height, and rotation. Goal tolerance is blue (RPE); human
+  next-step tolerance is pink (SPE). Both use a single gradient from center to
+  edge. The AI-observed next state is a single draggable square with no
+  distribution or tolerance controls.
+- Outlines and shape handles appear only during editing. Moving a point,
+  Escape, or clicking the empty plot hides them. The gradients stay visible.
+- Both plot axes use the same pixels per state unit. Shape controls specify
+  ellipse radii on those axes, so equal width/height values form a circle and
+  the same radius has the same size for goal and state tolerance. Values use
+  three decimal places and a 0.005 adjustment step; either radius can reach 0.
+  A collapsed axis represents exact tolerance and can be expanded again with
+  its handles, keyboard, or slider. One zero radius is shown as a line; two
+  zero radii leave the center point. A collapsed goal keeps its continuation
+  directed toward the goal center, with no projection onto the remaining
+  tolerance axis. With zero later curve it is a straight center-to-center path;
+  a nonzero curve rotates the displacement about the goal center as it shrinks.
+  Off-axis zero-tolerance deviations have infinite
+  normalized error; SPE shows ∞. When both quadratic returns diverge, RPE
+  shows — with an undefined-comparison explanation. Expanding the goal
+  radii restores a finite comparison.
+- Arrow keys move points by 0.01 (Shift: 0.05), resize by 0.005 (Shift: 0.02), or
+  rotate by 1° (Shift: 10°). Touch users get the same labeled shape sliders.
+- The later-curve control bends the possible continuation without constraining
+  the freely placed next state. Each continuation converges to its own goal.
+- **Aligned**, **Goal differs**, and **Path differs** sit below the plot as
+  separate buttons and restore example configurations.
+  Goal differs keeps the expected and observed next states aligned.
 
-Contours and axis projections derive from the same bivariate Gaussian. Initial
-standard deviations are 0.14 with correlation 0.35. Rotation preserves the
-principal spreads; principal standard deviations are bounded to [0.055, 0.24]
-to keep the covariance valid and controls reachable. Marginals use a shared
-density scale within each dimension. Centers stay in [0, 1] across edits and
-viewport changes.
+The browser-local illustration uses a rotated quadratic continuation value U,
+a discount of 0.9, and a continuation contraction of 0.65 in goal-normalized
+coordinates. The first transition is free. RPE compares the AI trajectory's
+discounted return with the human-expected trajectory's discounted return:
+AI return minus expected return, both scored with the human reward function.
+This is a trajectory-return prediction error, including the future continuation,
+rather than a one-step TD error. A negative value means a lower return than
+expected; a positive value means a higher return. Each return includes the
+current-state reward and 80 reward samples beginning at the free next state;
+the remaining discounted tail uses the reward at that agent's destination.
+Thus settling at an AI goal that the human values poorly continues to carry
+that human reward. The plotted path shows the early continuation and its goal.
+SPE is the distance from
+the human-expected state to the AI-observed state, normalized by the human
+next-step tolerance. Rotate that displacement into the human ellipse's axes,
+divide by the corresponding tolerance radii, and take the Euclidean norm.
+These continuous examples are distinct from the Theory page’s binary trial labels.
 
-The displayed **RPE/SPE proxies** are absolute goal/action center differences in
-normalized units. Changing spread or tilt changes the curves, not these proxies.
-They are not temporal-difference errors, behavioral labels, or neural estimates;
-the Theory page retains the actual formulations. The illustration makes no API
-requests and cannot change experiment state.
+The rotated human next-step ellipse is an acceptance region, not a probability
+distribution. SPE is 0 at its center, 1 on its boundary, below 1 inside, and
+above 1 outside. Resizing or rotating it changes SPE and the within/outside
+status without changing RPE. AI has no next-step tolerance. Human goal shape
+changes valuation; AI goal and shape affect RPE through the AI continuation,
+not through AI rewards. Different future goals can produce nonzero RPE while
+identical next states keep SPE at zero. The panel keeps live values and short interpretations without displaying
+formulas or worked calculations. It makes no API requests and cannot change
+experiment state or estimate neural activity.
+
+Validate the numerical model with `node --test live_demo/tests/test_value_landscapes.mjs`.
+Browser checks are in `live_demo/tests/check_value_landscapes.cjs`.
 
 ## Interactive NVA navigation
 

@@ -15,11 +15,10 @@
     controlState: document.getElementById("control-state"),
     start: document.getElementById("start-button"),
     startRecording: document.getElementById("start-recording-session"),
-    recordingSession: document.getElementById("recording-session"),
     recordingCounts: document.getElementById("recording-counts"),
     recordingNonpeCount: document.getElementById("recording-nonpe-count"),
     recordingPeCount: document.getElementById("recording-pe-count"),
-    recordingCountSummary: document.getElementById("recording-count-summary"),
+    recordingCountError: document.getElementById("recording-count-error"),
     instructionsEnabled: document.getElementById("instructions-enabled"),
     ratingsEnabled: document.getElementById("ratings-enabled"),
     sessionProgress: document.getElementById("session-progress"),
@@ -34,22 +33,12 @@
     speed: document.getElementById("movement-speed"),
     speedValue: document.getElementById("movement-speed-value"),
     speedTiming: document.getElementById("movement-speed-timing"),
-    humanAction: document.getElementById("human-action"),
-    humanPhase: document.getElementById("human-phase"),
-    humanStrategy: document.getElementById("human-strategy"),
-    aiAction: document.getElementById("ai-action"),
-    arbitration: document.getElementById("arbitration"),
-    aiPhase: document.getElementById("ai-phase"),
-    qTarget: document.getElementById("q-target"),
-    qValues: document.getElementById("q-values"),
-    planOptions: document.getElementById("plan-options"),
     eegConnection: document.getElementById("eeg-connection"),
     decoderIntent: document.getElementById("decoder-intent"),
     decoderConfidence: document.getElementById("decoder-confidence"),
     decoderAction: document.getElementById("decoder-action"),
     decoderSource: document.getElementById("decoder-source"),
     revisions: document.getElementById("revision-count"),
-    eventLog: document.getElementById("event-log"),
     sessionLabel: document.getElementById("session-label"),
     container: document.getElementById("overcooked"),
     stage: document.querySelector(".stage"),
@@ -105,7 +94,6 @@
     rpeValue: document.getElementById("rpe-value"),
     speValue: document.getElementById("spe-value"),
     trialPhase: document.getElementById("trial-phase-badge"),
-    nominalAiAction: document.getElementById("nominal-ai-action"),
     undecidedPanel: document.getElementById("undecided-panel"),
     undecidedReason: document.getElementById("undecided-reason"),
     retryEvent: document.getElementById("retry-event"),
@@ -152,7 +140,7 @@
     tileSize: 104,
     scenarios: [],
     recordingSessions: [],
-    recordingSessionId: "current_library",
+    recordingSessionId: "custom_critical",
     categories: [],
     categoryId: "recording_library",
     classes: [],
@@ -170,6 +158,7 @@
     eventWindowResults: new Map(),
     decoderResultHandled: false,
     experimentMode: elements.experimentMode.value,
+    editorOpen: false,
     playback: null,
     clock: null,
     correctionDelayMs: null,
@@ -249,6 +238,7 @@
 
   function recordingSelection() {
     const profile = runtime.recordingSessions?.find(item => item.id === runtime.recordingSessionId);
+    if (!profile) return {profile, valid: false, total: 0};
     if (!profile?.custom_counts) return {profile, valid: true,
       total: profile?.trial_count ?? runtime.scenarios.filter(scenario => !scenario.preview_only).length};
     const values = [elements.recordingNonpeCount.value, elements.recordingPeCount.value];
@@ -275,11 +265,7 @@
     elements.recordingCounts.hidden = !recording || !selection.profile?.custom_counts;
     elements.recordingNonpeCount.disabled = busy;
     elements.recordingPeCount.disabled = busy;
-    elements.recordingCountSummary.textContent = selection.profile?.custom_counts
-      ? selection.valid
-        ? `${selection.total} ${selection.total === 1 ? "trial" : "trials"}: ${selection.counts.nonPE} nonPE + ${selection.counts.pe_each} RPE+SPE + ${selection.counts.pe_each} SPE`
-        : "Enter whole numbers of zero or more; total must be at least 1."
-      : "";
+    elements.recordingCountError.hidden = !recording || !selection.profile?.custom_counts || selection.valid;
     elements.startRecording.disabled = busy || !recordingCount || !selection.valid
       || selection.profile?.available === false;
     const current = recording ? runtime.trialNumber || 0 : runtime.selectedScenario ? 1 : 0;
@@ -297,7 +283,6 @@
     elements.reset.disabled = runtime.arming;
     elements.layout.disabled = busy;
     elements.category.disabled = busy;
-    elements.recordingSession.disabled = busy;
     elements.instructionsEnabled.disabled = busy;
     elements.ratingsEnabled.disabled = busy;
     window.ParticipantGuide?.sync({
@@ -401,6 +386,7 @@
   function ensureHeatmapTiles(valueMap) {
     const scene = activeScene();
     if (!scene) return false;
+    const visible = valueMapVisible();
     valueMap.forEach((tile) => {
       const key = tile.x + "," + tile.y;
       if (runtime.heatmapTiles.has(key)) return;
@@ -409,7 +395,7 @@
         .rectangle(tile.x * size, tile.y * size, size, size, 0x604d68, 0.55)
         .setOrigin(0)
         .setDepth(0.5)
-        .setVisible(runtime.valueMapVisible);
+        .setVisible(visible);
       const label = scene.add
         .text(tile.x * size + 6, tile.y * size + 6, "", {
           font: "bold " + Math.max(11, Math.round(size * 0.15)) + "px Arial",
@@ -418,24 +404,30 @@
           strokeThickness: 3,
         })
         .setDepth(0.7)
-        .setVisible(runtime.valueMapVisible);
+        .setVisible(visible);
       runtime.heatmapTiles.set(key, { rectangle, label });
     });
     return true;
   }
 
+  function valueMapVisible() {
+    return runtime.experimentMode !== "recording" && runtime.valueMapVisible;
+  }
+
   function syncValueMapVisibility() {
+    const visible = valueMapVisible();
     runtime.heatmapTiles.forEach(({ rectangle, label }) => {
-      rectangle.setVisible(runtime.valueMapVisible);
-      label.setVisible(runtime.valueMapVisible);
+      rectangle.setVisible(visible);
+      label.setVisible(visible);
     });
-    elements.valueMapToggle.setAttribute("aria-pressed", String(runtime.valueMapVisible));
-    elements.valueMapToggle.textContent = "Value map: " + (runtime.valueMapVisible ? "On" : "Off");
-    elements.heatLegend.classList.toggle("is-hidden", !runtime.valueMapVisible);
-    elements.heatLegend.setAttribute("aria-hidden", String(!runtime.valueMapVisible));
+    elements.valueMapToggle.setAttribute("aria-pressed", String(visible));
+    elements.valueMapToggle.textContent = "Value map: " + (visible ? "On" : "Off");
+    elements.heatLegend.classList.toggle("is-hidden", !visible);
+    elements.heatLegend.setAttribute("aria-hidden", String(!visible));
   }
 
   function toggleValueMap() {
+    if (runtime.experimentMode === "recording") return;
     runtime.valueMapVisible = !runtime.valueMapVisible;
     syncValueMapVisibility();
   }
@@ -473,57 +465,6 @@
     });
   }
 
-  function renderQValues(qValues, selectedAction) {
-    elements.qValues.innerHTML = "";
-    Object.entries(qValues || {}).forEach(([name, value]) => {
-      const item = document.createElement("div");
-      const label = document.createElement("span");
-      const score = document.createElement("strong");
-      item.className = name === selectedAction ? "selected" : "";
-      label.textContent = name;
-      score.textContent = Number(value).toFixed(0);
-      item.append(label, score);
-      elements.qValues.append(item);
-    });
-  }
-
-  function renderPlanOptions(options) {
-    if (!elements.planOptions || !Array.isArray(options)) return;
-    elements.planOptions.innerHTML = "";
-    options.forEach((option, index) => {
-      const card = document.createElement("article");
-      card.className = `plan-option ${option.status || "alternative"}`;
-      const heading = document.createElement("div");
-      const marker = document.createElement("span");
-      const title = document.createElement("strong");
-      const probability = document.createElement("b");
-      const bar = document.createElement("i");
-      const fill = document.createElement("span");
-      const detail = document.createElement("p");
-      const evidence = document.createElement("small");
-      marker.textContent = String.fromCharCode(65 + index);
-      title.textContent = option.title;
-      probability.textContent = `${Math.round((Number(option.probability) || 0) * 100)}%`;
-      fill.style.width = `${Math.max(0, Math.min(100, (Number(option.probability) || 0) * 100))}%`;
-      detail.textContent = option.detail;
-      evidence.textContent = option.status === "rejected"
-        ? (runtime.playback?.correction_source === "scripted_simulation" ? "Rejected in the scripted correction" : "Rejected by decoded prediction error")
-        : option.status === "selected"
-          ? `Selected - ${option.evidence}`
-          : option.evidence;
-      heading.append(marker, title, probability);
-      bar.append(fill);
-      card.append(heading, bar, detail, evidence);
-      elements.planOptions.append(card);
-    });
-  }
-
-  function friendlyPhase(value) {
-    return String(value || "")
-      .replaceAll("_", " ")
-      .replaceAll("handoff", "middle-counter transfer");
-  }
-
   function resetReadout() {
     runtime.tick = 0;
     runtime.score = 0;
@@ -536,83 +477,10 @@
     runtime.mismatchMarker = null;
     elements.mismatchPanel.hidden = true;
     elements.mismatchResume.hidden = false;
-    elements.humanAction.textContent = "STAY";
-    elements.humanPhase.textContent = "Waiting";
-    elements.humanStrategy.textContent = runtime.selectedScenario?.human_expectation || "Choose an example";
-    elements.aiAction.textContent = "STAY";
-    elements.arbitration.textContent = "Waiting for the first state";
-    elements.aiPhase.textContent = "Waiting";
-    elements.qTarget.textContent = "—";
-    elements.qValues.innerHTML = '<div class="q-empty">Q-values appear when the demo starts.</div>';
-    renderPlanOptions(runtime.selectedScenario?.options || []);
     elements.revisions.textContent = "0";
     elements.decoderIntent.textContent = runtime.selectedScenario?.title || "Choose an example";
     elements.decoderConfidence.textContent = "Scenario-driven, no EEG confidence";
     elements.decoderAction.textContent = "Waiting to start";
-    elements.eventLog.innerHTML = '<li class="empty">Play this example to see its actions and markers.</li>';
-  }
-
-  function renderHumanStrategy(payload, nextState) {
-    if (runtime.layoutName !== "random3_symmetric") {
-      elements.humanStrategy.textContent = "Direct cooking route";
-      return;
-    }
-    if (runtime.scenarioName === "split_work") {
-      const staged = Math.min(2, Number(payload.split_onions_staged) || 0);
-      const delivered = Math.min(2, Number(payload.completed_handoffs) || 0);
-      if (payload.split_third_delivered) {
-        elements.humanStrategy.textContent = "Roles split · the AI collected both counter onions, fetched its own third onion, and is serving the right-pot soup";
-      } else if (payload.split_revision_acknowledged) {
-        elements.humanStrategy.textContent = `Roles split · you work on the left pot; the AI fetches the final right-pot onion itself · ${delivered}/2 counter onions collected`;
-      } else if (delivered === 2) {
-        elements.humanStrategy.textContent = "2/2 counter onions collected · you work on the left pot and expect the AI to fetch onion three";
-      } else if (staged >= 2) {
-        elements.humanStrategy.textContent = `2/2 onions placed on middle counters · ${delivered}/2 collected by the AI; you begin left-pot work`;
-      } else {
-        elements.humanStrategy.textContent = `Middle-counter plan · ${staged}/2 onions placed, ${delivered}/2 collected for the AI's right pot`;
-      }
-      return;
-    }
-    const objects = Object.values(nextState.objects || {});
-    const middle = new Set(["2,2", "3,2", "4,2", "5,2"]);
-    const stocked = objects
-      .filter((object) => object?.name === "onion" && middle.has((object.position || []).join(",")))
-      .map((object) => `(${object.position.join(", ")})`)
-      .sort();
-    const placement = payload.human_phase === "stage_handoff" &&
-      payload.human_action_name === "INTERACT" &&
-      stocked.includes(`(${(payload.human_interaction_target || []).join(", ")})`);
-    const staged = Math.min(3, Math.max(0, Number(payload.human_onions_staged) || 0) + (placement ? 1 : 0));
-    const stockSummary = `${staged}/3 stocked · ${stocked.length} ready on ${stocked.join(", ") || "middle counters"}`;
-    if (staged >= 3) {
-      elements.humanStrategy.textContent = `Onions are ready on the middle counters · ${stockSummary}; you resume cooking`;
-    } else if (payload.human_phase === "stage_handoff") {
-      elements.humanStrategy.textContent = `Staging onion ${staged + (placement ? 0 : 1)}/3 · ${stockSummary}`;
-    } else if (payload.human_phase === "collect_for_handoff") {
-      elements.humanStrategy.textContent = `Fetching the next onion immediately · ${stockSummary}`;
-    } else {
-      elements.humanStrategy.textContent = `Preparing onions on the middle counters · ${stockSummary}`;
-    }
-  }
-
-  function addEvent(payload, reward) {
-    const empty = elements.eventLog.querySelector(".empty");
-    if (empty) empty.remove();
-    const item = document.createElement("li");
-    const step = document.createElement("span");
-    const description = document.createElement("div");
-    step.textContent = String(payload.tick_id + 1).padStart(2, "0");
-    description.textContent = `${payload.plan_revision ? (payload.scenario_name === "split_work" ? "AI revised plan: fetch its own third onion · " : "AI revised plan: pick up the onion from the middle counter · ") : ""}${payload.mismatch ? `${payload.mismatch.type}: ${payload.mismatch.title} · ` : ""}You: ${payload.human_action_name} (${friendlyPhase(payload.human_phase)}) · AI: ${payload.final_ai_action_name} · ${friendlyPhase(payload.ai_phase)}${reward ? ` · reward +${reward}` : ""}`;
-    if (payload.critical_event) {
-      const event = payload.critical_event;
-      description.textContent = `Marker ${event.sequence}/${event.total_events} · ${event.expected_class}: ${event.title} · ${description.textContent}`;
-    }
-    if (payload.scripted_correction) {
-      description.textContent = `Scripted correction · +${payload.scripted_correction.delay_ms / 1000} s: ${payload.scripted_correction.detail} · ${description.textContent}`;
-    }
-    item.append(step, description);
-    elements.eventLog.prepend(item);
-    while (elements.eventLog.children.length > 16) elements.eventLog.lastElementChild.remove();
   }
 
   function pauseForMismatch(mismatch) {
@@ -673,7 +541,6 @@
     elements.speValue.textContent = "—";
     elements.decoderConfidence.textContent = "No usable estimates yet";
     elements.undecidedPanel.hidden = true;
-    elements.nominalAiAction.textContent = "Waiting";
     drawProbabilityChart();
     setTrialPhase("LEAD_IN");
   }
@@ -1125,7 +992,6 @@
     elements.mismatchTile.textContent = Array.isArray(eventPayload.tile) ? `Relevant kitchen tile: (${eventPayload.tile.join(", ")})` : "";
     elements.mismatchPanel.hidden = false;
     elements.mismatchResume.hidden = true;
-    elements.nominalAiAction.textContent = elements.aiAction.textContent;
     elements.decoderAction.textContent = "Collecting EEG windows";
     runtime.eventWindowResults.clear();
     syncControls();
@@ -1159,11 +1025,6 @@
         return;
       }
       updateHeatmap(repair.value_map);
-      renderPlanOptions(repair.plan_options);
-      renderQValues(repair.q_values, repair.final_ai_action_name);
-      elements.qTarget.textContent = repair.repair_target
-        ? `Selected plan target (${repair.repair_target.join(", ")})`
-        : "—";
       const Action = window.Overcooked.OvercookedMDP.Action;
       const transition = runtime.game.mdp.get_transition_states_and_probs({
         state: runtime.state,
@@ -1172,8 +1033,6 @@
       runtime.state = transition[0][0];
       runtime.game.drawState(runtime.state);
       elements.decoderAction.textContent = `${repair.repair_phase.replaceAll("_", " ")} · ${repair.final_ai_action_name}`;
-      elements.aiAction.textContent = repair.final_ai_action_name;
-      elements.arbitration.textContent = repair.arbitration_reason;
       if (repair.eeg_revision) runtime.revisions += 1;
       elements.revisions.textContent = String(runtime.revisions);
       elements.undecidedPanel.hidden = true;
@@ -1225,8 +1084,10 @@
     elements.scenario.value = usesTrialFiles() ? selected.trial_alias : selected.id;
     elements.briefingTitle.textContent = selected.title;
     elements.briefingExpectation.textContent = selected.human_expectation;
-    renderPlanOptions(selected.options);
-    initializeGame();
+    // Recorded playback mounts its frozen occurrence, and the editor owns its
+    // preview. Do not show a temporary catalogue kitchen in either mode.
+    if (runtime.catalogueReady && (!["editor", "play", "presentation"].includes(runtime.experimentMode)
+        || (playing.active && !playing.recorded))) initializeGame();
     resetReadout();
     resetDecoderUI();
     syncControls();
@@ -1281,7 +1142,6 @@
       elements.scenario.append(option);
       elements.briefingTitle.textContent = "No matching event";
       elements.briefingExpectation.textContent = "Choose a condition and an available kitchen layout.";
-      renderPlanOptions([]);
       syncControls();
       return;
     }
@@ -1347,14 +1207,7 @@
     runtime.layouts = catalogue.layouts;
     runtime.playbackSpeeds = catalogue.playback_speeds;
     runtime.recordingSessions = catalogue.recording_sessions || [];
-    elements.recordingSession.replaceChildren(...runtime.recordingSessions.map(profile => {
-      const option = new Option(`${profile.label} · ${profile.custom_counts ? "choose counts" : `${profile.trial_count} trials`}${profile.available ? "" : " · unavailable"}`, profile.id);
-      option.disabled = !profile.available;
-      option.title = profile.error || "";
-      return option;
-    }));
-    elements.recordingSession.value = runtime.recordingSessionId;
-    const customProfile = runtime.recordingSessions.find(profile => profile.custom_counts);
+    const customProfile = runtime.recordingSessions.find(profile => profile.id === runtime.recordingSessionId && profile.custom_counts);
     if (customProfile) {
       elements.recordingNonpeCount.value = String(customProfile.condition_counts.nonPE);
       elements.recordingPeCount.value = String(customProfile.condition_counts.SPE);
@@ -1442,8 +1295,10 @@
     if (runtime.experimentMode === "editor") return;
     // Reserve the actual space above the kitchen without moving its center.
     document.body.style.setProperty("--game-heading-height", `${elements.gameHeading.offsetHeight}px`);
-    if (["play", "presentation"].includes(runtime.experimentMode)) {
-      document.body.style.setProperty("--playing-stage-height", `${elements.stage.offsetHeight}px`);
+    if (["play", "presentation"].includes(runtime.experimentMode) && !focusModeActive()) {
+      const header = document.querySelector(".hybrid-header");
+      const headerHeight = header.getBoundingClientRect().bottom - elements.displaySurface.getBoundingClientRect().top;
+      document.body.style.setProperty("--playing-header-height", `${headerHeight}px`);
     }
     document.body.style.setProperty("--scaled-display-height",
       `${elements.displaySurface.offsetHeight * runtime.displayScale}px`);
@@ -1501,8 +1356,7 @@
     syncRawEegVisibility();
   }
 
-  function syncModeUI() {
-    const wasEditor = runtime.experimentMode === "editor";
+  function syncModeUI({ editorReady = true } = {}) {
     runtime.experimentMode = elements.experimentMode.value;
     document.body.dataset.experimentMode = runtime.experimentMode;
     playing.syncSetup();
@@ -1512,7 +1366,6 @@
     const editor = document.getElementById("trial-editor");
     if (editor) editor.hidden = !isEditor;
     elements.category.closest("label").hidden = !isPreview || isEditor;
-    elements.recordingSession.closest("label").hidden = runtime.experimentMode !== "recording";
     if (isPreview) window.clearTimeout(runtime.eegReconnectTimer);
     elements.participantId.closest("label").hidden = isPreview;
     elements.eegStreamSelect.closest("label").hidden = isPreview;
@@ -1532,30 +1385,21 @@
       ? "Waiting for a valid rolling decoder window"
       : "Pure recording · labels are currently nullable";
     syncRawEegVisibility();
+    syncValueMapVisibility();
     sizeGameWindow();
     if (focusModeActive()) window.scrollTo(0, 0);
     syncControls();
-    if (isEditor && !wasEditor) window.dispatchEvent(new CustomEvent("trial-editor-open", {
-      detail: { alias: runtime.selectedScenario?.trial_alias, version: runtime.selectedScenario?.trial_version },
-    }));
-    if (wasEditor && !isEditor) window.dispatchEvent(new CustomEvent("trial-editor-close"));
+    if (isEditor && editorReady && !runtime.editorOpen) {
+      runtime.editorOpen = true;
+      window.dispatchEvent(new CustomEvent("trial-editor-open", {
+        detail: { alias: runtime.selectedScenario?.trial_alias, version: runtime.selectedScenario?.trial_version },
+      }));
+    }
+    if (runtime.editorOpen && !isEditor) {
+      runtime.editorOpen = false;
+      window.dispatchEvent(new CustomEvent("trial-editor-close"));
+    }
     if (isPlay && playing.active) playing.visibility();
-  }
-
-  function selectRecordingSession() {
-    if (runtime.sessionId || runtime.arming || runtime.running) return;
-    runtime.recordingSessionId = elements.recordingSession.value;
-    const profile = runtime.recordingSessions.find(item => item.id === runtime.recordingSessionId);
-    runtime.trialNumber = 0;
-    runtime.trialCount = recordingSelection().total;
-    elements.speed.value = String(runtime.playbackSpeeds.findIndex(speed => speed.step_ms === profile?.default_step_ms));
-    selectCategory(elements.classFilter.value);
-    elements.playbackStatus.textContent = profile?.custom_counts
-      ? "Start refreshes saved reviews and critical-action labels, samples your counts, and randomizes the session."
-      : profile?.refresh_on_start
-      ? `Each start refreshes saved reviews and computed labels, then selects ${Object.entries(profile.condition_counts).map(([label, count]) => `${count} ${label}`).join(", ")}`
-      : "Start a session to load the first trial";
-    syncControls();
   }
 
   function updateRecordingCounts() {
@@ -1721,8 +1565,6 @@
         : runtime.playback.correction_tick != null && requestTick > runtime.playback.correction_tick
           ? "Corrected behavior" : "Observe the action";
       if (runtime.librarySession) elements.playbackStatus.textContent = "Watch the collaboration";
-      elements.humanAction.textContent = humanName;
-      elements.aiAction.textContent = aiName;
       const payload = await api("/api/tick", {
         method: "POST",
         body: JSON.stringify({
@@ -1741,14 +1583,7 @@
         throw new Error("Stored playback disagreed with server actions");
       }
       updateHeatmap(payload.value_map);
-      renderPlanOptions(payload.plan_options);
-      elements.humanPhase.textContent = friendlyPhase(payload.human_phase);
-      elements.humanStrategy.textContent = runtime.selectedScenario.human_expectation;
-      elements.aiPhase.textContent = payload.correction_active ? "Scripted correction" : "Stored scene";
-      elements.arbitration.textContent = payload.scripted_correction?.detail || runtime.selectedScenario.lead_in;
       elements.decoderAction.textContent = aiName;
-      elements.qTarget.textContent = payload.interaction_target ? `(${payload.interaction_target.join(", ")})` : "—";
-      renderQValues(payload.q_values, aiName);
       if (payload.scripted_correction) runtime.revisions += 1;
       elements.revisions.textContent = String(runtime.revisions);
       if (["play", "presentation"].includes(runtime.experimentMode) && payload.adaptation_signal) {
@@ -1758,7 +1593,6 @@
         elements.decodedClass.textContent = signal.decoded_class || "UNDECIDED";
         elements.decoderConfidence.textContent = "Decoder observed only · correction is scripted";
       }
-      addEvent(payload, transition[1]);
       if (payload.done) {
         runtime.timer = window.setTimeout(finishDemo, Math.max(0, runtime.clock.dueAt(runtime.trajectoryLength) - performance.now()));
         return;
@@ -2116,7 +1950,60 @@
     }
   }
 
+  async function changeWorkspaceMode() {
+    const generation = runtime.modeGeneration = (runtime.modeGeneration || 0) + 1;
+    const loading = window.DemoLoading;
+    const ticket = loading?.current();
+    const cancelled = () => generation !== runtime.modeGeneration || (loading && !loading.isCurrent(ticket));
+    // Invalidate an older activation immediately. Serialize teardown only;
+    // a slow catalogue from the previous mode must not block the next one.
+    if (playing.active) ++playing.generation;
+    runtime.modeTransition = (runtime.modeTransition || Promise.resolve()).catch(() => {}).then(async () => {
+      if (cancelled()) return;
+      if (playing.active) await playing.deactivate();
+      if (!cancelled()) syncModeUI({editorReady: Boolean(runtime.catalogueReady)});
+    });
+    try {
+      await runtime.modeTransition;
+      if (cancelled()) return;
+      if (!runtime.catalogueReady) {
+        if (runtime.startupError) throw runtime.startupError;
+        return;
+      }
+      if (["play", "presentation"].includes(runtime.experimentMode)) {
+        await playing.activate();
+        if (playing.state === "UNAVAILABLE") throw new Error(elements.playbackStatus.textContent);
+      } else if (runtime.experimentMode === "editor") {
+        if (loading && !window.TrialEditorReady) throw new Error('Trial Editor could not start. Reload the page and try again.');
+        await window.TrialEditorReady;
+      } else {
+        selectCategory(elements.classFilter.value);
+        if (loading) await loading.waitForRenderer([runtime.game], cancelled);
+        scanEegSources();
+        if (!["live", "mock"].includes(runtime.eegStatus?.mode) || runtime.eegStatus?.status !== "connected")
+          connectEeg(false).catch(error => setSystemStatus(error.message, false));
+      }
+      if (!cancelled()) await loading?.finish(ticket);
+    } catch (error) {
+      if (!cancelled()) {
+        setSystemStatus(`Error: ${error.message}`, false);
+        loading?.fail(ticket, error);
+      }
+    }
+  }
+
   async function boot() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedMode = window.DemoLoading?.current().mode || (window.StaticReplay
+      ? (params.get("mode") === "presentation" ? "presentation" : "play")
+      : params.get("mode"));
+    if ([...elements.experimentMode.options].some(option => option.value === requestedMode))
+      elements.experimentMode.value = requestedMode;
+    if (!window.StaticReplay && requestedMode === "play" && params.get("session") === "keyboard")
+      document.getElementById("playing-session-type").value = "keyboard";
+    // Show the destination even while the API is loading or unavailable. Open
+    // the editor controller only after its scripts and the catalogue are ready.
+    syncModeUI({ editorReady: false });
     window.ParticipantGuide.init(submitTrialResponse, async () => {
       await resetDemo();
       if (runtime.sessionId) throw new Error("Could not end the session. Try End session again.");
@@ -2126,7 +2013,6 @@
     syncControls();
     elements.start.addEventListener("click", startDemo);
     elements.startRecording.addEventListener("click", startRecordingSession);
-    elements.recordingSession.addEventListener("change", selectRecordingSession);
     elements.recordingNonpeCount.addEventListener("input", updateRecordingCounts);
     elements.recordingPeCount.addEventListener("input", updateRecordingCounts);
     elements.confirmHint.addEventListener("click", confirmRecordingHint);
@@ -2154,15 +2040,14 @@
     elements.classFilter.addEventListener("change", () => changeSelection(selectCondition));
     elements.scenario.addEventListener("change", () => changeSelection(() => usesTrialFiles()
       ? selectTrialAlias(elements.scenario.value, elements.classFilter.value) : selectScenario(elements.scenario.value)));
-    elements.experimentMode.addEventListener("change", async () => {
-      if (playing.active) await playing.deactivate();
-      syncModeUI();
-      if (["play", "presentation"].includes(runtime.experimentMode)) { await playing.activate(); return; }
-      selectCategory(elements.classFilter.value);
-      scanEegSources();
-      if (!["preview", "editor"].includes(runtime.experimentMode)
-          && (!["live", "mock"].includes(runtime.eegStatus?.mode) || runtime.eegStatus?.status !== "connected")) connectEeg(false);
-    });
+    elements.experimentMode.addEventListener("change", changeWorkspaceMode);
+    if (window.DemoLoading) window.DemoLoading.retry = () => {
+      if (!runtime.catalogueReady) { window.location.reload(); return; }
+      window.DemoLoading.begin(elements.experimentMode.value);
+      // A failed initial editor load can be opened again without losing drafts.
+      if (runtime.experimentMode === "editor") runtime.editorOpen = false;
+      changeWorkspaceMode();
+    };
     window.addEventListener("trial-library-reloaded", async event => {
       try {
         await loadScenarios();
@@ -2201,19 +2086,9 @@
     try {
       const health = await api("/api/health");
       updateEegStatus(health.eeg);
-      const requestedMode = window.StaticReplay
-        ? (new URLSearchParams(window.location.search).get("mode") === "presentation" ? "presentation" : "play")
-        : new URLSearchParams(window.location.search).get("mode");
-      const opensEditor = requestedMode === "editor";
-      const opensPlaying = ["play", "presentation"].includes(requestedMode);
-      const eegStatus = (["live", "mock"].includes(health.eeg.mode) && health.eeg.status === "connected")
-        ? health.eeg : elements.experimentMode.value === "preview" || opensEditor || opensPlaying ? health.eeg : await connectEeg(false);
+      const eegStatus = health.eeg;
       await Promise.all([loadScenarios(), loadDecoders()]);
-      if (opensEditor) elements.experimentMode.value = "editor";
-      if (opensPlaying) elements.experimentMode.value = requestedMode;
-      if (!window.StaticReplay && requestedMode === "play" && new URLSearchParams(window.location.search).get("session") === "keyboard")
-        document.getElementById("playing-session-type").value = "keyboard";
-      syncModeUI();
+      runtime.catalogueReady = true;
       scanEegSources();
       resetDecoderUI();
       syncValueMapVisibility();
@@ -2224,10 +2099,12 @@
           : `Ready · ${eegStatus.last_error || "select live or Mock EEG"}`,
         ["preview", "editor"].includes(runtime.experimentMode) || eegStatus.status === "connected",
       );
-      if (opensPlaying) await playing.activate();
+      await changeWorkspaceMode();
     } catch (error) {
       setSystemStatus(`Error: ${error.message}`, false);
       elements.start.disabled = true;
+      runtime.startupError = error;
+      window.DemoLoading?.fail(window.DemoLoading.current(), error);
     }
   }
 
@@ -2277,7 +2154,6 @@
       runtime.state = transition[0][0]; runtime.score += transition[1]; runtime.tick = row.index + 1;
       if (!clocked) runtime.game.drawState(runtime.state);
       renderOrders(runtime.state);
-      elements.humanAction.textContent = row.actions[0]; elements.aiAction.textContent = row.actions[1];
       return {at: row.at, tick: runtime.tick, score: runtime.score,
         state: JSON.parse(JSON.stringify(runtime.state)), before, actions: [...row.actions]};
     },
@@ -2302,8 +2178,6 @@
       });
       runtime.game.drawSnapshot(OvercookedState.from_object(display));
       renderOrders(OvercookedState.from_object(JSON.parse(JSON.stringify(snapshot.state))));
-      elements.humanAction.textContent = snapshot.actions?.[0] || "—";
-      elements.aiAction.textContent = snapshot.actions?.[1] || "—";
     },
   });
   boot();

@@ -1,0 +1,59 @@
+/* Reserve the workspace independently of its asynchronous contents. These
+   placeholders never animate; the page header remains visible and usable. */
+html { scrollbar-gutter: stable; }
+html:has(body.is-focus-mode) { scrollbar-gutter: auto; }
+.demo-workspace { position: relative; min-height: max(800px, var(--demo-content-height, 0px)); }
+.demo-loading { display: none; }
+html[data-demo-state]:not([data-demo-state="ready"]) .demo-content {
+  position: absolute; inset: 0 0 auto; width: 100%; visibility: hidden;
+}
+html[data-demo-state]:not([data-demo-state="ready"]) .demo-content *,
+html[data-demo-state]:not([data-demo-state="ready"]) .scenario-browser * { visibility: hidden !important; }
+html[data-demo-state]:not([data-demo-state="ready"]) .demo-loading {
+  display: block; width: calc(100% - 80px); margin: 0 auto; padding-top: 24px;
+}
+.demo-loading-status { position: absolute; top: 24px; max-width: 52%; min-height: 40px; margin: 0; color: var(--muted); font-size: 13px; z-index: 1; }
+.demo-loading-status p { margin: 0; }
+#demo-loading-retry { display: none; margin-top: 12px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--ink); cursor: pointer; }
+html[data-demo-state="error"] #demo-loading-retry { display: inline-block; }
+.demo-loading-grid { display: grid; grid-template-columns: minmax(0, 800fr) minmax(0, 568fr); gap: 24px; }
+.demo-loading-kitchen, .demo-loading-panel, .demo-loading-controls {
+  border: 1px solid var(--line); border-radius: 7px; background: var(--surface);
+}
+.demo-loading-game { padding-top: 106px; }
+.demo-loading-kitchen { height: 350px; display: grid; place-items: center; }
+.demo-loading-kitchen::after { content: ''; width: 65%; height: 65%; border-radius: 5px; background: var(--cream); }
+.demo-loading-controls { height: 104px; margin-top: 16px; }
+.demo-loading-panels { display: grid; grid-auto-rows: minmax(0, 1fr); gap: 16px; height: 780px; }
+.demo-loading-panel { padding: 20px; }
+.demo-loading-panel::before { content: ''; display: block; width: 40%; height: 10px; background: var(--cream); border-radius: 3px; }
+body[data-experiment-mode="recording"] .demo-loading-grid { grid-template-columns: 272fr 800fr 272fr; }
+body[data-experiment-mode="recording"] .demo-loading-game { grid-column: 2; }
+body[data-experiment-mode="recording"] .demo-loading-panels { height: 300px; }
+body[data-experiment-mode="recording"] .demo-loading-status { left: 26%; }
+body[data-experiment-mode="recording"] .demo-loading-panel + .demo-loading-panel { display: none; }
+body[data-experiment-mode="editor"] .demo-loading-grid { grid-template-columns: 1.8fr 1fr; }
+body:not([data-experiment-mode="presentation"]) .demo-loading-panel:last-child { display: none; }
+/* Setup has a stable reserved row even before its select options arrive. */
+body .display-surface .scenario-browser { position: relative; min-height: 100px; }
+body[data-experiment-mode="recording"] .display-surface .scenario-browser { min-height: 132px; }
+html[data-demo-state]:not([data-demo-state="ready"]) .scenario-browser { height: 100px; overflow: hidden; }
+html[data-demo-state]:not([data-demo-state="ready"]) body[data-experiment-mode="recording"] .scenario-browser { height: 132px; }
+html[data-demo-state]:not([data-demo-state="ready"]) .scenario-browser::after {
+  content: ''; position: absolute; inset: 22px 18px; border-radius: 5px;
+  background: repeating-linear-gradient(90deg, var(--cream) 0, var(--cream) 21%, transparent 21%, transparent 25%);
+}
+html[data-demo-state]:not([data-demo-state="ready"]) .runtime-status { visibility: hidden; }
+.workspace-mode-figure[data-loading] svg { visibility: hidden; }
+.workspace-mode-figure[data-loading]::after { content: ''; position: absolute; inset: 25% 0 0 25%; background: var(--cream); border-radius: 7px; }
+body.is-focus-mode .demo-workspace { min-height: calc(var(--display-viewport-height) - 44px); }
+body.is-focus-mode .demo-loading { padding-top: 60px; }
+@media (max-width: 760px) {
+  body:not(.is-focus-mode) .demo-loading { width: calc(100% - 32px); }
+  body:not(.is-focus-mode) .demo-loading-grid { grid-template-columns: minmax(0, 1fr); }
+  body:not(.is-focus-mode) .demo-loading-game { grid-column: 1; }
+  body:not(.is-focus-mode) .demo-loading-status { left: 16px; max-width: calc(100% - 32px); }
+  body:not(.is-focus-mode) .demo-loading-kitchen { height: 280px; }
+  body:not(.is-focus-mode) .display-surface .scenario-browser { min-height: 230px; }
+  html[data-demo-state]:not([data-demo-state="ready"]) body:not(.is-focus-mode) .scenario-browser { height: 230px; }
+}

@@ -13,7 +13,7 @@
     document.documentElement.dataset.theme = theme;
     document.querySelectorAll('[data-light-switch]').forEach(button => {
       button.setAttribute('aria-checked', String(theme === 'light'));
-      button.title = theme === 'light' ? 'Turn light off · dark background' : 'Turn light on · white background';
+      button.title = theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
       button.hidden = false;
     });
   }

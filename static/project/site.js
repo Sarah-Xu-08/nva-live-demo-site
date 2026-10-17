@@ -48,28 +48,41 @@
     for (const name of ['rpe', 'spe', 'outcome', 'recipient']) root.querySelector(`[data-handoff-${name}]`).textContent = item[name];
     root.querySelector('[data-handoff-explanation]').textContent = item.text;
   }
-  const theory = root.querySelector('.nv-theory-tabs');
-  function chooseTheory() {
-    if (!theory) return;
-    const requested = location.hash.slice(1), selected = ['general', 'nva', 'overcooked'].includes(requested) ? requested : 'general';
-    root.querySelectorAll('.nv-theory-section').forEach(el => { el.hidden = el.id !== selected; });
-    theory.querySelectorAll('a').forEach(el => {
-      if (el.hash === `#${selected}`) el.setAttribute('aria-current', 'location');
-      else el.removeAttribute('aria-current');
-    });
-  }
-  if (theory) {
-    chooseTheory();
-    theory.addEventListener('click', event => {
-      const link = event.target.closest('a');
-      if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  root.querySelectorAll('.nv-theory-tabs, .nv-experiment-tabs').forEach(tabs => {
+    const links = [...tabs.querySelectorAll('a[href^="#"]')];
+    const sections = links.map(link => document.getElementById(link.hash.slice(1)));
+    function sectionFor(hash) {
+      let id;
+      try { id = decodeURIComponent(hash.slice(1)); } catch { return null; }
+      const target = document.getElementById(id);
+      return sections.find(section => section === target || section.contains(target));
+    }
+    function chooseSection() {
+      const selected = sectionFor(location.hash) || sections[0];
+      sections.forEach(section => { section.hidden = section !== selected; });
+      links.forEach(link => {
+        if (link.hash === `#${selected.id}`) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    }
+    chooseSection();
+    tabs.closest('.nv-page').addEventListener('click', event => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const selected = sectionFor(link.hash);
+      if (!selected) return;
       event.preventDefault();
-      history.pushState(null, '', link.hash);
-      chooseTheory();
+      if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+      chooseSection();
+      if (!tabs.contains(link)) {
+        // A link at the end of a stage returns readers to the tab bar.
+        links.find(item => item.hash === `#${selected.id}`).focus({ preventScroll: true });
+        tabs.scrollIntoView({ block: 'start' });
+      }
     });
-    window.addEventListener('hashchange', chooseTheory);
-    window.addEventListener('popstate', chooseTheory);
-  }
+    window.addEventListener('hashchange', chooseSection);
+    window.addEventListener('popstate', chooseSection);
+  });
   const epochExample = root.querySelector('[data-epoch-explainer]');
   if (epochExample) {
     const svg = epochExample.querySelector('.nv-epoch-timeline');
@@ -169,8 +182,6 @@
       estimates.forEach((estimate, i) => {
         const percent = estimate / total * 100;
         probabilityExample.querySelector(`[data-normalized-value="${i}"]`).textContent = `${percent.toFixed(1)}%`;
-        probabilityExample.querySelector(`[data-normalized-numerator="${i}"]`).textContent = estimate.toFixed(3);
-        probabilityExample.querySelector(`[data-normalized-denominator="${i}"]`).textContent = total.toFixed(3);
         probabilityExample.querySelector(`[data-normalized-bar="${i}"]`).style.width = `${percent}%`;
       });
     }
@@ -207,7 +218,7 @@
         const y = center + amplitude * envelope * (Math.sin(t * 55 + c * 1.3) + .4 * Math.sin(t * 111 + c * .7));
         path += `${x === 2 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)} `;
       }
-      markup += `<path d="M2 ${center} H${width - 2}" fill="none" stroke="var(--nv-line)" stroke-width="1"/><path d="${path}" fill="none" stroke="var(--nv-blue)" stroke-width="1.5" opacity="${1 - c * .18}"/>`;
+      markup += `<path d="M2 ${center} H${width - 2}" fill="none" stroke="var(--nv-line)" stroke-width="1"/><path d="${path}" fill="none" stroke="var(--nv-support)" stroke-width="1.5" opacity="${1 - c * .18}"/>`;
     }
     svg.innerHTML = markup;
   }

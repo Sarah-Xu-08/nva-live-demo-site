@@ -45,19 +45,17 @@
       this.briefingControl = document.querySelector(".hint-control");
       this.briefingHome = document.createComment("Briefing position outside Playing");
       this.briefingControl.before(this.briefingHome);
+      const gameSupport = document.createElement("div");
+      gameSupport.className = "playing-only playing-game-support";
+      document.querySelector(".game-window").after(gameSupport);
       this.briefingSlot = document.createElement("div");
       this.briefingSlot.className = "playing-only playing-briefing-slot";
-      document.querySelector(".game-window").after(this.briefingSlot);
-      const source = document.createElement("section");
-      source.id = "playing-source";
-      source.className = "playing-only playing-source";
-      source.setAttribute("aria-live", "polite");
-      source.innerHTML = '<strong id="playing-source-title">Pre-recorded session</strong><p id="playing-eeg-identity"></p><p id="playing-model-identity"></p>';
-      document.querySelector(".left-sidebar").append(source);
-      const history = document.createElement("div");
+      gameSupport.append(this.briefingSlot);
+      const history = document.createElement("section");
       history.className = "playing-only playing-history";
+      history.setAttribute("aria-label", "Trial history");
       history.innerHTML = '<div><strong>Trial history</strong><output id="playing-time-range">0.00 s</output></div><div><button id="playing-history-left" type="button" aria-label="Earlier game, EEG and probabilities">←</button><input id="playing-history" type="range" min="0" max="0" step="any" value="0" aria-label="Shared game, EEG and probability timeline"><button id="playing-history-right" type="button" aria-label="Later game, EEG and probabilities">→</button></div><small id="playing-history-help">Both panels show the latest 1.5 seconds.</small>';
-      document.querySelector(".eeg-sidebar").append(history);
+      gameSupport.append(history);
       for (const id of ["playing-participant", "playing-session-type", "playing-condition"]) {
         $(id).addEventListener("change", () => this.selectionChanged(id));
       }
@@ -259,11 +257,6 @@
         this.gameHistory.push(this.host.mount(session));
         await this.host.ready(() => !this.active || generation !== this.generation);
         if (!this.active || generation !== this.generation) return;
-        $("playing-source-title").textContent = this.presenting ? "Presentation · pre-recorded EEG" : this.recorded ? "Pre-recorded session" : "Real-time session";
-        $("playing-eeg-identity").textContent = this.recorded
-          ? `EEG · ${session.participant_id} · ${chosen.session} · Trial ${chosen.trial_number} · original recording`
-          : `EEG · live headset · ${session.participant_id}`;
-        $("playing-model-identity").textContent = `${window.StaticReplay ? "Saved model results" : "Decoder"} · ${session.decoder_id} · margin 10 pp`;
         this.applyState(session);
         this.stream = window.StaticReplay ? window.StaticReplay.stream(session.session_id)
           : new EventSource(`/api/session/${session.session_id}/playing-events`);
@@ -596,7 +589,8 @@
         e.ctx.stroke();
       });
       $("playing-history").min = String(this.timelineStart);
-      $("playing-history").max = String(Math.max(this.timelineStart, this.elapsed));
+      // Keep a fixed full-trial scale; elapsed limits seeking, not the axis.
+      $("playing-history").max = String(Math.max(this.timelineStart, this.session?.duration ?? this.elapsed));
       $("playing-history").value = String(this.viewEnd);
       $("playing-time-range").textContent = `${this.viewEnd.toFixed(2)} s · ${start.toFixed(2)}–${(start + span).toFixed(2)} s`;
     }

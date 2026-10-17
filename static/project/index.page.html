@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="When you can’t say what feels wrong, your brain may still signal it. Explore neural value alignment and mismatches in human and AI goals and actions."><meta name="color-scheme" content="light dark"><title>Overview · Anything Wrong?</title><link rel="icon" type="image/svg+xml" href="favicon.svg?v=rpe-colors-v1"><script src="theme.js?v=theme-icons-v1"></script><link rel="stylesheet" href="site.css?v=592251ad0b36"><link rel="stylesheet" href="../../static/css/math.css?v=1"><link rel="stylesheet" href="overview.css?v=2"><link rel="stylesheet" href="value-landscapes.css?v=9"><script type="module" src="value-landscapes.js?v=10"></script><link rel="stylesheet" href="../../static/css/site-fullscreen.css?v=3"><script src="../../static/js/site-fullscreen.js?v=4" defer></script><script defer src="../../static/js/private-analytics.js?v=44b573a6df8d"></script>
+</head>
+<body><div id="nva-project"><div class="nv-site"><a class="nv-skip" href="#main-content">Skip to content</a><header class="nv-header"><a class="nv-brand" href="index.html"><span class="nv-brand-mark" aria-hidden="true">a<span>?</span></span>Anything Wrong?</a><nav aria-label="Project pages"><a href="index.html" aria-current="page">Overview</a><a href="theory.html">Theory</a><a href="experiment.html">Experiment</a><a href="decoder.html">Decoding</a><a href="demo.html">Demo</a></nav><div class="site-display-actions"><button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button><button class="nv-light-switch" type="button" role="switch" aria-label="Light mode" aria-checked="true" data-light-switch hidden><svg data-theme-icon="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg><svg data-theme-icon="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></button></div></header><main id="main-content">
+  <div class="nv-page" data-view="overview">
+    <section class="nv-overview-hero" aria-labelledby="nv-overview-title">
+      <p class="nv-overview-eyebrow">NEURAL VALUE ALIGNMENT</p>
+      <h1 id="nv-overview-title">Anything Wrong?</h1>
+      <p class="nv-overview-subtitle">When you can’t say what feels wrong,<br>your brain may still signal it.</p>
+      <div class="nv-overview-tldr"><span>TL;DR</span><p>You can feel something is wrong without knowing exactly why. <strong>Your brain may hold the clue.</strong> NVA explores neural signals to distinguish mismatches in <strong>goals</strong> and <strong>actions</strong>, without asking you to explain.</p></div>
+    </section>
+    <figure class="nv-overview-diagram" aria-label="A person watches a robot move blocks. A tangled speech bubble conveys difficulty explaining what feels wrong. Two colored responses inside the brain feed one combined signal into a decoder that estimates goal and action mismatches.">
+      <div class="nv-overview-art-full"><img src="../assets/overview/brain-feedback-single-stream.png" width="1774" height="887" decoding="async" alt="A gender-neutral person struggles to put a feeling into words. Two colored brain responses emerge as one black neural signal, then separate into blue Goal mismatch and pink Action mismatch estimates."></div>
+      <div class="nv-overview-art-mobile" aria-hidden="true">
+        <div class="nv-overview-art-main"><img src="../assets/overview/brain-feedback-single-stream.png" width="1774" height="887" decoding="async" alt=""></div>
+        <div class="nv-overview-art-neural"><img src="../assets/overview/brain-feedback-single-stream.png" width="1774" height="887" decoding="async" alt=""></div>
+      </div>
+    </figure>
+    <div id="nv-value-landscapes" class="nv-values">
+      <section class="nve-panel" aria-labelledby="nv-values-heading">
+        <header class="nve-header">
+          <div class="nve-heading">
+          <p class="nve-eyebrow">EXPLORE THE IDEA</p>
+          <h2 id="nv-values-heading">Find the mismatch</h2>
+          </div>
+        </header>
+        <div class="nve-toolbar">
+          <div class="nve-interaction-intro">
+            <div class="nve-legends">
+              <div class="nve-agents" aria-label="Choose an agent to adjust">
+                <button type="button" data-agent="human" aria-pressed="false"><i class="nve-line" aria-hidden="true"></i>Human</button>
+                <button type="button" data-agent="ai" aria-pressed="true"><i class="nve-line nve-ai-line" aria-hidden="true"></i>AI</button>
+              </div>
+              <div class="nve-path-key" aria-label="Trajectory line styles"><span><i class="nve-possible-line" aria-hidden="true"></i>Future transition</span></div>
+            </div>
+            <p class="nve-hint">Drag to move. Click a goal or the human state to resize or rotate.</p>
+          </div>
+          <div class="nve-value-story" role="group" aria-label="For any agent, the goal defines rewards and the trajectory determines the states encountered. Together they determine its value function: expected return along that trajectory.">
+            <div class="nve-value-inputs">
+              <div class="nve-value-factor"><i class="nve-key-goal" aria-hidden="true"></i><span><strong>Goal</strong><small>Rewards</small></span></div>
+              <div class="nve-value-factor"><i class="nve-key-trajectory" aria-hidden="true"></i><span><strong>Trajectory</strong><small>States</small></span></div>
+            </div>
+            <svg class="nve-value-join" viewBox="0 0 40 86" aria-hidden="true"><path d="M2 20H14V43H36M2 66H14V43M31 38L36 43L31 48"/></svg>
+            <div class="nve-value-result"><strong>Value function</strong><span>Expected return</span></div>
+          </div>
+        </div>
+        <div class="nve-stage">
+          <svg class="nve-plot" role="img" aria-labelledby="nve-title nve-description"></svg>
+          <div class="nve-handles">
+            <button type="button" class="nve-handle nve-goal" data-drag="goal" data-owner="human" aria-label="Move human goal. Arrow keys move it."><span></span></button>
+            <button type="button" class="nve-handle nve-goal nve-ai" data-drag="goal" data-owner="ai" aria-label="Move AI goal. Arrow keys move it."><span></span></button>
+            <button type="button" class="nve-handle nve-step" data-drag="step" data-owner="human" aria-label="Move the human expected next state. Arrow keys move horizontally and vertically."><span></span></button>
+            <button type="button" class="nve-handle nve-step nve-ai" data-drag="step" data-owner="ai" aria-label="Move the AI observed next state. Arrow keys move horizontally and vertically."><span></span></button>
+            <button type="button" class="nve-handle nve-size" data-drag="wx" aria-label="Resize selected value width. Arrow keys adjust it."><span></span></button>
+            <button type="button" class="nve-handle nve-size" data-drag="wy" aria-label="Resize selected value height. Arrow keys adjust it."><span></span></button>
+            <button type="button" class="nve-handle nve-size nve-tolerance-size" data-drag="tx" aria-label="Resize selected next-step tolerance width. Arrow keys adjust it."><span></span></button>
+            <button type="button" class="nve-handle nve-size nve-tolerance-size" data-drag="ty" aria-label="Resize selected next-step tolerance height. Arrow keys adjust it."><span></span></button>
+            <button type="button" class="nve-handle nve-size nve-rotation" data-drag="goalAngle" aria-label="Rotate selected goal ellipse. Arrow keys adjust its angle."><span></span></button>
+            <button type="button" class="nve-handle nve-size nve-tolerance-size nve-rotation" data-drag="toleranceAngle" aria-label="Rotate selected next-step tolerance ellipse. Arrow keys adjust its angle."><span></span></button>
+          </div>
+        </div>
+        <noscript><p class="nve-hint">Enable JavaScript to explore goals, trajectories, and prediction errors.</p></noscript>
+        <div class="nve-controls" aria-label="Selected agent settings">
+          <div class="nve-control-heading">
+            <span data-selected-label>AI selected</span>
+            <div class="nve-examples" aria-label="Example configurations">
+              <button type="button" data-example="aligned" aria-pressed="false">Aligned</button>
+              <button type="button" data-example="goals" aria-pressed="true">Goal differs</button>
+              <button type="button" data-example="paths" aria-pressed="false">Path differs</button>
+            </div>
+          </div>
+          <div class="nve-parts" aria-label="Choose the shape to resize">
+            <button type="button" data-part="goal" aria-pressed="false"><i class="nve-key-goal" aria-hidden="true"></i>Goal tolerance</button>
+            <button type="button" data-part="step" aria-pressed="false" hidden><i class="nve-key-step" aria-hidden="true"></i>Next-step tolerance</button>
+          </div>
+          <div class="nve-sliders" id="nve-shape-controls" hidden>
+            <label><span>Width <output data-wx-value>0.300</output></span><input type="range" data-property="wx" min="0" max="0.38" step="0.005" value="0.3" aria-label="Selected value landscape width"></label>
+            <label><span>Height <output data-wy-value>0.220</output></span><input type="range" data-property="wy" min="0" max="0.38" step="0.005" value="0.22" aria-label="Selected value landscape height"></label>
+            <label data-rotation-control><span>Rotation <output data-angle-value>0°</output></span><input type="range" data-property="angle" min="-180" max="180" step="1" value="0" aria-label="Selected ellipse rotation in degrees"></label>
+            <label data-curve-control><span>Later curve <output data-bend-value>18°</output></span><input type="range" data-property="bend" min="-90" max="90" step="1" value="18" aria-label="Curve of the remaining path after the next state, in degrees"></label>
+          </div>
+        </div>
+        <div class="nve-errors">
+          <section class="nve-error nve-rpe" aria-label="Trajectory-return reward prediction error" title="Both trajectory returns use human rewards.">
+            <div class="nve-error-heading"><div><strong>RPE</strong><span>Reward prediction error</span></div><output data-rpe>0.000</output></div>
+            <div class="nve-interpretation" data-rpe-interpretation>Lower return than expected</div>
+          </section>
+          <section class="nve-error nve-spe" aria-label="Tolerance-normalized state prediction error">
+            <div class="nve-error-heading"><div><strong>SPE</strong><span>State prediction error</span></div><output data-spe>0.000</output></div>
+            <div class="nve-interpretation" data-spe-interpretation>Within human tolerance · boundary: 1</div>
+          </section>
+        </div>
+        <p class="nve-example-note" data-example-note hidden>Shared next step. Different goals.</p>
+        <div class="nve-sr" data-status role="status" aria-live="polite"></div>
+      </section>
+    </div>
+    <div class="nv-hero-actions nv-overview-actions"><a class="nv-primary" href="demo.html">Explore demo <svg class="nv-icon" aria-hidden="true"><use href="icons.svg#arrow-up-right"></use></svg></a><a href="https://doi.org/10.1109/TCYB.2026.3722605" target="_blank" rel="noopener noreferrer">Read the NVA paper <svg class="nv-icon" aria-hidden="true"><use href="icons.svg#arrow-up-right"></use></svg></a></div>
+  </div>
+</main></div></div></body></html>

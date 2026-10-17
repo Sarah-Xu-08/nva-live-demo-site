@@ -7,6 +7,85 @@ the same renderer and source timelines as the local application. Its prediction 
 not predictions recomputed in the visitor's browser. The local Python app keeps
 its existing causal inference and research workflows.
 
+## Required redeployment constraints
+
+Read and follow this section before building, publishing, or redeploying the
+public website, as required by the root `AGENTS.md`. These are the user's agreed
+publication rules; later explicit user instructions take precedence. The trial
+count below describes the current selection, not a permanently fixed limit.
+
+1. **Deploy only when the user asks.** Do not add automatic folder syncing,
+   file watchers, scheduled publication, or automatic publication from research
+   source changes. Use the current local `live_demo` as the source of requested
+   updates. For a specific fix, publish only that fix and its necessary assets;
+   do not include unrelated local work. Building or editing documentation alone
+   does not authorize publication. GitHub Pages may build the publishing branch
+   after an explicitly requested push.
+
+2. **Keep the public deployment on GitHub Pages.** Publish only the generated
+   static website to `Sarah-Xu-08/nva-live-demo-site`, branch
+   `codex/github-pages`, at `https://sarah-xu-08.github.io/nva-live-demo-site/`.
+   Keep the project pages available. The original research repository remains
+   private; do not publish its full source, runtime-data folders, model weights,
+   or raw recording files as part of a website deployment.
+
+3. **Only Introduction and Presentation are available inside public Live Demo.**
+   Keep all four mode cards and their appearance in Introduction. Presentation
+   opens online replay; Trial Editor, Recording, and Playing link to Run Locally.
+   Historical editor/recording/Playing URL parameters fall back to Presentation.
+   Keyboard only, the lab GPU/server AI connection, and their assets remain
+   outside the public deployment for now.
+
+4. **Keep Run Locally out of every shared top menu.** The top menu contains
+   Overview, Theory, Experiment, Decoding, and Demo. Keep the Run Locally guide
+   accessible within Demo content through the three local-mode cards and the
+   Presentation description link.
+
+5. **Publish only recordings saved in Presentation.** The current selection is
+   10 recordings in "Selected presentation trials". Derive the selection from
+   the saved Presentation sets, not a hard-coded count, suggested set, or full
+   catalogue. Preserve their saved game actions, original signal values and
+   timestamps, and saved prediction results. Include no unrelated recordings or
+   editor trial library. Stop if the saved selection is empty or unavailable;
+   do not silently substitute other trials. A rebuild must remove data for
+   recordings no longer selected.
+
+6. **The online experience is read-only prerecorded replay.** Clearly label it
+   as recorded/saved data. Do not enable EEG recording, real-time decoding,
+   model inference, trial editing, or other live-session/backend requests.
+   Visitors must not modify the published trial library. Personal trial creation
+   is deferred. Live research capabilities belong to the locally run application
+   described by Run Locally; preserve those local capabilities.
+
+7. **Preserve the public Presentation panel customizations.** Hide Participant
+   and Presentation set and load the saved selection automatically; retain both
+   selectors in the local app. Use the latest local custom recording names from
+   `static/data/recording-names.json` for Picked Recording, preserving their
+   recording associations instead of reverting to old catalogue/default names.
+   Keep the selector wide enough to show the full current trial names, with a
+   responsive full-width layout on narrow screens. Maintain these changes in
+   the export source as well as the published output so later builds retain them.
+
+8. **Keep visitor statistics private.** Use the existing GoatCounter site,
+   `https://nva-live-demo.goatcounter.com/`, with its dashboard restricted to
+   authorized users. Do not add a public visitor map, counter, statistics
+   endpoint, or API token to the website. Keep analytics off local previews.
+   Exclude automated browser verification from counts by blocking analytics
+   requests. The owner's exclusion is per browser/profile/device via
+   GoatCounter's `skipgc` preference; do not claim universal owner exclusion or
+   exclude a shared lab IP. See the instructions below.
+
+9. **Verify before reporting a successful redeployment.** Before publishing,
+   inspect the changed files and exported trial selection for unintended content.
+   Run relevant existing checks, including public-export tests when changing
+   export/data behavior, and inspect affected UI and links in the browser.
+   Check the public mode restrictions, Run Locally routing, hidden selectors,
+   recording names and widths, and replay behavior as applicable. Preserve
+   asset versioning so updated scripts, styles, and names are not masked by old
+   cached assets. After publishing, wait for a successful GitHub Pages deployment
+   and verify the actual live pages with fresh URLs and analytics blocked.
+   Report completion only after these checks; disclose any remaining limitation.
+
 ## Build and inspect the public site
 
 Use the existing `nva-live` environment, with the local recordings and reviewed
@@ -45,8 +124,9 @@ separate public `Sarah-Xu-08/nva-live-demo-site` repository, on its
 Settings → Pages → Deploy from a branch. The publishing branch should contain
 only the generated site. The expected project address is
 `https://sarah-xu-08.github.io/nva-live-demo-site/`. Building locally does not publish
-anything or change repository settings. Rebuild and republish when the frozen
-demo data or website changes; a source-only GitHub build lacks the ignored data.
+anything or change repository settings. When the user requests publication of
+changed frozen demo data or website content, rebuild and republish within that
+scope; a source-only GitHub build lacks the ignored data.
 GitHub Pages supports public repositories on GitHub Free; verify the repository's
 visibility and plan before enabling it. See the [Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 
@@ -55,17 +135,6 @@ current plan does not support Pages from that private repository, so only the
 generated website is published separately. Source ZIP and native-installation
 links require access to the research repository; the public website does not
 grant that access.
-
-The public UI offers Introduction and Presentation. Run locally is accessible
-from Demo content, not the shared top navigation.
-The public Presentation panel omits the Participant and Presentation set selectors;
-the saved selection loads automatically. Both selectors remain in the local app.
-Introduction keeps all four mode cards; Trial Editor, Recording and Playing
-link to Run locally, while Presentation opens the online replay workspace.
-Historical Playing/editor/recording URL parameters fall back to Presentation.
-Keyboard-only assets and connections are not included. The replay transport
-rejects all edits and live-session requests. Personal trial creation in the
-browser is deferred; it must never overwrite the published library.
 
 ## Private visitor statistics
 

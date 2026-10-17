@@ -1,0 +1,19 @@
+/* Keep an opaque page beneath the incoming view; never fade through blank. */
+#site-navigation-status {
+  position: fixed; z-index: 2; bottom: 64px; right: 16px; max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 16px; margin: 0; border: 1px solid light-dark(#e2e7ed, #2d3644); border-radius: 5px;
+  background: light-dark(#fff, #11151c); color: light-dark(#18202d, #edf1f8); font: 14px/1.5 system-ui;
+}
+#site-navigation-status[hidden] { display: none; }
+::view-transition-old(root) { animation: none; }
+::view-transition-new(root) {
+  animation: site-page-reveal 140ms ease-out both;
+  mix-blend-mode: normal;
+}
+::view-transition-group(root) { animation-duration: 140ms; }
+@keyframes site-page-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+}

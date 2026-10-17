@@ -7,7 +7,7 @@
   // Count pages, not query parameters, trial identities or button interactions.
   // GoatCounter's standard browser exclusion (#toggle-goatcounter) is retained.
   window.goatcounter = {
-    path: window.location.pathname,
+    path: window.location.pathname.replace(/\.page\.html$/, '.html'),
     no_events: true,
   };
   const script = document.createElement('script');

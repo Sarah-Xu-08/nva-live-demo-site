@@ -1,5 +1,9 @@
-/* The approved four-card introduction, using the original mode artwork. */
-#nva-project .demo-introduction { padding-bottom: 28px; }
+/* Approved Editor 2 symbol set, at the compact Size B. */
+#nva-project .demo-introduction {
+  --demo-art-width: 230px;
+  --demo-art-height: 130px;
+  padding-bottom: 28px;
+}
 #nva-project .demo-intro-hero {
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
   align-items: end; gap: 24px; padding: 38px 0 32px;
@@ -16,13 +20,15 @@
 #nva-project .demo-mode-description { margin-top: 7px; max-width: 390px; min-height: 44px; color: var(--nv-muted); }
 #nva-project .demo-mode-figure {
   display: flex; align-items: center; justify-content: center;
-  width: 100%; margin: 14px 0 12px; flex: 1; min-height: 0;
+  width: 100%; margin: 14px 0 12px; flex: 1; min-height: 195px;
 }
 #nva-project .demo-mode-figure svg {
-  display: block; width: 100%; max-width: 400px; height: auto; aspect-ratio: 1334 / 650;
-  overflow: hidden; border-radius: 5px; background: #fff;
+  display: block; width: 100%; max-width: var(--demo-art-width); height: var(--demo-art-height);
+  overflow: hidden; border-radius: 5px; background: transparent;
 }
 #nva-project .demo-mode-link { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-weight: 600; }
+#nva-project .demo-mode-figure image { filter: url(#mode-art-light); }
+:root[data-theme="dark"] #nva-project .demo-mode-figure image { filter: url(#mode-art-dark); }
 #nva-project .demo-mode-note { margin-top: 5px; font-size: 11px; line-height: 1.5; color: var(--nv-muted); }
 #nva-project .demo-signal-legend {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
@@ -42,6 +48,6 @@
   #nva-project .demo-mode-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   #nva-project .demo-intro-hero h1 { font-size: 39px; letter-spacing: -1.7px; }
   #nva-project .demo-mode-description { min-height: 0; }
-  #nva-project .demo-mode-figure { margin-block: 18px; }
+  #nva-project .demo-mode-figure { margin-block: 18px; min-height: 165px; }
   #nva-project .demo-signal-legend { gap: 14px; }
 }

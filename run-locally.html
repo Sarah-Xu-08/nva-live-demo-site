@@ -1,46 +1,10 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Run locally · Anything Wrong?</title>
-<link rel="stylesheet" href="static/project/site.css"><style>
-body{font-family:system-ui,sans-serif;line-height:1.65;color:#25312c;background:#fafbf8;margin:0}
-main{max-width:850px;margin:50px auto;padding:0 24px}h1{font-size:42px;line-height:1.15}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf0ea;padding:20px;border-radius:12px}
-a{color:#315c50}section{margin:36px 0}li{margin:8px 0}.links{display:flex;gap:24px;flex-wrap:wrap}
-</style><script defer src="static/js/private-analytics.js"></script>
-</head><body><main><nav class="links"><a href="static/project/index.html">← Project overview</a>
-<a href="demo.html?mode=presentation">Open Presentation</a></nav><h1>Run the research application locally.</h1>
-<p>The online demo replays saved trials, EEG signals and prediction results. To record EEG,
-run a decoder, edit trials or adapt the application to your equipment, install the full application
-on your computer or server.</p>
-<p>The research repository is currently private. Source downloads require repository access.</p><p class="links">
-<a href="https://github.com/Sarah-Xu-08/nva-live-demo">Source code and documentation</a>
-<a href="https://github.com/Sarah-Xu-08/nva-live-demo/archive/HEAD.zip">Download source ZIP</a></p>
-<section><h2>Start with Docker</h2><p>Install Docker, download the source and open a terminal in its folder.
-Build the image using the included Dockerfile:</p>
-<pre>docker build -t nva-live-demo .
-docker run --rm -p 127.0.0.1:65008:65008 \
-  -v nva-recordings:/app/live_demo/runtime_data \
-  -v nva-trials:/app/live_demo/trials \
-  -v nva-trial-history:/app/live_demo/trial_history \
-  nva-live-demo</pre>
-<p>Open <a href="http://127.0.0.1:65008">localhost:65008</a>. Named volumes retain recordings,
-trial edits and revision backups between container runs. This is a local research service;
-keep it on your own computer or trusted network.</p>
-<p>The source download includes the application and authored trials. Participant recordings,
-trained model bundles and saved analysis archives are separate inputs; they are not bundled
-into the Docker image. Without those inputs, prerecorded Playing reports unavailable.
-Trial Editor and mock recording can be used without them.</p></section>
-<section><h2>Connect an EEG device</h2><p>The application receives compatible EEG through Lab Streaming Layer (LSL).
-Start your device's LSL outlet and configure the stream's channel names and sampling rate.
-The built-in Playing pipeline expects the documented 14-channel, 128 Hz input.</p>
-<p>Docker networking needs explicit configuration for LSL discovery. On Linux, host networking
-is an option. On macOS or Windows, installing Python directly on the acquisition computer is
-the simplest starting point; container networking must be verified with your device.</p>
-<p><a href="https://github.com/Sarah-Xu-08/nva-live-demo/blob/HEAD/README.md">Native Python installation and EEG setup</a></p></section>
-<section><h2>Use your model</h2><p>Model integration is done in the local Python application. Use its decoder
-manifest and adapter interfaces, matching preprocessing, channels, sampling rate and output labels.
-The current Playing pipeline uses its saved causal model bundles; replacing it with a different
-architecture requires an adapter. Uploading arbitrary weights does not automatically make them compatible.</p>
-<p><a href="deployment-guide.md">Docker, data mounts and deployment guide</a></p></section>
-<section><h2>Create your own trials</h2><p>The local Trial Editor is available now. A separate browser workspace
-for creating personal kitchens, trajectories and subtasks is planned. Published examples on this
-website are read-only.</p></section></main></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark"><title>Run locally · Anything Wrong?</title>
+<link rel="icon" href="static/project/favicon.svg">
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:light-dark(#fff,#11151c)}
+#site-page{display:block;width:100%;height:100%;border:0}</style>
+<script src="static/js/site-shell.js?v=2" defer></script>
+</head><body><iframe id="site-page" title="Anything Wrong?" data-content="run-locally.page.html" allow="fullscreen" allowfullscreen></iframe>
+<noscript><a href="run-locally.page.html">Open page</a></noscript></body></html>
