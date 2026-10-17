@@ -12,3 +12,10 @@
   color: var(--ink);
   text-decoration: underline;
 }
+
+/* Published replays use the saved participant and set automatically. Keep the
+   backing controls for the shared replay engine, but omit them from the panel. */
+body[data-public-replay="true"] .scenario-dropdowns > label:has(> #playing-participant),
+body[data-public-replay="true"] .scenario-dropdowns > label:has(> #presentation-set) {
+  display: none;
+}

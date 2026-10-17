@@ -57,6 +57,8 @@ links require access to the research repository; the public website does not
 grant that access.
 
 The public UI offers Introduction and Presentation, with a Run locally link.
+The public Presentation panel omits the Participant and Presentation set selectors;
+the saved selection loads automatically. Both selectors remain in the local app.
 Introduction keeps all four mode cards; Trial Editor, Recording and Playing
 link to Run locally, while Presentation opens the online replay workspace.
 Historical Playing/editor/recording URL parameters fall back to Presentation.
