@@ -56,7 +56,8 @@ generated website is published separately. Source ZIP and native-installation
 links require access to the research repository; the public website does not
 grant that access.
 
-The public UI offers Introduction and Presentation, with a Run locally link.
+The public UI offers Introduction and Presentation. Run locally is accessible
+from Demo content, not the shared top navigation.
 The public Presentation panel omits the Participant and Presentation set selectors;
 the saved selection loads automatically. Both selectors remain in the local app.
 Introduction keeps all four mode cards; Trial Editor, Recording and Playing
