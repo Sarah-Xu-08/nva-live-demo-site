@@ -64,6 +64,32 @@ Keyboard-only assets and connections are not included. The replay transport
 rejects all edits and live-session requests. Personal trial creation in the
 browser is deferred; it must never overwrite the published library.
 
+## Private visitor statistics
+
+The public export includes GoatCounter page-visit analytics for
+`https://nva-live-demo.goatcounter.com/`. Keep that dashboard restricted to
+logged-in users and leave public visitor counters disabled. There is no public
+map, counter, API token or statistics endpoint in this website.
+
+`public/private-analytics.js` loads GoatCounter only on
+`sarah-xu-08.github.io/nva-live-demo-site/`. Local research pages are not modified,
+and local export previews do not load the analytics service. Each content page
+is counted; the root redirect is skipped to avoid counting the same arrival
+twice. Page query strings and trial interactions are not collected as page
+identities or custom events. Country estimates use GoatCounter's normal visitor
+analytics. Collection starts only after this export is published.
+
+To exclude your browser, open the published Overview with
+`#toggle-goatcounter` appended and check that the popup says tracking is disabled.
+Do this once per browser/profile/device; opening the toggle again re-enables
+tracking. Clearing site storage removes the exclusion. This uses GoatCounter's
+`skipgc` local-storage preference; avoid excluding a shared lab IP, which would
+also remove other visitors using that IP. See the
+[official exclusion instructions](https://www.goatcounter.com/help/skip-dev).
+
+Statistics update within GoatCounter without rebuilding this website. Deployment
+remains manual; analytics does not synchronize the local folder or publish edits.
+
 ## Build and run Docker locally
 
 Install Docker, then from the repository root:
