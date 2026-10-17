@@ -95,7 +95,11 @@
     get entry() { return this.entries.find(e => e.recording_id === $('playing-recording').value); }
     visibility() {
       document.querySelectorAll('.presentation-only').forEach(e => e.hidden = !this.active);
-      if (window.StaticReplay) $('presentation-edit').hidden = true;
+      if (window.StaticReplay) {
+        $('presentation-edit').hidden = true;
+        this.header.hidden = true;
+        $('playing-participant').closest('label').hidden = true;
+      }
       if (this.active) {
         $('playing-session-type').closest('label').hidden = true;
         $('playing-condition').closest('label').hidden = true;
