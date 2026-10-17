@@ -19,3 +19,20 @@ body[data-public-replay="true"] .scenario-dropdowns > label:has(> #playing-parti
 body[data-public-replay="true"] .scenario-dropdowns > label:has(> #presentation-set) {
   display: none;
 }
+
+/* Give the trial name the available row width; speed needs only a short field. */
+body[data-public-replay="true"][data-experiment-mode="presentation"] .display-surface .scenario-dropdowns {
+  grid-template-columns: minmax(0, 1fr) 180px;
+}
+body[data-public-replay="true"][data-experiment-mode="presentation"] .scenario-dropdowns .playing-recording-field {
+  grid-column: auto;
+  min-width: 0;
+}
+body[data-public-replay="true"] #playing-recording {
+  width: 100%;
+}
+@media (max-width: 640px) {
+  body[data-public-replay="true"][data-experiment-mode="presentation"] .display-surface .scenario-dropdowns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
