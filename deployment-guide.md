@@ -57,6 +57,8 @@ links require access to the research repository; the public website does not
 grant that access.
 
 The public UI offers Introduction and Presentation, with a Run locally link.
+Introduction keeps all four mode cards; Trial Editor, Recording and Playing
+link to Run locally, while Presentation opens the online replay workspace.
 Historical Playing/editor/recording URL parameters fall back to Presentation.
 Keyboard-only assets and connections are not included. The replay transport
 rejects all edits and live-session requests. Personal trial creation in the

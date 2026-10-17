@@ -12,8 +12,3 @@
   color: var(--ink);
   text-decoration: underline;
 }
-body[data-public-replay="true"] #nva-project .demo-mode-grid {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 680px;
-  margin-inline: auto;
-}

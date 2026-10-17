@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore selected human–AI collaboration trials with recorded EEG and saved prediction results.">
+  <meta name="description" content="Explore the human–AI collaboration demo: design trials, record EEG, play sessions, and present decoder results.">
   <meta name="color-scheme" content="light dark">
   <title>Demo · Anything Wrong?</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -23,19 +23,58 @@
       <div class="demo-intro-hero">
         <div>
           <p class="nv-eyebrow">DEMO / INTRODUCTION</p>
-          <h1>Observe. Replay.<br>Understand.</h1>
-          <p class="nv-subtitle">Explore selected human–AI collaboration trials with recorded EEG, saved prediction results, and guided replay.</p>
+          <h1>Observe. Decode.<br>Understand.</h1>
+          <p class="nv-subtitle">Explore human–AI collaboration through trial design, EEG recording, decoding, and guided replay.</p>
         </div>
         <a class="nv-primary demo-open-workspace" href="../../demo.html?mode=presentation" data-open-workspace data-default-mode="presentation" data-workspace-modes="presentation">Open Presentation <span aria-hidden="true">↗</span></a>
       </div>
       <section class="demo-mode-grid" aria-label="Demo modes">
-        
-        
-        
-        <article class="demo-mode-card" aria-labelledby="demo-presentation-heading">
+        <article class="demo-mode-card" aria-labelledby="demo-editor-heading">
           <p class="demo-mode-number">01</p>
+          <h2 id="demo-editor-heading">Trial Editor</h2>
+          <p class="demo-mode-description">Design and preview kitchen scenes, joint actions, and critical moments.</p>
+          <figure class="demo-mode-figure">
+            <svg viewBox="220 124 1334 650" role="img" aria-labelledby="demo-editor-art-title" focusable="false">
+              <title id="demo-editor-art-title">A smiling human chef designs an onion-to-pot-to-plate sequence beside an AI chef.</title>
+              <image href="../../static/assets/modes/trial-editor-gray-a-v1.png" x="0" y="0" width="1774" height="887" />
+            </svg>
+          </figure>
+          <div class="demo-mode-entry">
+            <a class="demo-mode-link" href="../../run-locally.html">Run Trial Editor locally <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="demo-mode-card" aria-labelledby="demo-recording-heading">
+          <p class="demo-mode-number">02</p>
+          <h2 id="demo-recording-heading">Recording</h2>
+          <p class="demo-mode-description">Record EEG while participants observe human–AI collaboration.</p>
+          <figure class="demo-mode-figure">
+            <svg viewBox="220 124 1334 650" role="img" aria-labelledby="demo-recording-art-title" focusable="false">
+              <title id="demo-recording-art-title">A separate observer watches two chefs on a small screen while a gray EEG trace comes from their brain.</title>
+              <image href="../../static/assets/modes/recording-gray-a-v1.png" x="0" y="0" width="1774" height="887" />
+            </svg>
+          </figure>
+          <div class="demo-mode-entry">
+            <a class="demo-mode-link" href="../../run-locally.html">Run Recording locally <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="demo-mode-card" aria-labelledby="demo-play-heading">
+          <p class="demo-mode-number">03</p>
+          <h2 id="demo-play-heading">Playing</h2>
+          <p class="demo-mode-description">Explore recorded or live EEG alongside game behavior and decoded responses.</p>
+          <figure class="demo-mode-figure">
+            <svg viewBox="220 124 1334 650" role="img" aria-labelledby="demo-play-art-title" focusable="false">
+              <title id="demo-play-art-title">Playing concept: a human chef’s brain signal enters a network decoder; blue and pink signals point to the chip in the AI chef’s head.</title>
+              <image href="../../static/assets/modes/playing-gray-a-v1.png" x="0" y="0" width="1774" height="887" />
+            </svg>
+          </figure>
+          <div class="demo-mode-entry">
+            <a class="demo-mode-link" href="../../run-locally.html">Run Playing locally <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="demo-mode-card" aria-labelledby="demo-presentation-heading">
+          <p class="demo-mode-number">04</p>
           <h2 id="demo-presentation-heading">Presentation</h2>
-          <p class="demo-mode-description">Guide an audience through selected trials, key events, and saved prediction results.</p>
+          <p class="demo-mode-description">Guide an audience through selected trials, key events, and decoder results.</p>
           <figure class="demo-mode-figure">
             <svg viewBox="220 124 1334 650" role="img" aria-labelledby="demo-presentation-art-title" focusable="false">
               <title id="demo-presentation-art-title">A paused cooking replay above a gray EEG signal entering a decoder with blue and pink output streams.</title>
