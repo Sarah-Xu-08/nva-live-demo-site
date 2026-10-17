@@ -79,7 +79,7 @@
       $('presentation-save-copy').onclick = () => this.save(true);
     }
     get active() { return this.player.active && $('experiment-mode').value === 'presentation'; }
-    label(recording) { return `${recording.session} · Trial ${recording.trial_number} · ${recording.design} · ${recording.condition}`; }
+    label(recording) { return `${this.player.recordingLabel(recording)} · ${recording.condition}`; }
     async load() {
       const [catalogue, saved] = await Promise.all([this.player.host.api('/api/presentation/catalogue'), this.player.host.api('/api/presentation/sets')]);
       this.candidates = catalogue.candidates;

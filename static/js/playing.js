@@ -136,8 +136,15 @@
       this.visibility();
       this.syncControls();
       try {
-        this.catalogue = await this.host.api("/api/playing/catalogue");
+        const [catalogue, recordingNames] = await Promise.all([
+          this.host.api("/api/playing/catalogue"),
+          fetch("static/data/recording-names.json?v=f75fc7ab2d3b")
+            .then(response => response.ok ? response.json() : {})
+            .catch(() => ({})),
+        ]);
         if (!this.active || generation !== this.generation) return;
+        this.catalogue = catalogue;
+        this.recordingNames = recordingNames;
         $("playing-participant").replaceChildren(...this.catalogue.participants.map(p => new Option(p.label, p.id)));
         if (!this.participant?.available) throw new Error(this.participant?.error || "Participant catalogue unavailable");
         if (this.presenting) await this.guide.load();
@@ -175,10 +182,18 @@
       }
       document.querySelector(".eeg-card-heading h2").textContent = "EEG · last 1.8 s";
     }
+    recordingLabel(recording) {
+      const name = this.recordingNames?.[recording.design]
+        || recording.design.replace(/^[A-Z]?\d+[a-z]?\s*·\s*/i, "");
+      return `${name} · ${recording.session}-${String(recording.trial_number).padStart(2, "0")}`;
+    }
     populate() {
       const old = $("playing-recording").value;
-      $("playing-recording").replaceChildren(...this.matching.map(r => new Option(
-        `${r.session} · Trial ${r.trial_number} · ${r.design}${r.available ? "" : " · unavailable"}`, r.id)));
+      $("playing-recording").replaceChildren(...this.matching.map(r => {
+        const option = new Option(`${this.recordingLabel(r)}${r.available ? "" : " · unavailable"}`, r.id);
+        option.title = `${r.session} · Trial ${r.trial_number} · ${r.design}`;
+        return option;
+      }));
       if (this.matching.some(r => r.id === old)) $("playing-recording").value = old;
     }
     async selectionChanged(id) {
