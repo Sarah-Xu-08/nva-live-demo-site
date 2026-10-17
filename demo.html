@@ -9,14 +9,15 @@
     <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64" href="static/favicon-sage.ico?v=1">
     <link rel="icon" type="image/png" sizes="64x64" href="static/favicon-sage.png?v=1">
     <link rel="stylesheet" href="static/css/warm.css?v=focus-mode-v1">
-    <link rel="stylesheet" href="static/css/trial-editor.css?v=focus-mode-v1">
+    <link rel="stylesheet" href="static/css/trial-editor.css?v=editor-focus-v1">
     <link rel="stylesheet" href="static/css/participant-guide.css?v=5">
     <link rel="stylesheet" href="static/css/playing.css?v=focus-mode-v1">
-    <link rel="stylesheet" href="static/css/research-ui.css?v=mode-art-v2">
+    <link rel="stylesheet" href="static/css/research-ui.css?v=demo-introduction-v1">
     <link rel="stylesheet" href="static/css/math.css?v=1">
     <link rel="stylesheet" href="static/css/site-fullscreen.css?v=1"><script src="static/js/site-fullscreen.js?v=1" defer></script>
+  <link rel="stylesheet" href="static/css/public-replay.css">
   </head>
-  <body data-experiment-mode="play" data-public-replay="true">
+  <body data-experiment-mode="presentation" data-public-replay="true">
     <div class="display-viewport">
     <div class="display-surface">
     <div class="project-navigation">
@@ -26,33 +27,36 @@
         <a href="static/project/theory.html">Theory</a>
         <a href="static/project/experiment.html">Experiment</a>
         <a href="static/project/decoder.html">Decoding</a>
-        <a href="demo.html?mode=play" aria-current="page">Explore demo <span aria-hidden="true">↗</span></a>
+        <a href="static/project/demo.html" aria-current="page">Demo</a>
       <a href="run-locally.html">Run locally</a></nav>
       <div class="site-display-actions"><button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button><button class="workspace-light-switch" type="button" role="switch" aria-label="Light mode" aria-checked="true" data-light-switch hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg><span>Light</span><span class="workspace-light-track" aria-hidden="true"></span></button></div>
     </div>
     <header class="site-header hybrid-header">
+      <div class="workspace-overview">
       <div class="workspace-intro">
         <div class="workspace-intro-copy"><p class="workspace-eyebrow">RECORDED DEMO</p><h1>Observe. Replay.<br>Understand.</h1><p class="workspace-subtitle">Replay saved trials, recorded EEG and saved prediction results. No live decoding or recording runs on this website. <a href="run-locally.html">Run locally with your EEG or model →</a></p></div>
         <figure class="workspace-mode-figure">
-          <svg id="workspace-mode-art" viewBox="80 90 1600 730" role="img" aria-labelledby="workspace-mode-art-title" focusable="false">
-            <title id="workspace-mode-art-title">Recording: an observer's brain signal is recorded while watching the human and AI chefs collaborate.</title>
-            <defs><clipPath id="workspace-mode-crop" clipPathUnits="userSpaceOnUse"><rect id="workspace-mode-crop-bounds" x="80" y="90" width="1600" height="730" /></clipPath></defs>
-            <image id="workspace-mode-image" href="static/assets/modes/recording.png" width="1774" height="887" clip-path="url(#workspace-mode-crop)" />
+          <svg id="workspace-mode-art" viewBox="0 0 1280 650" preserveAspectRatio="xMaxYMax meet" role="img" aria-labelledby="workspace-mode-art-title" focusable="false">
+            <title id="workspace-mode-art-title">Recording: a separate observer watches the human and AI chefs on a screen while their brain signal appears in a recording trace.</title>
+            <defs><clipPath id="workspace-mode-crop" clipPathUnits="userSpaceOnUse"><rect id="workspace-mode-crop-bounds" x="0" y="0" width="1280" height="650" /></clipPath></defs>
+            <image id="workspace-mode-image" href="static/assets/modes/recording-gray-a-v1.png" x="-217" y="-94" width="1774" height="887" clip-path="url(#workspace-mode-crop)" />
           </svg>
         </figure>
       </div>
       <div class="workspace-heading">
         <div class="workspace-modes" role="group" aria-label="Experiment mode" hidden>
-          
-          
-          <button type="button" data-workspace-mode="play" aria-pressed="false">Playing</button>
+
+
+
+          <a class="workspace-introduction" href="static/project/demo.html">Introduction</a>
           <button type="button" data-workspace-mode="presentation" aria-pressed="false">Presentation</button>
         </div>
-        <button type="button" id="workspace-focus" class="workspace-focus" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>Focus mode</span></button>
+        <button type="button" id="workspace-focus" class="workspace-focus" aria-pressed="false" aria-label="Enter focus mode" title="Focus on workspace" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg><span>Focus mode</span></button>
+      </div>
       </div>
       <section class="scenario-browser" aria-label="Demo setup">
         <div class="scenario-dropdowns">
-          <label for="experiment-mode"><span>Experiment mode</span><select id="experiment-mode"><option value="play">Playing</option><option value="presentation">Presentation</option></select></label>
+          <label for="experiment-mode"><span>Experiment mode</span><select id="experiment-mode"><option value="presentation">Presentation</option></select></label>
           <label data-playing-field hidden><span>Playing session</span><select id="playing-session-type"><option value="pre_recorded">Pre-recorded session</option></select></label>
           <label data-playing-field hidden><span>Participant</span><select id="playing-participant"><option value="xx_record">xx_record</option></select></label>
           <label data-playing-recorded hidden><span>Condition</span><select id="playing-condition"><option value="All">All</option><option value="SPE">SPE</option><option value="RPE+SPE">RPE+SPE</option></select></label>
@@ -276,8 +280,10 @@
               <button id="pause-button" disabled hidden>Pause</button>
               <button id="resume-button" disabled hidden>Resume</button>
               <button id="reset-button" class="subtle">Reset</button>
-              <button id="playing-previous" type="button" hidden>← Previous</button>
-              <button id="playing-next" type="button" hidden>Next →</button>
+              <div id="playing-trial-navigation" role="group" aria-label="Trial navigation" hidden>
+                <button id="playing-previous" type="button" hidden>← Previous</button>
+                <button id="playing-next" type="button" hidden>Next →</button>
+              </div>
               <button id="playing-random" type="button" hidden>Random</button>
             </div>
             <div class="scene-progress" aria-live="polite">
@@ -417,8 +423,8 @@
     </div>
     </div>
     <div class="focus-mode-tools" role="group" aria-label="Display controls">
-      <button id="focus-mode-toggle" class="focus-mode-toggle" type="button" aria-pressed="false" aria-label="Enter focus mode" title="Fold the setup panel">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>Focus mode</span>
+      <button id="focus-mode-toggle" class="focus-mode-toggle" type="button" aria-pressed="false" aria-label="Enter focus mode" title="Focus on workspace">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg><span>Focus mode</span>
       </button>
       <button class="site-fullscreen-toggle" type="button" data-site-fullscreen aria-pressed="false" aria-label="Enter fullscreen" title="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span data-site-fullscreen-label>Fullscreen</span></button>
     </div>
@@ -521,9 +527,10 @@
     <script src="static/js/trial-clock.js?v=readable-previews-v13"></script>
     <script src="static/js/participant-guide.js?v=5"></script>
     <script src="static/js/presentation.js?v=5-all-correct"></script>
-    <script src="static/js/playing.js?v=focus-mode-v1"></script>
+    <script src="static/js/playing.js?v=presentation-navigation-v2"></script>
+    <script src="static/js/demo-navigation.js?v=introduction-v1"></script>
     <script src="static/js/static-replay.js"></script>
-    <script src="static/js/q-demo.js?v=focus-mode-v1"></script>
-    <script src="static/js/research-ui.js?v=mode-art-v3"></script>
+    <script src="static/js/q-demo.js?v=editor-focus-v1"></script>
+    <script src="static/js/research-ui.js?v=gray-a-mode-art-right-v1"></script>
   </body>
 </html>

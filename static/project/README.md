@@ -5,7 +5,7 @@ server running. These buildless pages use Flask's existing static-file route;
 no server restart, frontend build, or new dependency is needed.
 
 The header's **Light** switch selects white (on) or dark (off) appearance on all
-four project pages. `theme.js` applies the saved browser preference before paint
+project pages. `theme.js` applies the saved browser preference before paint
 and shares it across pages/tabs. Before a manual choice, appearance follows the
 system setting. Blocked browser storage does not prevent toggling the current page.
 
@@ -20,8 +20,15 @@ system setting. Blocked browser storage does not prevent toggling the current pa
 - `experiment.html`: Source provenance, controlled comparisons, EEG protocol.
 - `decoder.html`: Current Playing feature pipeline, calibration, model averaging,
   and decision margin.
+- `demo.html`: The Demo Introduction, with the four existing mode illustrations
+  in a two-by-two grid (one column on mobile) and direct mode entry links.
 
-All Live demo links point to `/?mode=play`. The live workspace shares this visual
+The upper **Demo** link uses the same style as the other navigation items and
+opens `demo.html`, including when returning from a workspace mode. The cards
+open `/?mode=editor`, `/?mode=recording`, `/?mode=play`, or `/?mode=presentation`.
+**Open workspace** resumes the last applied mode stored by `demo-navigation.js`,
+defaulting to Trial Editor when no valid preference is available. No workspace
+controllers load on the Introduction page. The live workspace shares this visual
 style through its separate `research-ui.css` and `research-ui.js` files. Its
 existing controllers still handle playback, recording, editing, and inference.
 The project pages' `site.js` contains only explanatory interactions and
@@ -68,21 +75,37 @@ waveforms, navigation and handoff diagrams are explanatory schematics.
 
 ## Interactive value landscapes
 
-Overview contains an adaptation of NVA Fig. 2(a). `value-landscapes.css` and
-`value-landscapes.js` are loaded only on Overview and do not affect the other
-pages or live demo.
+The title, brain-reading subtitle, and TL;DR introduce internal mismatches that
+can be difficult to express in words or infer from behavior. The approved,
+gender-neutral human/robot illustration uses the same gray line-art style as
+the four Demo mode images. `overview.css` crops the supplied artwork into a
+wide diagram on desktop and readable sections on mobile. The diagram and
+interactive panel are 800 px wide at most; the TL;DR is 730 px wide at most.
+The existing light/dark switch also styles the illustration.
 
-Both human and AI contours can be dragged with a pointer or touch. Their center
-buttons also accept arrow keys (0.01 steps; Shift for 0.05). Selecting a legend
-entry brings that landscape forward, including when both centers overlap. Reset
-restores the illustration. Coordinates stay in [0, 1] across viewport changes.
+The interactive panel adapts NVA Fig. 2(a). Its `value-landscapes.css` and
+`value-landscapes.js` load only on Overview. Select either human or AI contours,
+center, or legend entry to edit it, including when both centers overlap:
 
-Contours and axis projections come from the same bivariate Gaussian, with fixed
-standard deviations 0.14 and correlation 0.35. Dragging changes its mean. The
-displayed **RPE/SPE proxies** are absolute goal/action center differences in
-normalized units, not temporal-difference errors, behavioral labels, or neural
-estimates. The Theory page retains the actual formulations. The illustration
-makes no requests and cannot change any experiment state.
+- Drag the center or contour to move it; arrow keys move by 0.01 (Shift: 0.05).
+- Drag square perimeter handles to change goal/action spread. Arrow keys change
+  spread by 0.005 (Shift: 0.02).
+- Drag the round outer handle to rotate. Arrow keys rotate by 5° (Shift: 15°).
+- Compact plots provide labeled spread and tilt sliders instead of small handles.
+- Escape or the empty plot deselects. Reset restores both centers and shapes.
+
+Contours and axis projections derive from the same bivariate Gaussian. Initial
+standard deviations are 0.14 with correlation 0.35. Rotation preserves the
+principal spreads; principal standard deviations are bounded to [0.055, 0.24]
+to keep the covariance valid and controls reachable. Marginals use a shared
+density scale within each dimension. Centers stay in [0, 1] across edits and
+viewport changes.
+
+The displayed **RPE/SPE proxies** are absolute goal/action center differences in
+normalized units. Changing spread or tilt changes the curves, not these proxies.
+They are not temporal-difference errors, behavioral labels, or neural estimates;
+the Theory page retains the actual formulations. The illustration makes no API
+requests and cannot change experiment state.
 
 ## Interactive NVA navigation
 

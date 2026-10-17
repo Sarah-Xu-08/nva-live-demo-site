@@ -1,55 +1,326 @@
-/* Overview's value landscape only; inherit the existing site theme. */
+/* Overview only: interactive Gaussian contours and marginal distributions. */
 #nva-project .nv-values {
-  --nv-value-human: light-dark(#434e5b, #c4ceda);
-  --nv-value-ai: light-dark(#8d96a3, #91a0b3);
-  border: 1px solid var(--nv-line);
-  border-radius: var(--nv-radius);
-  padding: 27px 28px 23px;
-  margin-bottom: 28px;
+  --nv-value-human: light-dark(#686c73, #c4cbd4);
+  --nv-value-ai: light-dark(#9ca0a6, #8d99aa);
+  --plot-radius: 16px;
+  --plot-line: 2.2px;
 }
-#nva-project .nv-values-intro .nv-eyebrow { margin-bottom: 12px; }
-#nva-project .nv-values-intro h2 { font-size: 26px; font-weight: 600; letter-spacing: -.8px; }
-#nva-project .nv-values-intro > p:last-child { margin-top: 10px; color: var(--nv-muted); font-size: 13px; }
-#nva-project .nv-values-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 22px; }
-#nva-project .nv-values-legend { display: flex; gap: 22px; flex-wrap: wrap; }
-#nva-project .nv-values-legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; color: var(--nv-muted); padding: 5px 0; }
-#nva-project .nv-values-legend button[aria-pressed=true] { color: var(--nv-ink); }
-#nva-project .nv-values-legend i { display: inline-block; width: 23px; height: 0; }
-#nva-project .nv-values-human-line { border-top: 2px solid var(--nv-value-human); }
-#nva-project .nv-values-ai-line { border-top: 2px dashed var(--nv-value-ai); }
-#nva-project .nv-values-reset { color: var(--nv-muted); font-size: 11px; padding: 5px 0 5px 10px; }
-#nva-project .nv-values-help { font-size: 11px; color: var(--nv-muted); margin-top: 6px; }
-#nva-project .nv-values-stage { position: relative; width: 100%; max-width: 880px; height: 410px; margin: 16px auto 0; }
-#nva-project .nv-values-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-#nva-project .nv-values-svg text { font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; fill: var(--nv-ink); pointer-events: none; }
-#nva-project .nv-values-svg .nv-values-axis { font-size: 14px; font-weight: 500; }
-#nva-project .nv-values-svg .nv-values-muted { fill: var(--nv-muted); font-size: 11px; }
-#nva-project .nv-values-svg .nv-values-rpe { fill: var(--nv-blue); }
-#nva-project .nv-values-svg .nv-values-spe { fill: var(--nv-pink); }
-#nva-project .nv-values-svg [data-value-drag] { cursor: grab; touch-action: none; }
-#nva-project .nv-values-handle { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; border-radius: 50%; cursor: grab; touch-action: none; }
-#nva-project .nv-values-handle span { width: 7px; height: 7px; border-radius: 50%; background: var(--nv-value-human); pointer-events: none; }
-#nva-project .nv-values-handle-ai span { width: 9px; height: 9px; border-radius: 2px; border: 1.5px solid var(--nv-value-ai); background: var(--nv-bg); }
-#nva-project .nv-values-handle:focus-visible { outline-offset: 0; }
-#nva-project .nv-values-stage[data-dragging] { cursor: grabbing; user-select: none; }
-#nva-project .nv-values-stage[data-dragging] [data-value-drag] { cursor: grabbing; }
-#nva-project .nv-values-results { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; border-top: 1px solid var(--nv-line); padding-top: 17px; }
-#nva-project .nv-values-results > div { display: grid; grid-template-columns: 7px 1fr auto; align-items: center; gap: 3px 9px; }
-#nva-project .nv-values-results strong { font-size: 13px; }
-#nva-project .nv-values-results > div > span:nth-of-type(2) { grid-column: 2; font-size: 11px; color: var(--nv-muted); }
-#nva-project .nv-values-results output { grid-column: 3; grid-row: 1; font: 20px "Latin Modern Math", math; font-variant-numeric: tabular-nums; }
-#nva-project .nv-values-results small { grid-column: 3; grid-row: 2; color: var(--nv-muted); font-size: 11px; text-align: right; }
-#nva-project .nv-values-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (max-width: 680px) {
-  #nva-project .nv-values { padding: 22px 18px 20px; }
-  #nva-project .nv-values-intro h2 { font-size: 24px; }
-  #nva-project .nv-values-stage { height: 380px; }
-  #nva-project .nv-values-results { gap: 18px; }
-  #nva-project .nv-values-results > div { grid-template-columns: 7px 1fr; }
-  #nva-project .nv-values-results output { grid-column: 2; grid-row: 3; margin-top: 7px; }
-  #nva-project .nv-values-results small { grid-column: 2; grid-row: 4; text-align: left; }
-  #nva-project .nv-values-legend { gap: 14px; }
+#nva-project .nv-values {
+  border:1px solid var(--nv-line);
+  border-radius:var(--plot-radius);
+  padding:24px 26px 20px;
+  width:100%;
+  max-width:800px;
+  margin:0 auto 24px;
+  background:var(--nv-bg);
 }
-@media (pointer: coarse) {
-  #nva-project .nv-values-legend button, #nva-project .nv-values-reset { min-height: 44px; }
+#nva-project .nv-values-intro h2 {
+  font-size:27px;
+  line-height:1.25;
+  font-weight:600;
+  letter-spacing:-.85px;
+  margin-top:9px;
+}
+#nva-project .nv-values-intro>p:last-child {
+  font-size:14px;
+  color:var(--nv-muted);
+  margin-top:8px;
+}
+#nva-project .nv-values-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-top:23px;
+}
+#nva-project .nv-values-legend {
+  display:flex;
+  gap:24px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+#nva-project .nv-values-legend button {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:6px 0;
+  color:var(--nv-muted);
+  font-size:12px;
+}
+#nva-project .nv-values-legend button[aria-pressed=true] {
+  color:var(--nv-ink);
+  font-weight:600;
+  background:transparent;
+}
+#nva-project .nv-values-legend i {
+  display:inline-block;
+  width:24px;
+  height:0;
+}
+#nva-project .nv-values-human-line {
+  border-top:3px solid var(--nv-value-human);
+  border-radius:2px;
+}
+#nva-project .nv-values-ai-line {
+  border-top:3px dashed var(--nv-value-ai);
+}
+#nva-project .nv-values-reset {
+  display:flex;
+  gap:6px;
+  align-items:center;
+  font-size:12px;
+  color:var(--nv-muted);
+  padding:7px 9px;
+  border:1px solid var(--nv-line);
+  border-radius:7px;
+}
+#nva-project .nv-values-reset svg {
+  width:13px;
+  height:13px;
+}
+#nva-project .nv-values-help {
+  font-size:11px;
+  color:var(--nv-muted);
+  margin-top:5px;
+}
+#nva-project .nv-values-stage {
+  position:relative;
+  width:100%;
+  height:330px;
+  margin:15px auto 0;
+  touch-action:pan-y;
+}
+#nva-project .nv-values-svg {
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+#nva-project .nv-values-svg text {
+  font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  fill:var(--nv-ink);
+  pointer-events:none;
+}
+#nva-project .nv-values-svg .nv-values-axis {
+  font-size:14px;
+  font-weight:600;
+}
+#nva-project .nv-values-svg .nv-values-muted {
+  font-size:11px;
+  fill:var(--nv-muted);
+}
+#nva-project .nv-values-svg .nv-values-rpe {
+  fill:var(--nv-blue);
+  font-weight:500;
+}
+#nva-project .nv-values-svg .nv-values-spe {
+  fill:var(--nv-pink);
+  font-weight:500;
+}
+#nva-project .nv-values-svg path {
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#nva-project .nv-values-svg path[data-value-marginal] {
+  stroke-width:var(--plot-line);
+}
+#nva-project .nv-values-svg [data-value-drag] {
+  cursor:grab;
+  touch-action:none;
+}
+#nva-project .nv-values-handle {
+  position:absolute;
+  width:44px;
+  height:44px;
+  margin:-22px 0 0 -22px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  cursor:grab;
+  touch-action:none;
+  padding:0;
+}
+#nva-project .nv-values-handle span {
+  width:11px;
+  height:11px;
+  border:3px solid var(--nv-value-human);
+  border-radius:50%;
+  background:var(--nv-bg);
+  pointer-events:none;
+  box-shadow:0 0 0 3px var(--nv-bg);
+}
+#nva-project .nv-values-handle-ai span {
+  width:12px;
+  height:12px;
+  border:2.5px solid var(--nv-value-ai);
+  border-radius:3px;
+}
+#nva-project .nv-shape-handle {
+  position:absolute;
+  width:26px;
+  height:26px;
+  margin:-13px 0 0 -13px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:4px;
+  z-index:5;
+  touch-action:none;
+}
+#nva-project .nv-shape-handle span {
+  display:block;
+  width:8px;
+  height:8px;
+  background:var(--nv-bg);
+  border:1.8px solid var(--nv-shape-ink,var(--nv-value-human));
+  border-radius:2px;
+  box-shadow:0 0 0 2px var(--nv-bg);
+  pointer-events:none;
+}
+#nva-project .nv-shape-handle[data-value-shape^="goal"] {
+  cursor:ew-resize;
+}
+#nva-project .nv-shape-handle[data-value-shape^="action"] {
+  cursor:ns-resize;
+}
+#nva-project .nv-rotate-handle {
+  cursor:grab;
+}
+#nva-project .nv-rotate-handle span {
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+#nva-project .nv-shape-mobile {
+  display:none;
+  margin:5px 0 17px;
+  border-top:1px solid var(--nv-line);
+  padding-top:13px;
+}
+#nva-project .nv-shape-mobile>p {
+  font-size:12px;
+  font-weight:600;
+  margin-bottom:8px;
+}
+#nva-project .nv-shape-mobile label {
+  display:grid;
+  grid-template-columns:90px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  font-size:12px;
+  color:var(--nv-muted);
+  min-height:44px;
+}
+#nva-project .nv-shape-mobile input {
+  width:100%;
+  margin:0;
+  accent-color:var(--nv-value-human);
+}
+#nva-project .nv-values[data-compact="true"] .nv-shape-mobile:not([hidden]) {
+  display:block;
+}
+#nva-project .nv-values[data-compact="true"] .nv-shape-handle {
+  display:none;
+}
+#nva-project .nv-values-stage[data-dragging],
+#nva-project .nv-values-stage[data-dragging] [data-value-drag] {
+  cursor:grabbing;
+}
+#nva-project .nv-values-results {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  border-top:1px solid var(--nv-line);
+  padding-top:17px;
+  margin-top:3px;
+}
+#nva-project .nv-values-results>div {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+#nva-project .nv-result-stroke {
+  height:30px;
+  width:3px;
+  flex-shrink:0;
+  border-radius:2px;
+  background:var(--nv-blue);
+}
+#nva-project .nv-result-action .nv-result-stroke {
+  background:var(--nv-pink);
+}
+#nva-project .nv-values-results strong {
+  display:block;
+  font-size:14px;
+  font-weight:600;
+}
+#nva-project .nv-values-results>div>div>span {
+  display:block;
+  font-size:11px;
+  color:var(--nv-muted);
+  margin-top:2px;
+}
+#nva-project .nv-values-results output {
+  font-size:25px;
+  letter-spacing:-.8px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  margin-left:auto;
+  padding-left:10px;
+}
+#nva-project .nv-values-note {
+  font-size:11px;
+  color:var(--nv-muted);
+  margin-top:17px;
+}
+#nva-project .nv-values-announcement {
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+@media(max-width:800px) {
+#nva-project .nv-values {
+  padding:24px 20px;
+}
+}
+@media(max-width:600px) {
+#nva-project .nv-values {
+  padding:22px 16px 18px;
+}
+#nva-project .nv-values-intro h2 {
+  font-size:25px;
+}
+#nva-project .nv-values-intro>p:last-child {
+  font-size:13px;
+}
+#nva-project .nv-values-stage {
+  height:340px;
+  margin-top:14px;
+}
+#nva-project .nv-values-legend {
+  gap:15px;
+}
+#nva-project .nv-values-results {
+  grid-template-columns:1fr;
+  gap:18px;
+}
+}
+@media(max-width:380px) {
+#nva-project .nv-values-legend {
+  gap:9px;
+}
+#nva-project .nv-values-results output {
+  font-size:23px;
+  padding-left:4px;
+}
+}
+@media(pointer:coarse) {
+#nva-project .nv-values-legend button,
+#nva-project .nv-values-reset {
+  min-height:44px;
+}
 }

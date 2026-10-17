@@ -80,8 +80,10 @@
       document.addEventListener("fullscreenchange", () => this.scheduleDraw());
       document.addEventListener("focusmodechange", () => this.scheduleDraw());
       this.guide = new window.PresentationGuide(this);
+      this.keyboard = window.KeyboardOnly ? new window.KeyboardOnly() : null;
     }
     get presenting() { return this.guide.active; }
+    get keyboardSelected() { return !this.presenting && !!this.keyboard?.panel && $("playing-session-type").value === "keyboard"; }
     get recorded() { return this.presenting || $("playing-session-type").value === "pre_recorded"; }
     get participant() { return this.catalogue?.participants.find(p => p.id === $("playing-participant").value); }
     get matching() {
@@ -124,6 +126,10 @@
     async activate() {
       this.active = true;
       this.syncSetup();
+      if (this.keyboardSelected) {
+        this.state = "KEYBOARD"; this.host.release(); this.visibility(); this.syncControls();
+        await this.keyboard.activate(); return;
+      }
       this.briefingSlot.append(this.briefingControl);
       this.state = "PREPARING";
       const generation = ++this.generation;
@@ -143,6 +149,7 @@
     }
     async cancel() {
       const generation = ++this.generation;
+      await this.keyboard?.deactivate();
       window.clearTimeout(this.poll);
       this.stream?.close();
       this.stream = null;
@@ -180,6 +187,7 @@
         if (!this.active || generation !== this.generation) return;
         this.state = "IDLE";
         this.visibility();
+        if (this.keyboardSelected || !this.catalogue) { await this.activate(); return; }
         this.populate();
         if (id === "playing-session-type" && !this.recorded) this.host.selectLive();
         await this.prepare();
@@ -207,6 +215,7 @@
       await this.prepare();
     }
     async prepare() {
+      if (this.keyboardSelected) return;
       let generation;
       try {
         generation = await this.cancel();
@@ -329,7 +338,7 @@
         COMPLETE: this.presenting ? "Complete · Replay, Previous, or Next" : "Complete · Replay, Next, or Random"}[this.state] || this.state;
       $("playback-status").textContent = text;
       this.host.status(text, this.state !== "PREPARING");
-      if (this.state === "BRIEFING") $("decoder-confidence").textContent = "Ready · waiting for Briefing confirmation";
+      if (this.state === "BRIEFING") $("decoder-confidence").textContent = "";
       if (this.state === "RESTORING") $("decoder-confidence").textContent = "Restoring causal decoder state";
       if (this.state === "COMPLETE" && !this.recorded) this.stream?.close();
       if (this.reviewing) { this.elapsed = session.elapsed; this.pan(this.elapsed); }
@@ -361,8 +370,9 @@
       $("briefing-title").classList.toggle("visually-hidden", !active);
       document.body.dataset.playingSession = active ? $("playing-session-type").value : "";
       document.querySelectorAll("[data-playing-field]").forEach(e => e.hidden = !active);
+      $("playing-participant").closest("label").hidden = !active || this.keyboardSelected;
       document.querySelectorAll("[data-playing-recorded]").forEach(e => e.hidden = !active || !this.recorded);
-      for (const id of ["playing-next", "playing-random"]) $(id).hidden = !active || !this.recorded;
+      for (const id of ["playing-trial-navigation", "playing-next", "playing-random"]) $(id).hidden = !active || !this.recorded;
       $("playing-previous").hidden = !this.presenting;
       if (!active) for (const id of ["pause-button", "resume-button"]) $(id).hidden = true;
       if (!active) {
@@ -370,6 +380,13 @@
         document.querySelector(".lsl-marker-controls").hidden = false;
         document.querySelector(".speed-hover-control").hidden = false;
         $("eeg-connect").hidden = false;
+        return;
+      }
+      if (this.keyboardSelected) {
+        for (const id of ["participant-id", "class-filter", "scenario-select", "layout-select", "eeg-stream-select"])
+          $(id).closest("label").hidden = true;
+        for (const id of ["decoder-field", "eeg-top-connect", "eeg-connect"]) $(id).hidden = true;
+        this.guide.visibility();
         return;
       }
       $("participant-id").closest("label").hidden = true;
@@ -387,7 +404,7 @@
       this.status(this.host.eegStatus());
     }
     status(status) {
-      if (!this.active) return;
+      if (!this.active || this.keyboardSelected) return;
       if (this.recorded) {
         $("eeg-connection").textContent = "Recorded EEG";
         $("eeg-quality").textContent = "128 Hz · 14 channels";
@@ -403,6 +420,7 @@
     }
     syncControls() {
       if (!this.active) return;
+      if (this.keyboardSelected) { document.body.dataset.playingState = "KEYBOARD"; $("experiment-mode").disabled = false; return; }
       document.body.dataset.playingState = this.state;
       $("start-button").hidden = true;
       $("start-recording-session").hidden = true;
@@ -479,7 +497,7 @@
       return {ctx, width, height, text: style.color, grid: style.borderTopColor, surface: style.backgroundColor};
     }
     draw() {
-      if (!this.active) return;
+      if (!this.active || this.keyboardSelected) return;
       const start = this.presenting ? this.timelineStart : Math.max(0, this.viewEnd - WINDOW);
       const span = this.presenting ? Math.max(.001, (this.session?.duration || WINDOW) - start) : WINDOW;
       const axes = (id, probabilities) => {

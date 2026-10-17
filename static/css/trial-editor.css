@@ -4,8 +4,7 @@ body[data-experiment-mode="editor"] .page-shell,
 body[data-experiment-mode="editor"] .demo-footer { display: none; }
 body[data-experiment-mode="editor"] .display-surface .site-header { width: calc(100% - 32px); grid-template-columns: auto minmax(220px, 1fr); flex-wrap: wrap; }
 body[data-experiment-mode="editor"] .display-surface .scenario-dropdowns { grid-template-columns: minmax(220px, 320px); }
-body[data-experiment-mode="editor"] .display-surface footer,
-body[data-experiment-mode="editor"] .focus-mode-toggle { display: none; }
+body[data-experiment-mode="editor"] .display-surface footer { display: none; }
 .trial-editor { padding: 20px 28px 36px; }
 .trial-editor[hidden] { display: none; }
 .editor-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }

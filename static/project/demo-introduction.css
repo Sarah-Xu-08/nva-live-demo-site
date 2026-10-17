@@ -1,0 +1,47 @@
+/* The approved four-card introduction, using the original mode artwork. */
+#nva-project .demo-introduction { padding-bottom: 28px; }
+#nva-project .demo-intro-hero {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end; gap: 24px; padding: 38px 0 32px;
+}
+#nva-project .demo-intro-hero .nv-subtitle { max-width: 650px; font-size: 15px; }
+#nva-project .demo-open-workspace { margin-bottom: 5px; white-space: nowrap; font-size: 13px; }
+#nva-project .demo-mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+#nva-project .demo-mode-card {
+  display: flex; flex-direction: column; min-width: 0; padding: 22px 24px 20px;
+  border: 1px solid var(--nv-line); border-radius: var(--nv-radius);
+}
+#nva-project .demo-mode-number { margin-bottom: 3px; color: var(--nv-muted); font-size: 12px; }
+#nva-project .demo-mode-card h2 { font-size: 25px; font-weight: 600; letter-spacing: -.8px; }
+#nva-project .demo-mode-description { margin-top: 7px; max-width: 390px; min-height: 44px; color: var(--nv-muted); }
+#nva-project .demo-mode-figure {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; margin: 14px 0 12px; flex: 1; min-height: 0;
+}
+#nva-project .demo-mode-figure svg {
+  display: block; width: 100%; max-width: 400px; height: auto; aspect-ratio: 1334 / 650;
+  overflow: hidden; border-radius: 5px; background: #fff;
+}
+#nva-project .demo-mode-link { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-weight: 600; }
+#nva-project .demo-mode-note { margin-top: 5px; font-size: 11px; line-height: 1.5; color: var(--nv-muted); }
+#nva-project .demo-signal-legend {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 16px 28px; padding: 20px 0 0; color: var(--nv-muted); font-size: 11px;
+}
+#nva-project .demo-signal-legend > span { display: inline-flex; align-items: center; gap: 8px; }
+#nva-project .demo-signal-legend svg { width: 48px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#nva-project .demo-signal-legend .demo-rpe { color: #1987ff; }
+#nva-project .demo-signal-legend .demo-spe { color: #ff3995; }
+@media (max-width: 760px) {
+  #nva-project .demo-intro-hero { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-top: 30px; }
+  #nva-project .demo-open-workspace { justify-self: start; margin: 0; }
+  #nva-project .demo-mode-card { padding: 20px; }
+  #nva-project .demo-mode-card h2 { font-size: 23px; }
+}
+@media (max-width: 600px) {
+  #nva-project .demo-mode-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  #nva-project .demo-intro-hero h1 { font-size: 39px; letter-spacing: -1.7px; }
+  #nva-project .demo-mode-description { min-height: 0; }
+  #nva-project .demo-mode-figure { margin-block: 18px; }
+  #nva-project .demo-signal-legend { gap: 14px; }
+}

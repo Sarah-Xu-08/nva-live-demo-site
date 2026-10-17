@@ -5,39 +5,35 @@
   const buttons = [...group.querySelectorAll('[data-workspace-mode]')];
   const focus = document.getElementById('workspace-focus');
   const focusToggle = document.getElementById('focus-mode-toggle');
-  const artwork = document.getElementById('workspace-mode-art');
   const artworkImage = document.getElementById('workspace-mode-image');
   const artworkTitle = document.getElementById('workspace-mode-art-title');
-  const artworkCrop = document.getElementById('workspace-mode-crop-bounds');
-  // Each mode has standalone artwork; viewports remove its outer white margin.
+  // Keep one 1280 × 650 frame and the shared CSS 65% scale for all illustrations.
+  // These offsets align each visible right edge with the frame and each bottom
+  // with the mode panel without independently enlarging the chefs.
   const illustrations = {
     recording: {
-      file: 'recording.png', width: 1774, height: 887, viewBox: '80 90 1600 730',
-      description: "Recording: an observer's brain signal is recorded while watching the human and AI chefs collaborate.",
+      file: 'recording-gray-a-v1.png', x: -217, y: -94,
+      description: "Recording: a separate observer watches the human and AI chefs on a screen while their brain signal appears in a recording trace.",
     },
     play: {
-      file: 'playing-v2.png', width: 1774, height: 887, viewBox: '90 130 1640 700',
-      description: "Playing concept: the human chef's brain signal passes through a centered decoder, with blue RPE and pink SPE signals pointing to the network inside the AI chef's head.",
+      file: 'playing-gray-a-v1.png', x: -220, y: -111,
+      description: "Playing concept: the human chef's brain signal passes through a network decoder, with blue and pink decoded signals pointing to the chip inside the smiling AI chef's head.",
     },
     editor: {
-      file: 'trial-editor-v2.png', width: 1774, height: 887, viewBox: '220 40 1300 800',
-      description: 'Trial Editor: a human chef authors a kitchen route and an onion-to-pot-to-serving action sequence with the AI chef.',
+      file: 'trial-editor-gray-a-v1.png', x: -106, y: -124,
+      description: 'Trial Editor: a human chef uses a pencil to design an onion-to-pot-to-plate action sequence beside the smiling AI chef.',
     },
     presentation: {
-      file: 'presentation-v2.png', width: 1774, height: 887, viewBox: '195 50 1385 790',
-      description: 'Presentation: a paused human–AI cooking replay above a black EEG signal entering a decoder, with blue RPE and pink SPE output streams.',
+      file: 'presentation-gray-a-v1.png', x: -231, y: -96,
+      description: 'Presentation: a paused human–AI cooking replay above one gray EEG signal entering a network decoder, with blue and pink output streams.',
     },
   };
   let illustratedMode;
   const sync = () => {
     if (illustratedMode !== mode.value) {
       const illustration = illustrations[mode.value] || illustrations.editor;
-      artwork.setAttribute('viewBox', illustration.viewBox);
-      illustration.viewBox.split(' ').forEach((value, index) => {
-        artworkCrop.setAttribute(['x', 'y', 'width', 'height'][index], value);
-      });
-      artworkImage.setAttribute('width', illustration.width);
-      artworkImage.setAttribute('height', illustration.height);
+      artworkImage.setAttribute('x', illustration.x);
+      artworkImage.setAttribute('y', illustration.y);
       artworkImage.setAttribute('href', `static/assets/modes/${illustration.file}`);
       artworkTitle.textContent = illustration.description;
       illustratedMode = mode.value;
@@ -47,10 +43,12 @@
       button.disabled = mode.disabled || !option || option.disabled;
       button.setAttribute('aria-pressed', String(button.dataset.workspaceMode === mode.value));
     }
-    focus.hidden = mode.value === 'editor';
+    focus.hidden = false;
     const focused = document.body.classList.contains('is-focus-mode');
     focus.querySelector('span').textContent = focused ? 'Exit focus mode' : 'Focus mode';
     focus.setAttribute('aria-pressed', String(focused));
+    focus.setAttribute('aria-label', focused ? 'Exit focus mode' : 'Enter focus mode');
+    focus.title = focused ? 'Restore page header' : 'Focus on workspace';
   };
   for (const button of buttons) button.addEventListener('click', () => {
     if (mode.disabled || button.disabled || mode.value === button.dataset.workspaceMode) return;

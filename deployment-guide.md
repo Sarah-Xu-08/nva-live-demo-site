@@ -2,8 +2,8 @@
 
 The public site replays frozen game actions, recorded EEG and existing saved
 prediction traces. It performs **no inference, recording or shared editing**.
-Playing and Presentation use the same renderer and source timelines as the
-local application. Presentation's prediction highlights refer to saved analysis,
+The public Live demo offers Introduction and Presentation only. Presentation uses
+the same renderer and source timelines as the local application. Its prediction highlights refer to saved analysis,
 not predictions recomputed in the visitor's browser. The local Python app keeps
 its existing causal inference and research workflows.
 
@@ -23,8 +23,8 @@ the relative links needed by a GitHub project site. The exporter fails if saved
 recordings, models used for provenance validation, prediction archives or saved
 presentation identities are missing/incompatible. It never trains or decodes.
 Only recordings referenced by saved Presentation sets are included (currently
-10 trials in “Selected presentation trials”). Playing and Presentation both use
-this selection. Other recordings' signals, predictions and catalogue entries,
+10 trials in “Selected presentation trials”). Presentation uses this selection.
+Other recordings' signals, predictions and catalogue entries,
 and the local editor's trial library, are omitted. If multiple sets are saved,
 their combined selection is exported once per recording. A missing or empty set
 stops the export; it never falls back to suggested trials or the full catalogue.
@@ -56,8 +56,9 @@ generated website is published separately. Source ZIP and native-installation
 links require access to the research repository; the public website does not
 grant that access.
 
-The public UI offers Playing and Presentation, with a Run locally link. Direct
-editor/recording URL parameters fall back to Playing. The replay transport
+The public UI offers Introduction and Presentation, with a Run locally link.
+Historical Playing/editor/recording URL parameters fall back to Presentation.
+Keyboard-only assets and connections are not included. The replay transport
 rejects all edits and live-session requests. Personal trial creation in the
 browser is deferred; it must never overwrite the published library.
 

@@ -788,6 +788,7 @@
   async function scanEegSources() {
     if (window.StaticReplay) return;
     window.clearTimeout(runtime.eegScanTimer);
+    if (runtime.experimentMode === "play" && playing.keyboardSelected) return;
     if (runtime.eegScanning || ["preview", "editor"].includes(runtime.experimentMode)) return;
     runtime.eegScanning = true;
     try {
@@ -1406,7 +1407,11 @@
   }
 
   function sizeGameWindow() {
-    if (runtime.experimentMode === "editor") return;
+    if (runtime.experimentMode === "editor") {
+      runtime.displayScale = 1;
+      document.body.style.setProperty("--display-scale", 1);
+      return;
+    }
     const layout = runtime.playback?.layout_grid
       ? {grid: runtime.playback.layout_grid} : (LAYOUTS[runtime.layoutName] || LAYOUTS.compact_demo);
     const aspect = layout.grid[0].length / layout.grid.length;
@@ -1453,7 +1458,7 @@
     playing.syncSetup();
     elements.focusModeToggle.setAttribute("aria-pressed", String(active));
     elements.focusModeToggle.setAttribute("aria-label", active ? "Exit focus mode" : "Enter focus mode");
-    elements.focusModeToggle.title = active ? "Restore the setup panel" : "Fold the setup panel";
+    elements.focusModeToggle.title = active ? "Restore page header" : "Focus on workspace";
     elements.focusModeToggle.querySelector("span").textContent = active ? "Exit focus mode" : "Focus mode";
     sizeGameWindow();
     if (active) window.scrollTo(0, 0);
@@ -1461,7 +1466,6 @@
   }
 
   function toggleFocusMode() {
-    if (runtime.experimentMode === "editor") return;
     document.body.classList.toggle("is-focus-mode");
     syncFocusModeUI();
   }
@@ -1501,10 +1505,6 @@
     const wasEditor = runtime.experimentMode === "editor";
     runtime.experimentMode = elements.experimentMode.value;
     document.body.dataset.experimentMode = runtime.experimentMode;
-    if (runtime.experimentMode === "editor" && focusModeActive()) {
-      document.body.classList.remove("is-focus-mode");
-      syncFocusModeUI();
-    }
     playing.syncSetup();
     const isPlay = ["play", "presentation"].includes(runtime.experimentMode);
     const isEditor = runtime.experimentMode === "editor";
@@ -1568,7 +1568,7 @@
   function scheduleEegReconnect(status) {
     window.clearTimeout(runtime.eegReconnectTimer);
     runtime.eegReconnectTimer = null;
-    if (["play", "presentation"].includes(runtime.experimentMode) && playing.recorded) return;
+    if (["play", "presentation"].includes(runtime.experimentMode) && (playing.recorded || playing.keyboardSelected)) return;
     if (["preview", "editor"].includes(runtime.experimentMode) || (["live", "mock"].includes(status?.mode) && status?.status === "connected")) return;
     runtime.eegReconnectTimer = window.setTimeout(() => connectEeg(false), 3000);
   }
@@ -1579,6 +1579,7 @@
   }
 
   async function connectEeg(force = false, useSelectedSource = true) {
+    if (playing.keyboardSelected && runtime.experimentMode === "play") return runtime.eegStatus;
     if (runtime.eegConnecting) return runtime.eegStatus;
     window.clearTimeout(runtime.eegReconnectTimer);
     runtime.eegReconnectTimer = null;
@@ -2210,6 +2211,8 @@
       await Promise.all([loadScenarios(), loadDecoders()]);
       if (opensEditor) elements.experimentMode.value = "editor";
       if (opensPlaying) elements.experimentMode.value = requestedMode;
+      if (!window.StaticReplay && requestedMode === "play" && new URLSearchParams(window.location.search).get("session") === "keyboard")
+        document.getElementById("playing-session-type").value = "keyboard";
       syncModeUI();
       scanEegSources();
       resetDecoderUI();

@@ -3,6 +3,12 @@
  */
 (() => {
   'use strict';
+  // Historical links and saved local workspace choices open the only public
+  // workspace. This runs before the shared demo controller reads the URL.
+  const publicUrl = new URL(location.href);
+  publicUrl.searchParams.set('mode', 'presentation');
+  publicUrl.searchParams.delete('session');
+  if (publicUrl.href !== location.href) history.replaceState(null, '', publicUrl);
   const copy = value => structuredClone(value);
   const sessions = new Map();
   let cataloguePromise, serial = 0;
@@ -171,8 +177,8 @@
         sample_rate: 128, channel_count: 14, buffer_ready: false,
       }};
       if (method === 'POST' && url.pathname === '/api/session') {
-        if (payload.playing_session_type !== 'pre_recorded' || !['play', 'presentation'].includes(payload.experiment_mode))
-          throw new Error('Recording and live decoding are available in the local application.');
+        if (payload.playing_session_type !== 'pre_recorded' || payload.experiment_mode !== 'presentation')
+          throw new Error('Only saved Presentation trials are available on the published website.');
         const path = index.files[payload.recorded_source_id];
         if (!path) throw new Error('Choose a published recording.');
         const data = await json(path);

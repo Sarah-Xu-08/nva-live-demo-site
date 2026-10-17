@@ -1,0 +1,19 @@
+/* Export-only navigation; the local research workspace retains every mode. */
+.workspace-modes .workspace-introduction {
+  padding: 7px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: 3px;
+}
+.workspace-modes .workspace-introduction:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+body[data-public-replay="true"] #nva-project .demo-mode-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 680px;
+  margin-inline: auto;
+}
