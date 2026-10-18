@@ -66,7 +66,8 @@
       if (!entry) return null;
       const result = {
         condition: entry.condition, expectation: entry.expectation, happened: entry.happened,
-        explanation: entry.explanation, critical_onset: entry.checkpoints.critical_onset,
+        explanation: entry.explanation, prediction_text: entry.prediction_text,
+        critical_onset: entry.checkpoints.critical_onset,
         action_stop: entry.checkpoints.action_stop, checkpoint: this.checkpoint || null,
         evidence: null, evidence_error: null,
       };

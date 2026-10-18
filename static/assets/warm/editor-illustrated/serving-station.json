@@ -1,0 +1,113 @@
+{
+  "frames": {
+    "serve-north.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "serve-east.png": {
+      "frame": {
+        "x": 198,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "serve-south.png": {
+      "frame": {
+        "x": 396,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "serve-west.png": {
+      "frame": {
+        "x": 594,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "serve.png": {
+      "frame": {
+        "x": 792,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    }
+  },
+  "meta": {
+    "app": "Trial Editor illustrated asset packer",
+    "image": "serving-station.png",
+    "size": {
+      "w": 990,
+      "h": 198
+    },
+    "scale": "1"
+  }
+}

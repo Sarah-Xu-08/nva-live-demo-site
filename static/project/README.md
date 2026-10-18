@@ -13,7 +13,7 @@ appearance follows the system setting. Blocked browser storage does not prevent
 toggling the current page.
 
 - `index.html`: Overview with interactive goals, trajectories, and continuous prediction errors.
-- `theory.html`: General framework, NVA paper, and Overcooked extension. The
+- `theory.html`: General Framework, Single-Agent Setting, and Collaborative Environments. The
   sections also support `#general`, `#nva`, and `#overcooked` deep links.
 - `rpe-spe-methods.tex`: Self-contained, Overleaf-ready Methods document with
   the general formulation, Overcooked operationalization, an illustrative LLM
@@ -68,15 +68,79 @@ than adjacent HTML `sub`/`sup` or slash text. Decoder example updates target the
 MathML number nodes so slider changes preserve the typesetting.
 Font provenance and licensing are in `../fonts/latin-modern-math/`.
 
-The October 16 formulation uses `T` for the transition model and specifies
-accepted actions directly, without a policy-probability support rule. It
-distinguishes the scalar task-alignment reward from the next-state features
-used for SPE. Keep these explanations consistent between the General framework,
-Our extension, and the downloadable LaTeX. This conceptual summary does not
-change the classifier, trial JSON, review checks, or computed step labels.
+The shared formulation uses `g_t^(AI|H)` for the human-expected AI goal,
+`R^H` for the human reward function evaluating AI goal compatibility, and
+`r_(t+1)^AI` for the observed reward the AI achieved in the team.
+`r_(t+1)^(AI|H)` denotes the reward expected by the human, computed using `R^H`
+on the transition and human-expected goal. All three Theory tabs
+use the achieved-reward symbol for their observed reward outputs,
+along with `T`, the accepted-action set, accepted next-state representations,
+and the feature mapping `φ`. The single-agent case uses an absent human action
+and a fixed prescribed trajectory; its distance and directed-edge criteria are
+unchanged. Collaboration can admit multiple accepted actions and subsequent
+human preference revisions, evaluated against expectations held before each action.
+
+General Framework uses continuous errors: `RPE_t = r_(t+1)^AI - r_(t+1)^(AI|H)`,
+and SPE is the minimum execution distance to an accepted next-state
+representation. The RPE card puts this equation first, then explains both
+reward symbols inline, then gives the expected-reward computation
+`r_(t+1)^(AI|H) = R^H(s_t, a_t^H, a_t^AI, s_(t+1); g_t^(AI|H))`.
+The human reward function uses `R^H` throughout all three tabs and the shared
+reference. The SPE card likewise places its error equation first, then explains
+the observed features and accepted set, followed by the accepted-set definition.
+Both supporting definitions use the explanatory text's muted grey. The binary
+legend is omitted from both cards. The two example
+tabs retain their existing binary behavioral annotations and interactive scoring.
+Single-Agent Setting uses the same card layout: the main error formula follows
+the heading, with explanations and inline definitions underneath in muted grey.
+
+General Framework's opening diagram preserves the context, observed contribution,
+and two check descriptions in a parallel layout. Both inputs feed both checks
+through native SVG connectors with filled arrowheads that rotate with each curve's
+final direction. The connectors follow card positions on resize and when the
+tab is revealed; narrow screens stack the checks.
+This diagram does not change the equations or computed labels.
+
+Collaborative Environments opens with the approved teamwork timeline in
+`collaborative-diagram.css` and `collaborative-diagram.js`. Human plans retain
+the Goal/Action split; the smaller AI view uses simple plan labels. Both agents'
+actions feed one shared state along a straight centerline. Native MathML labels
+show the initial and observed states, actions, human-expected AI goal and accepted
+AI action set, plus the transition model. Components without an agreed symbol
+remain text labels; no additional goal or team-expectation symbols are introduced.
+RPE and SPE remain on the human side, linked to the expected AI plan and observed
+shared state. These diagram cards show their names and task/action labels only;
+their computation equations appear exclusively in the formula cards below.
+Connectors redraw when the tab appears or the container resizes, and the figure
+reflows vertically on narrow screens while retaining its aligned action arrows.
+The horizontal timeline is labeled “Time” and sits below the diagram and above
+the legend at every screen size.
+Below it, a short caption introduces the shared transition, followed by concise
+RPE and SPE cards with the error equation first and the supporting definition
+underneath. They use the same signed reward difference and continuous execution
+distance as General Framework. Overcooked context and the interactive handoff
+example come last; only that example uses binary mismatch flags in this tab.
+
+General Framework includes an open **Shared notation** table with Symbol and
+Meaning columns. The other two tabs have a **Shared notation** button opening
+one native modal dialog with an identical copy of that reference. Close, Escape,
+and backdrop click dismiss
+the dialog and return focus to its triggering button. The dialog retains the
+current tab and interactive example state. Equations use native MathML with
+paired scripts, spoken equation labels, and explicit wrap boundaries.
+
+Accepted actions are specified directly, without a policy-probability support
+rule. Scalar goal reward and execution-relevant state features have separate
+roles. Keep these explanations consistent across the Theory tabs and the
+downloadable LaTeX. This conceptual summary does not change the classifier,
+trial JSON, review checks, or computed step labels.
 
 ## Content sources
 
+- Xu, X., and Lee, S. W., *Decoding Human Prediction Errors for Human-Robot
+  Value Alignment*, 2024 12th International Winter Conference on Brain-Computer
+  Interface (BCI), pp. 1–5. Cited in the Decoding page's Reference section.
+  <https://doi.org/10.1109/BCI60775.2024.10480520>
 - Xu et al., *Neural Value Alignment: Human–AI Collaboration Under Goal-Action
   Ambiguity*, IEEE Transactions on Cybernetics, 2026, Sections III and IV-B.
   <https://doi.org/10.1109/TCYB.2026.3722605>
@@ -144,9 +208,12 @@ possible continuation. Agent selection remains available when points overlap.
   rotate by 1° (Shift: 10°). Touch users get the same labeled shape sliders.
 - The later-curve control bends the possible continuation without constraining
   the freely placed next state. Each continuation converges to its own goal.
-- **Aligned**, **Goal differs**, and **Path differs** sit below the plot as
-  separate buttons and restore example configurations.
+- **Aligned**, **Goal differs**, and **Action differs** sit below the plot as
+  separate buttons and restore example configurations. Each initial trajectory
+  spans at least 40% of the interactive panel's width, with equal axis scales.
   Goal differs keeps the expected and observed next states aligned.
+  Snapping those points together does not add a footer caption or change the
+  panel height, so dragging at the bottom of the page keeps the plot steady.
 
 The browser-local illustration uses a rotated quadratic continuation value U,
 a discount of 0.9, and a continuation contraction of 0.65 in goal-normalized
@@ -164,7 +231,10 @@ SPE is the distance from
 the human-expected state to the AI-observed state, normalized by the human
 next-step tolerance. Rotate that displacement into the human ellipse's axes,
 divide by the corresponding tolerance radii, and take the Euclidean norm.
-These continuous examples are distinct from the Theory page’s binary trial labels.
+The Theory General Framework also permits continuous errors; its GridWorld and
+Overcooked examples retain binary behavioral labels. The Overview illustration
+uses a trajectory-return comparison, while the General Framework equation
+shows a reward comparison for one observed transition.
 
 The rotated human next-step ellipse is an acceptance region, not a probability
 distribution. SPE is 0 at its center, 1 on its boundary, below 1 inside, and
@@ -195,8 +265,8 @@ The NVA tab of Theory uses a 7×5 shared grid with three stages:
    Keyboard users focus neighboring cells with arrows and activate with
    Enter/Space, the same way as drawing their expectation.
 
-Every executed transition is recorded in the optional
-step history and scored using the binary indicators in NVA §IV-B:
+Each executed transition updates the RPE and SPE readouts beneath the grid
+using the binary indicators in NVA §IV-B:
 
 - RPE is 1 when Euclidean distance between the state and the participant-placed goal cell centers
   does not decrease. Comparisons use unrounded squared distances.
@@ -211,8 +281,9 @@ expectation** clears the route and movement while keeping both chosen positions.
 **Edit positions** clears the comparison and re-enables placement. Cancelled or
 invalid placement leaves the existing endpoints unchanged.
 
-The expectation uses the paper's solid gray (#808080); AI observation uses
-dashed tan (#B68F6A). Blue and pink identify RPE and SPE only. Cells are square
+Both trajectories are solid: human expectation is light grey (#AFB4BC), and
+AI observation is black (#111111), matching Overview with adjusted contrast
+in dark mode. Blue and pink identify RPE and SPE only. Cells are square
 and state/goal markers and route turns share cell centers. Dedicated
 `nva-navigation.css`, `nva-navigation.js`, and `nva-navigation-model.mjs` contain
 the example; no experiment session, classifier or EEG data is used.

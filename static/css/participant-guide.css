@@ -14,7 +14,7 @@
 .instructions-content h3 { margin-bottom: 8px; color: var(--green); font-size: 1.1rem; }
 .instructions-content figure { margin: 0; text-align: center; }
 .instructions-content figcaption { font-size: .8rem; line-height: 1.4; }
-.instructions-content canvas { max-width: 100%; height: auto; image-rendering: pixelated; }
+.instructions-content canvas { max-width: 100%; height: auto; image-rendering: auto; }
 .guide-chefs { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 18px 0; }
 .guide-chefs canvas { width: 80px; }
 .guide-cooking-steps, .guide-handoff-steps { padding: 0; margin: 20px 0; list-style: none; display: grid; gap: 14px; }

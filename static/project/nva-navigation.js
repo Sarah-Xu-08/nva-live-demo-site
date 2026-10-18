@@ -6,11 +6,8 @@ if (root) {
   const board = root.querySelector('[data-nav-board]');
   const cells = root.querySelector('[data-nav-cells]');
   const svg = root.querySelector('[data-nav-svg]');
-  const status = root.querySelector('[data-nav-status]');
   let drag = null;
   let selectedEndpoint = null;
-  const coordinate = cell => `(${cell[0] + 1}, ${cell[1] + 1})`;
-  const capital = text => text.charAt(0).toUpperCase() + text.slice(1);
   const format = n => n.toFixed(2);
   const buttons = [];
   for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLUMNS; col++) {
@@ -41,9 +38,9 @@ if (root) {
     }
     if (model.history.length) {
       const trail = [model.start, ...model.history.map(step => step.to)];
-      markup += `<path data-nav-observed-path d="${path(trail)}" fill="none" stroke="var(--nav-observed)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round" opacity=".65"/>`;
+      markup += `<path data-nav-observed-path d="${path(trail)}" fill="none" stroke="var(--nav-observed)" stroke-width="2" stroke-linejoin="round" opacity=".65"/>`;
       const last = model.lastStep;
-      markup += `<path data-nav-last-path d="${path([last.from, last.to])}" fill="none" stroke="var(--nav-observed)" stroke-width="2.8" stroke-dasharray="5 4"/>`;
+      markup += `<path data-nav-last-path d="${path([last.from, last.to])}" fill="none" stroke="var(--nav-observed)" stroke-width="2.8"/>`;
       markup += arrow(last.from, last.to, 'var(--nav-observed)');
     }
     function marker(cell, label, kind) {
@@ -103,28 +100,17 @@ if (root) {
     root.querySelector('[data-nav-spe]').textContent = last ? last.spe : '—';
     root.querySelector('[data-nav-distance]').textContent = last ? `Distance to goal: ${format(last.before)} → ${format(last.after)}. ${last.rpe ? 'No decrease.' : 'Closer.'}` : 'No executed step yet.';
     root.querySelector('[data-nav-agreement]').textContent = last ? last.spe ? 'This directed step is absent from your route.' : 'This directed step is in your route.' : 'No executed step yet.';
-    root.querySelector('[data-nav-history]').hidden = !model.history.length;
-    root.querySelector('[data-nav-history-count]').textContent = `(${model.history.length})`;
-    root.querySelector('[data-nav-history-body]').innerHTML = model.history.map(step => `<tr><td>${step.number}</td><td>${capital(step.direction)}</td><td>${coordinate(step.from)} → ${coordinate(step.to)}</td><td class="nv-navigation-distance-column">${format(step.before)} → ${format(step.after)}</td><td>${step.rpe}</td><td>${step.spe}</td></tr>`).join('');
     draw();
   }
 
   function addPoint(cell) {
     const result = model.addPoint(cell);
-    if (result === 'added' || result === 'trimmed') {
-      status.textContent = model.canUseRoute ? 'Route reaches G. Select Use trajectory to begin.' : `${model.route.length - 1} route steps. Continue through neighboring cells to G.`;
-      render();
-    } else if (result === 'not-adjacent') status.textContent = 'Choose a horizontally or vertically neighboring cell at the end of the route.';
-    else if (result === 'at-goal') status.textContent = 'Route reaches G. Select Use trajectory, or undo a point to revise it.';
+    if (result === 'added' || result === 'trimmed') render();
   }
   function moveTo(cell) {
     const result = model.moveTo(cell);
-    if (!result) {
-      if (!model.complete && !sameCell(cell, model.position)) status.textContent = 'Move to a horizontally or vertically neighboring cell. Distant clicks do not move the AI.';
-      return;
-    }
+    if (!result) return;
     render();
-    status.textContent = `Step ${result.number}: ${capital(result.direction)} ${coordinate(result.from)} → ${coordinate(result.to)}. RPE ${result.rpe}, SPE ${result.spe}.${model.complete ? ' Goal reached.' : ''}`;
   }
   function followCell(cell) {
     if (model.mode === 'drawing') addPoint(cell);
@@ -134,19 +120,15 @@ if (root) {
     return sameCell(cell, model.start) ? 'start' : sameCell(cell, model.goal) ? 'goal' : null;
   }
   function placeEndpoint(kind, cell) {
-    if (!cell || !model.setEndpoint(kind, cell)) {
-      status.textContent = 'Choose a grid cell different from the other marker.';
-      return false;
-    }
+    if (!cell || !model.setEndpoint(kind, cell)) return false;
     selectedEndpoint = null;
-    render(); status.textContent = `${kind === 'start' ? 'Start' : 'Goal'} placed at ${coordinate(cell)}. Select Draw trajectory when ready.`;
+    render();
     return true;
   }
   function selectSetupCell(cell) {
     if (selectedEndpoint) { placeEndpoint(selectedEndpoint, cell); return; }
     selectedEndpoint = endpointAt(cell);
     render();
-    status.textContent = selectedEndpoint ? `${selectedEndpoint === 'start' ? 'Start' : 'Goal'} selected. Choose its new cell, or press Escape to cancel.` : 'Drag S or G, or select a marker first.';
   }
   function cellAt(x, y) {
     const rect = board.getBoundingClientRect();
@@ -161,10 +143,10 @@ if (root) {
     if (model.mode === 'setup') {
       if (selectedEndpoint && !sameCell(cell, model[selectedEndpoint])) { placeEndpoint(selectedEndpoint, cell); return; }
       const endpoint = endpointAt(cell);
-      if (!endpoint) { status.textContent = 'Drag S or G, or select a marker first.'; return; }
+      if (!endpoint) return;
       selectedEndpoint = endpoint;
       drag = { kind: 'placement', endpoint, origin: cell, pointerId: event.pointerId, cell };
-      render(); status.textContent = `Place ${endpoint === 'start' ? 'S' : 'G'} in a different grid cell.`;
+      render();
     } else {
       drag = { kind: 'path', pointerId: event.pointerId, x: event.clientX, y: event.clientY, cell };
       followCell(cell);
@@ -211,7 +193,7 @@ if (root) {
   cells.addEventListener('keydown', event => {
     const directions = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
     const direction = directions[event.key], button = event.target.closest('[data-nav-cell]');
-    if (event.key === 'Escape' && selectedEndpoint) { selectedEndpoint = null; render(); status.textContent = 'Placement cancelled. Drag S or G to position them.'; }
+    if (event.key === 'Escape' && selectedEndpoint) { selectedEndpoint = null; render(); }
     if (!direction || !button || event.altKey || event.ctrlKey || event.metaKey) return;
     event.preventDefault();
     const cell = button.dataset.navCell.split(',').map(Number), delta = DIRECTIONS[direction];
@@ -221,24 +203,24 @@ if (root) {
   root.querySelector('[data-nav-positions]').addEventListener('click', () => {
     selectedEndpoint = null;
     if (model.mode === 'setup') {
-      model.beginDrawing(); status.textContent = 'Positions set. Click or drag a preferred route from S to G.';
+      model.beginDrawing();
     } else {
-      model.editPositions(); status.textContent = 'Route and AI movement cleared. Drag S and G to choose new positions.';
+      model.editPositions();
     }
     render();
   });
   root.querySelector('[data-nav-use]').addEventListener('click', () => {
     if (!model.useRoute()) return;
-    render(); status.textContent = 'Expectation set. Click neighboring cells or drag from S to move the AI.';
+    render();
   });
   root.querySelector('[data-nav-undo]').addEventListener('click', () => {
-    if (model.undoPoint()) { render(); status.textContent = 'Last route point removed. Continue drawing to G.'; }
+    if (model.undoPoint()) render();
   });
   root.querySelector('[data-nav-reset-ai]').addEventListener('click', () => {
-    model.resetAI(); render(); status.textContent = 'AI returned to the start. Your expected route is unchanged.';
+    model.resetAI(); render();
   });
   root.querySelector('[data-nav-reset-expectation]').addEventListener('click', () => {
-    model.resetExpectation(); render(); status.textContent = 'Expectation and AI movement cleared. Draw a new route from S to G.';
+    model.resetExpectation(); render();
   });
   new ResizeObserver(draw).observe(board);
   render();

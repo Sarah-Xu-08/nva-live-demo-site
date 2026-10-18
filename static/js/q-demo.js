@@ -18,6 +18,7 @@
     recordingCounts: document.getElementById("recording-counts"),
     recordingNonpeCount: document.getElementById("recording-nonpe-count"),
     recordingPeCount: document.getElementById("recording-pe-count"),
+    recordingSpeed: document.getElementById("recording-speed"),
     recordingCountError: document.getElementById("recording-count-error"),
     instructionsEnabled: document.getElementById("instructions-enabled"),
     ratingsEnabled: document.getElementById("ratings-enabled"),
@@ -75,12 +76,10 @@
     rawEegPanel: document.getElementById("raw-eeg-panel"),
     rawEegControls: document.getElementById("recording-eeg-controls"),
     rawEegToggle: document.getElementById("raw-eeg-toggle"),
+    probabilityToggle: document.getElementById("probability-toggle"),
     eegConnect: document.getElementById("eeg-connect"),
     eegTopConnect: document.getElementById("eeg-top-connect"),
     eegStreamSelect: document.getElementById("eeg-stream-select"),
-    markerCode: document.getElementById("marker-code"),
-    sendMarker: document.getElementById("send-marker"),
-    markerStatus: document.getElementById("marker-status"),
     eegBadge: document.getElementById("eeg-badge"),
     eegStreamLabel: document.getElementById("eeg-stream-label"),
     eegQuality: document.getElementById("eeg-quality"),
@@ -135,6 +134,8 @@
     heatmapTiles: new Map(),
     valueMapVisible: true,
     rawEegVisible: true,
+    playingRawEegVisible: true,
+    playingProbabilityVisible: true,
     layoutName: "random3_symmetric",
     scenarioName: "split_work",
     tileSize: 104,
@@ -295,6 +296,8 @@
     });
     elements.scenario.disabled = busy;
     elements.speed.disabled = busy;
+    elements.recordingSpeed.disabled = busy;
+    elements.recordingSpeed.value = elements.speed.value;
     elements.classFilter.disabled = busy;
     elements.experimentMode.disabled = busy;
     elements.participantId.disabled = busy;
@@ -352,14 +355,12 @@
       gameWidth: runtime.tileSize * columns,
       gameHeight: runtime.tileSize * rows,
       ANIMATION_DURATION: runtime.playback?.animation_ms || 375,
-      assets_loc: window.StaticReplay ? "static/assets/warm/" : "static/assets/warm/",
-      chef_atlas: (runtime.experimentMode === "preview" || (runtime.librarySession && runtime.playback?.preview_only))
-        ? "chefs-onion-preview" : "chefs",
+      ...KitchenStyle.options(),
       COOK_TIME: 2,
       explosion_time: Number.MAX_SAFE_INTEGER,
       DELIVERY_REWARD: 20,
-      player_colors: { 0: "gray", 1: "blue" },
     });
+    KitchenStyle.attach(runtime.game, {tileSize: runtime.tileSize});
     runtime.state = runtime.game.mdp.get_start_state(
       runtime.scenarioName === "split_work" ? ["onion", "onion"] : ["onion"]
     );
@@ -545,32 +546,6 @@
     setTrialPhase("LEAD_IN");
   }
 
-  function updateMarkerStatus(marker) {
-    marker = marker || {};
-    if (runtime.eegStatus?.mode === "mock") {
-      elements.sendMarker.disabled = true;
-      elements.markerStatus.classList.remove("is-working", "is-alert");
-      elements.markerStatus.textContent = marker.last_marker
-        ? `Mock EEG · marker ${marker.last_marker.code} saved locally`
-        : "Mock EEG · run markers are saved locally";
-      return;
-    }
-    elements.sendMarker.disabled = !marker.outlet_ready;
-    elements.markerStatus.classList.toggle("is-working", Boolean(marker.consumer_connected));
-    elements.markerStatus.classList.toggle("is-alert", !marker.consumer_connected);
-    if (marker.consumer_connected) {
-      elements.markerStatus.textContent = `${marker.stream_name || "LiveDemoMarkers"} · EmotivPRO linked`;
-    } else if (marker.outlet_ready) {
-      elements.markerStatus.textContent = `${marker.stream_name || "LiveDemoMarkers"} ready · connect it in EmotivPRO LSL Inlet`;
-    } else {
-      elements.markerStatus.textContent = "Marker outlet starts with the live LSL connection";
-    }
-    if (marker.last_marker) {
-      const last = marker.last_marker;
-      elements.markerStatus.textContent = `Last marker ${last.code} · ${last.consumer_connected ? "received by linked inlet" : "published; EmotivPRO inlet not linked"}`;
-    }
-  }
-
   function updateSignalQuality(status) {
     const eq = status.signal_quality?.eeg_quality || {};
     const cq = status.signal_quality?.contact_quality || {};
@@ -716,7 +691,6 @@
     );
     elements.eegTopConnect.textContent = runtime.eegConnecting ? "Connecting…" : status.status === "connected"
       ? "Reconnect EEG" : "Connect EEG";
-    updateMarkerStatus(status.marker);
   }
 
   function median(values) {
@@ -762,22 +736,33 @@
     if (elements.rawEegPanel.hidden) return;
 
     const canvas = elements.eegWaveform;
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    if (!width || !height) return;
+    // Match the expanded panel and Focus scaling without stretching the trace.
+    const ratio = canvas.getBoundingClientRect().width / width * (window.devicePixelRatio || 1);
+    const pixelWidth = Math.max(1, Math.round(width * ratio));
+    const pixelHeight = Math.max(1, Math.round(height * ratio));
+    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+      canvas.width = pixelWidth;
+      canvas.height = pixelHeight;
+    }
     const ctx = canvas.getContext("2d");
-    const width = canvas.width, height = canvas.height;
-    const left = 35, right = 8, bottom = 18;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const left = 36, right = 10, top = 20, bottom = 22;
     const plotWidth = width - left - right;
-    const plotHeight = height - bottom;
+    const plotHeight = height - top - bottom;
     ctx.clearRect(0, 0, width, height);
     const chartStyle = getComputedStyle(canvas);
-    ctx.font = "9px system-ui";
+    ctx.font = "11px system-ui";
     ctx.fillStyle = chartStyle.color;
     ctx.textAlign = "center";
     [0, .6, 1.2, 1.8].forEach((second) => {
       const x = left + second / 1.8 * plotWidth;
       ctx.strokeStyle = chartStyle.borderTopColor;
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, plotHeight); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, height - bottom); ctx.stroke();
       const label = second === 1.8 ? "0s" : `-${(1.8 - second).toFixed(1)}s`;
-      ctx.fillText(label, x, height - 5);
+      ctx.textAlign = second === 1.8 ? "right" : "center";
+      ctx.fillText(label, x, height - 6);
     });
 
     // EPOC X raw electrodes include a ~4,000 µV DC offset. Subtract each
@@ -797,7 +782,7 @@
 
     runtime.signalHistory.forEach((history, channel) => {
       const lane = plotHeight / 6;
-      const mid = lane * (channel + .5);
+      const mid = top + lane * (channel + .5);
       ctx.fillStyle = chartStyle.color;
       ctx.textAlign = "left";
       ctx.fillText(runtime.signalChannels[channel] || `Ch${channel + 1}`, 5, mid + 3);
@@ -952,13 +937,6 @@
     runtime.eventSource = new EventSource("/api/eeg/events");
     runtime.eventSource.addEventListener("eeg_status", (event) => updateEegStatus(JSON.parse(event.data)));
     runtime.eventSource.addEventListener("eeg_signal", (event) => drawSignal(JSON.parse(event.data)));
-    runtime.eventSource.addEventListener("eeg_marker", (event) => {
-      const marker = JSON.parse(event.data);
-      updateMarkerStatus({
-        ...(runtime.eegStatus?.marker || {}), last_marker: marker,
-        outlet_ready: marker.published, consumer_connected: marker.consumer_connected,
-      });
-    });
     runtime.eventSource.addEventListener("decoder_trace", (event) => renderProbabilityTrace(JSON.parse(event.data)));
     runtime.eventSource.addEventListener("decoder_window", (event) => renderEventWindow(JSON.parse(event.data)));
     runtime.eventSource.addEventListener("decoder_result", (event) => {
@@ -1058,9 +1036,10 @@
   }
 
   function selectScenario(id) {
-    const example = runtime.scenarios.find((scenario) => scenario.id === id);
+    const example = (usingLiveTrialLibrary() ? categoryScenarios() : runtime.scenarios)
+      .find((scenario) => scenario.id === id);
     if (!example || runtime.running || runtime.arming || runtime.librarySession) return;
-    if (example.preview_only && !["preview", "editor"].includes(runtime.experimentMode)) return;
+    if (example.preview_only && !["preview", "editor"].includes(runtime.experimentMode) && !usingLiveTrialLibrary()) return;
     const speed = runtime.playbackSpeeds[Number(elements.speed.value)];
     const selected = example.speed_variants.find(variant => variant.step_ms === speed.step_ms);
     runtime.selectedScenario = selected;
@@ -1094,6 +1073,7 @@
   }
 
   function usesTrialFiles() {
+    if (usingLiveTrialLibrary()) return true;
     const entries = categoryScenarios();
     return entries.length > 0 && entries.every(entry => entry.trial_alias);
   }
@@ -1104,7 +1084,7 @@
     elements.classFilter.replaceChildren(...versions.map(entry => new Option(entry.trial_version, entry.trial_version)));
     const selected = versions.find(entry => entry.trial_version === preferredVersion) || versions.find(entry => entry.trial_version === "nonPE") || versions[0];
     elements.classFilter.value = selected.trial_version;
-    elements.layout.replaceChildren(new Option(LAYOUTS[selected.layout_name]?.label || selected.layout_name, selected.layout_name));
+    elements.layout.replaceChildren(new Option(selected.layout_label || LAYOUTS[selected.layout_name]?.label || selected.layout_name, selected.layout_name));
     elements.layout.value = selected.layout_name;
     selectScenario(selected.id);
   }
@@ -1115,6 +1095,16 @@
         .sort((a, b) => a.trial_title.localeCompare(b.trial_title, undefined, { numeric: true }));
       elements.scenario.replaceChildren(...designs.map(entry => new Option(entry.trial_title, entry.trial_alias)));
       elements.exampleSelectLabel.textContent = `Trial (${designs.length})`;
+      if (!designs.length) {
+        elements.scenario.replaceChildren(new Option("No double-checked trials", ""));
+        elements.classFilter.replaceChildren();
+        elements.layout.replaceChildren();
+        runtime.selectedScenario = null;
+        runtime.selectedScenarioId = null;
+        elements.briefingExpectation.textContent = "Save Playback and Subtasks checks in Trial Editor to make a trial version available here.";
+        syncControls();
+        return;
+      }
       const previous = categoryScenarios().find(entry => entry.id === runtime.selectedScenarioId);
       selectTrialAlias(previous?.trial_alias || designs[0].trial_alias, previous?.trial_version);
       return;
@@ -1169,7 +1159,12 @@
     renderScenarioOptions();
   }
 
+  function usingLiveTrialLibrary() {
+    return runtime.experimentMode === "play" && !playing.recorded && !playing.keyboardSelected;
+  }
+
   function categoryScenarios() {
+    if (usingLiveTrialLibrary()) return playing.liveTrials || [];
     const categoryId = ["preview", "editor"].includes(runtime.experimentMode) ? runtime.categoryId : "recording_library";
     return runtime.scenarios.filter(scenario =>
       (scenario.category_id || "recording_library") === categoryId &&
@@ -1214,6 +1209,8 @@
     }
     elements.speed.max = String(runtime.playbackSpeeds.length - 1);
     elements.speed.value = String(runtime.playbackSpeeds.findIndex(speed => speed.step_ms === 500));
+    elements.recordingSpeed.replaceChildren(...runtime.playbackSpeeds.map((speed, index) => new Option(speed.label, String(index))));
+    elements.recordingSpeed.value = elements.speed.value;
     catalogue.layouts.forEach(layout => {
       LAYOUTS[layout.name] = layout;
     });
@@ -1250,12 +1247,28 @@
   }
 
   function syncRawEegVisibility() {
-    const canToggle = runtime.experimentMode === "recording";
-    const isVisible = !["preview", "editor"].includes(runtime.experimentMode) && (!canToggle || runtime.rawEegVisible);
+    const isRecording = runtime.experimentMode === "recording";
+    const isPlaying = runtime.experimentMode === "play" && !playing.keyboardSelected;
+    const isPresentation = runtime.experimentMode === "presentation";
+    const canToggle = isRecording || isPlaying;
+    const rawVisible = isRecording ? runtime.rawEegVisible : runtime.playingRawEegVisible;
+    const isVisible = isPresentation || (canToggle && rawVisible);
     elements.rawEegControls.hidden = !canToggle;
     elements.rawEegPanel.hidden = !isVisible;
-    elements.rawEegToggle.setAttribute("aria-pressed", String(runtime.rawEegVisible));
-    elements.rawEegToggle.textContent = `Raw EEG: ${runtime.rawEegVisible ? "On" : "Off"}`;
+    elements.decoderPanel.hidden = !(isPresentation || (isPlaying && runtime.playingProbabilityVisible));
+    elements.probabilityToggle.hidden = !isPlaying;
+    elements.rawEegToggle.setAttribute("aria-pressed", String(rawVisible));
+    elements.rawEegToggle.textContent = `Raw EEG: ${rawVisible ? "On" : "Off"}`;
+    elements.probabilityToggle.setAttribute("aria-pressed", String(runtime.playingProbabilityVisible));
+    elements.probabilityToggle.textContent = `Probability: ${runtime.playingProbabilityVisible ? "On" : "Off"}`;
+    if (isPlaying) {
+      const count = Number(runtime.playingRawEegVisible) + Number(runtime.playingProbabilityVisible);
+      document.body.dataset.playingPanels = String(count);
+      document.body.style.setProperty("--playing-panel-count", Math.max(1, count));
+    } else {
+      delete document.body.dataset.playingPanels;
+      document.body.style.removeProperty("--playing-panel-count");
+    }
     scheduleRecordingEegAlignment();
   }
 
@@ -1267,7 +1280,8 @@
     }
     const layout = runtime.playback?.layout_grid
       ? {grid: runtime.playback.layout_grid} : (LAYOUTS[runtime.layoutName] || LAYOUTS.compact_demo);
-    const aspect = layout.grid[0].length / layout.grid.length;
+    const board = KitchenStyle.dimensions(layout.grid);
+    const aspect = board.width / board.height;
     const border = parseFloat(getComputedStyle(elements.container).borderTopWidth) * 2;
     // Focus view keeps the monitor composition. The normal research page uses
     // unscaled typography and fits only the kitchen to its available column.
@@ -1328,8 +1342,7 @@
   function alignRecordingEegToGame() {
     const sidebar = document.querySelector(".eeg-sidebar");
     const stage = document.querySelector(".stage");
-    if (!sidebar || !stage || runtime.experimentMode !== "recording"
-        || elements.rawEegPanel.hidden) {
+    if (!sidebar || !stage || runtime.experimentMode !== "recording") {
       sidebar?.style.removeProperty("--recording-eeg-top");
       return;
     }
@@ -1351,9 +1364,22 @@
   }
 
   function toggleRawEegPanel() {
-    if (runtime.experimentMode !== "recording") return;
-    runtime.rawEegVisible = !runtime.rawEegVisible;
+    if (runtime.experimentMode === "play" && !playing.keyboardSelected) {
+      runtime.playingRawEegVisible = !runtime.playingRawEegVisible;
+    } else if (runtime.experimentMode === "recording") {
+      runtime.rawEegVisible = !runtime.rawEegVisible;
+    } else return;
     syncRawEegVisibility();
+    sizeGameWindow();
+    playing.scheduleDraw();
+  }
+
+  function toggleProbabilityPanel() {
+    if (runtime.experimentMode !== "play" || playing.keyboardSelected) return;
+    runtime.playingProbabilityVisible = !runtime.playingProbabilityVisible;
+    syncRawEegVisibility();
+    sizeGameWindow();
+    playing.scheduleDraw();
   }
 
   function syncModeUI({ editorReady = true } = {}) {
@@ -1368,6 +1394,7 @@
     elements.category.closest("label").hidden = !isPreview || isEditor;
     if (isPreview) window.clearTimeout(runtime.eegReconnectTimer);
     elements.participantId.closest("label").hidden = isPreview;
+    elements.recordingSpeed.closest("label").hidden = runtime.experimentMode !== "recording";
     elements.eegStreamSelect.closest("label").hidden = isPreview;
     elements.eegTopConnect.hidden = isPreview;
     elements.exampleReviewControl.hidden = !isPreview || isEditor;
@@ -1468,33 +1495,6 @@
       elements.eegTopConnect.textContent = runtime.eegStatus?.status === "connected"
         ? "Reconnect EEG" : "Connect EEG";
       renderEegSources();
-    }
-  }
-
-  async function sendTestMarker() {
-    const code = Number(elements.markerCode.value);
-    if (!Number.isInteger(code) || code < 0 || code > 2147483647) {
-      elements.markerStatus.textContent = "Enter an integer marker code from 0 to 2147483647";
-      elements.markerStatus.className = "is-alert";
-      return;
-    }
-    elements.sendMarker.disabled = true;
-    try {
-      const marker = await api("/api/eeg/marker", {
-        method: "POST",
-        body: JSON.stringify({
-          code, label: "operator_test", session_id: runtime.sessionId || undefined,
-        }),
-      });
-      updateMarkerStatus({
-        ...(runtime.eegStatus?.marker || {}), last_marker: marker,
-        outlet_ready: true, consumer_connected: marker.consumer_connected,
-      });
-    } catch (error) {
-      elements.markerStatus.textContent = error.message;
-      elements.markerStatus.className = "is-alert";
-    } finally {
-      elements.sendMarker.disabled = !(runtime.eegStatus?.marker?.outlet_ready);
     }
   }
 
@@ -2018,10 +2018,17 @@
     elements.confirmHint.addEventListener("click", confirmRecordingHint);
     const changeSelection = change => ["play", "presentation"].includes(runtime.experimentMode)
       ? playing.changeLive(change) : change();
-    elements.speed.addEventListener("input", () => changeSelection(() => selectScenario(runtime.selectedScenarioId)));
+    const changeSpeed = () => changeSelection(() => selectScenario(runtime.selectedScenarioId));
+    elements.speed.addEventListener("input", changeSpeed);
+    elements.recordingSpeed.addEventListener("change", () => {
+      if (runtime.experimentMode !== "recording" || elements.speed.disabled) return;
+      elements.speed.value = elements.recordingSpeed.value;
+      changeSpeed();
+    });
     elements.reset.addEventListener("click", resetDemo);
     elements.valueMapToggle.addEventListener("click", toggleValueMap);
     elements.rawEegToggle.addEventListener("click", toggleRawEegPanel);
+    elements.probabilityToggle.addEventListener("click", toggleProbabilityPanel);
     elements.focusModeToggle.addEventListener("click", toggleFocusMode);
     document.addEventListener("fullscreenchange", sizeGameWindow);
     document.addEventListener("webkitfullscreenchange", sizeGameWindow);
@@ -2031,7 +2038,6 @@
     elements.eegStreamSelect.addEventListener("change", selectEegSource);
     elements.eegStreamSelect.addEventListener("focus", scanEegSources);
     elements.eegStreamSelect.addEventListener("blur", renderEegSources);
-    elements.sendMarker.addEventListener("click", sendTestMarker);
     elements.retryEvent.addEventListener("click", () => applyRepair("retry"));
     document.querySelectorAll("[data-manual]").forEach((button) =>
       button.addEventListener("click", () => applyRepair("manual", button.dataset.manual)));
@@ -2110,6 +2116,7 @@
 
   const playing = new window.PlayingSessions({
     api, status: setSystemStatus, eegStatus: () => runtime.eegStatus,
+    syncPanels: syncRawEegVisibility,
     selectLive: () => selectCategory(elements.classFilter.value),
     liveSelection: () => ({scenario_id: runtime.selectedScenarioId,
       step_ms: runtime.playbackSpeeds[Number(elements.speed.value)].step_ms}),

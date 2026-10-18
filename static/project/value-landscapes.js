@@ -1,5 +1,5 @@
 /* Overview only: editable continuous RL illustration; no session or EEG access. */
-import {CURRENT_STATE,createExamples,trajectory,predictionErrors,rotate,extent,wrapAngle} from './value-landscapes-model.mjs?v=5';
+import {CURRENT_STATE,createExamples,trajectory,predictionErrors,rotate,extent,wrapAngle} from './value-landscapes-model.mjs?v=6';
 
 (() => {
   const root=document.getElementById('nv-value-landscapes');
@@ -80,7 +80,11 @@ import {CURRENT_STATE,createExamples,trajectory,predictionErrors,rotate,extent,w
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.setAttribute('width',width);svg.setAttribute('height',height);
     let markup=`<title id="nve-title">Human and AI goals, trajectories, and next-step tolerance</title><desc id="nve-description">Each path starts at the same state, passes through its freely positioned next-state point, then converges to its own goal. Blue goal regions match the RPE color. The pink human next-step tolerance ellipse matches the SPE color. These regions fade from center to edge. The AI-observed state is a single square with no distribution. Light-grey paths and circular goal and state markers identify the human; black paths and square goal and state markers identify AI, with inverted contrast in dark mode. Solid segments show the current-to-next transition; dashed segments show possible continuation. RPE compares the AI trajectory’s discounted return with the human-expected return, both using human rewards. RPE is ${signed(c.rpe)} and human-tolerance-normalized SPE is ${fixed(c.spe)}; the tolerance boundary is 1. The AI next-state center is ${c.withinHumanTolerance?'within':'outside'} human tolerance.</desc><defs><clipPath id="nve-clip"><rect x="1" y="1" width="${width-2}" height="${height-2}"/></clipPath><radialGradient id="nve-goal-gradient"><stop offset="0%" stop-color="var(--nve-blue)" stop-opacity=".40"/><stop offset="40%" stop-color="var(--nve-blue)" stop-opacity=".23"/><stop offset="78%" stop-color="var(--nve-blue)" stop-opacity=".08"/><stop offset="100%" stop-color="var(--nve-blue)" stop-opacity="0"/></radialGradient><radialGradient id="nve-step-gradient"><stop offset="0%" stop-color="var(--nve-pink)" stop-opacity=".46"/><stop offset="40%" stop-color="var(--nve-pink)" stop-opacity=".24"/><stop offset="78%" stop-color="var(--nve-pink)" stop-opacity=".08"/><stop offset="100%" stop-color="var(--nve-pink)" stop-opacity="0"/></radialGradient></defs>`;
     markup+='<g clip-path="url(#nve-clip)">';
-    for(const gx of [0,.2,.4,.6,.8,1])for(const gy of [0,.2,.4,.6,.8,1])markup+=`<circle cx="${x(gx)}" cy="${y(gy)}" r=".8" fill="var(--nve-line)"/>`;
+    // Cover the visible domain, including the wider starting configurations.
+    const gridStep=.2*2**Math.max(0,Math.ceil(Math.log2(24/(.2*scale))));
+    for(let i=Math.ceil(domain.xmin/gridStep);i<=Math.floor(domain.xmax/gridStep);i++)
+      for(let j=Math.ceil(domain.ymin/gridStep);j<=Math.floor(domain.ymax/gridStep);j++)
+        markup+=`<circle cx="${x(i*gridStep)}" cy="${y(j*gridStep)}" r=".8" fill="var(--nve-line)"/>`;
     for(const id of drawOrder){
       const m=state[id],angle=m.goalAngle*Math.PI/180,ca=Math.cos(angle),sa=Math.sin(angle),editing=state.editing&&state.part==='goal'&&id===state.selected;
       markup+=`<ellipse class="nve-value-area" data-contour="${id}" data-editing="${editing}" cx="0" cy="0" rx="${m.wx}" ry="${m.wy}" transform="matrix(${sx*ca} ${-sy*sa} ${-sx*sa} ${-sy*ca} ${x(m.gx)} ${y(m.gy)})" fill="url(#nve-goal-gradient)" fill-opacity="${shared&&id===state.selected?0:1}" stroke="${editing?'var(--nve-blue)':'none'}" stroke-opacity=".6" stroke-width="1" vector-effect="non-scaling-stroke" ${id==='ai'?'stroke-dasharray="5 4"':''}/>`;
@@ -177,7 +181,6 @@ import {CURRENT_STATE,createExamples,trajectory,predictionErrors,rotate,extent,w
     q('[data-rpe]').textContent=signed(c.rpe);q('[data-spe]').textContent=fixed(c.spe);
     q('[data-rpe-interpretation]').textContent=c.rpe==null?'Zero goal tolerance: return comparison undefined':c.rpe<-.0005?'Lower return than expected':c.rpe>.0005?'Higher return than expected':'Same return as expected';
     q('[data-spe-interpretation]').textContent=`${c.withinHumanTolerance?'Within':'Outside'} human tolerance · boundary: 1`;
-    q('[data-example-note]').hidden=!(sameState&&(!close(state.human.gx,state.ai.gx)||!close(state.human.gy,state.ai.gy)));
     panel.dataset.example=state.example;panel.dataset.selected=state.selected;panel.dataset.matched=String(sameState);panel.dataset.part=state.part;panel.dataset.editing=String(state.editing);
   }
   function schedule(){if(!drawFrame)drawFrame=requestAnimationFrame(draw);}

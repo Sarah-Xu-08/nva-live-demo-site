@@ -120,7 +120,7 @@
 
   async function loadArtwork() {
     const entries = await Promise.all(["terrain", "objects", "chefs", "serving-station"].map(async name => {
-      const base = `static/assets/warm/${name}`;
+      const base = `${KitchenStyle.options().assets_loc}${name}`;
       const response = await fetch(`${base}.json`);
       if (!response.ok) throw new Error("Artwork unavailable");
       const atlas = await response.json();
@@ -135,25 +135,29 @@
   async function drawGuide() {
     artworkPromise ||= loadArtwork();
     const assets = await artworkPromise;
-    const sprite = (ctx, atlas, name, x, y, size = 96) => {
-      const {img, atlas: meta} = assets[atlas];
-      const f = meta.frames[name].frame;
-      ctx.drawImage(img, f.x, f.y, f.w, f.h, x, y, size, size);
-    };
+    const resolution = Math.min(window.devicePixelRatio || 1, 2);
+    document.querySelectorAll('.instructions-content canvas').forEach(canvas => {
+      const width = Number(canvas.dataset.guideWidth ||= canvas.width);
+      const height = Number(canvas.dataset.guideHeight ||= canvas.height);
+      canvas.width = Math.round(width * resolution); canvas.height = Math.round(height * resolution);
+      canvas.getContext('2d').setTransform(resolution, 0, 0, resolution, 0, 0);
+    });
+    const sprite = (ctx, atlas, name, x, y, size = 96) => KitchenStyle.sprite(ctx, assets, atlas, name, x, y, size);
     document.querySelectorAll("[data-guide-art]").forEach(canvas => {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const [atlas, name] = canvas.dataset.guideArt.split(":");
-      if (atlas === "pot") sprite(ctx, "terrain", "pot.png", 0, 0);
-      sprite(ctx, atlas === "pot" ? "objects" : atlas, name, 0, 0);
+      const counter = atlas === "pot" || atlas === "serving" || (atlas === "terrain" && name !== "floor.png");
+      if (counter)
+        KitchenStyle.drawBoard(ctx, ["X"], assets);
+      sprite(ctx, atlas === "pot" ? "objects" : atlas, name, 0, counter ? KitchenStyle.fixtureOffset() : 0);
     });
     const kitchen = get("guide-kitchen"), ctx = kitchen.getContext("2d");
     ctx.clearRect(0, 0, kitchen.width, kitchen.height);
     const grid = ["XXOXTXX", "X  X  X", "X  X  X", "X  D  X", "XXPXPSX"];
-    const tiles = {X: "counter.png", O: "onions.png", T: "tomatoes.png", P: "pot.png", D: "dishes.png", S: "serve.png", " ": "floor.png"};
-    grid.forEach((row, y) => [...row].forEach((tile, x) => sprite(ctx, tile === "S" ? "serving" : "terrain", tiles[tile], x * 64, y * 64, 64)));
+    KitchenStyle.drawBoard(ctx, grid, assets, {tileSize: 64});
     sprite(ctx, "chefs", "EAST-grayhat.png", 128, 64, 64);
-    sprite(ctx, "chefs", "WEST-bluehat.png", 256, 64, 64);
+    sprite(ctx, "chefs", "WEST-sagehat.png", 256, 64, 64);
     const markCounter = (x, y, label, color) => {
       ctx.strokeStyle = color; ctx.lineWidth = 4;
       ctx.strokeRect(x + 3, y + 3, 58, 58);
@@ -166,11 +170,10 @@
     markCounter(192, 128, "B", "#237455");
     markCounter(0, 192, "C", "#626a73");
     const exchange = (c, step, y) => {
-      sprite(c, "terrain", "floor.png", 0, y);
-      sprite(c, "terrain", "counter.png", 96, y);
-      sprite(c, "terrain", "floor.png", 192, y);
+      const grid = [" X "];
+      KitchenStyle.drawBoard(c, grid, assets, {y});
       sprite(c, "chefs", step === "take" ? "EAST-grayhat-onion.png" : "EAST-grayhat.png", 0, y);
-      sprite(c, "chefs", step === "place" ? "WEST-bluehat-onion.png" : "WEST-bluehat.png", 192, y);
+      sprite(c, "chefs", step === "place" ? "WEST-sagehat-onion.png" : "WEST-sagehat.png", 192, y);
       if (step === "rest") sprite(c, "objects", "onion.png", 96, y);
       c.strokeStyle = "#237455"; c.lineWidth = 4;
       c.strokeRect(99, y + 3, 90, 90);
@@ -178,19 +181,18 @@
     document.querySelectorAll("[data-guide-exchange]").forEach(canvas => {
       const c = canvas.getContext("2d");
       c.clearRect(0, 0, canvas.width, canvas.height);
-      exchange(c, canvas.dataset.guideExchange, 24);
+      exchange(c, canvas.dataset.guideExchange, 12);
     });
     const opposite = get("guide-opposite").getContext("2d");
     opposite.clearRect(0, 0, 288, 192);
     exchange(opposite, "rest", 48);
     const corner = get("guide-corner").getContext("2d");
     corner.clearRect(0, 0, 288, 192);
-    sprite(corner, "terrain", "counter.png", 96, 0);
+    const cornerGrid = [" X", "  "];
+    KitchenStyle.drawBoard(corner, cornerGrid, assets);
     sprite(corner, "objects", "tomato.png", 96, 0);
-    sprite(corner, "terrain", "floor.png", 0, 0);
-    sprite(corner, "terrain", "floor.png", 96, 96);
     sprite(corner, "chefs", "EAST-grayhat.png", 0, 0);
-    sprite(corner, "chefs", "NORTH-bluehat.png", 96, 96);
+    sprite(corner, "chefs", "NORTH-sagehat.png", 96, 96);
     corner.strokeStyle = "#237455"; corner.lineWidth = 4; corner.strokeRect(99, 3, 90, 90);
     get("guide-art-status").hidden = true;
   }

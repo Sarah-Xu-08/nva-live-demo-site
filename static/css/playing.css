@@ -104,20 +104,48 @@ body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is
 @media (prefers-reduced-motion: reduce) {
   body:is([data-experiment-mode="recording"], [data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .hybrid-header { transition: none; }
 }
-/* Presentation shares Playing's scaled composition and adds a bounded story. */
+/* Presentation keeps both signal panels; annotations attach to their evidence. */
 .presentation-only { display: none; }
 body[data-experiment-mode="presentation"] .presentation-only { display: block; }
 body[data-experiment-mode="presentation"] .display-surface .stage > .eeg-sidebar { gap: 10px; }
+body[data-experiment-mode="presentation"] .eeg-sidebar { position: relative; }
 body[data-experiment-mode="presentation"] .eeg-card,
 body[data-experiment-mode="presentation"] .probability-panel { padding-block: 12px; }
-.presentation-card { border: 1px solid #d9dfd4; border-radius: 14px; background: #fafbf7; padding: 14px 16px; height: 300px; overflow: auto; font-size: 12px; line-height: 1.4; }
-.presentation-card-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-.presentation-card-title strong { font-size: 15px; }
-#presentation-condition { color: #63765b; }
-#presentation-story { display: grid; gap: 6px; }
-#presentation-story p, #presentation-evidence p { margin: 2px 0 6px; }
-#presentation-evidence:not(:empty) { padding-top: 8px; margin-top: 8px; border-top: 1px solid #d9dfd4; }
-#presentation-continue { position: sticky; bottom: 0; float: right; padding: 6px 18px; background: #eef4e9; box-shadow: 0 0 10px 5px #fafbf7; }
+.presentation-map-layer, .presentation-map-indicators { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.presentation-map-layer { z-index: 12; }
+.presentation-map-dock { margin-top: 12px; }
+body[data-experiment-mode="presentation"] .presentation-callout {
+  box-sizing: border-box; color-scheme: light; color: #111; background: #fff;
+  border: 2px solid #111; border-radius: 10px; padding: 12px 14px;
+  box-shadow: 0 3px 12px #00000018; font: 14px/1.4 system-ui; pointer-events: auto;
+}
+body[data-experiment-mode="presentation"] .presentation-card {
+  position: absolute; display: flex; flex-direction: column; gap: 8px; height: auto; overflow: auto;
+}
+body[data-experiment-mode="presentation"] .presentation-card.is-docked { position: relative; width: 100%; }
+.presentation-callout-heading { display: flex; align-items: start; gap: 8px; }
+.presentation-callout-heading > strong { flex: 1; }
+.presentation-callout-heading strong { font-size: 14px; line-height: 24px; font-weight: 650; }
+.presentation-callout-number {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; flex: 0 0 24px;
+  box-sizing: border-box; border: 1.5px solid #111; border-radius: 50%; background: #fff; color: #111; font: 650 12px/1 system-ui;
+}
+.presentation-callout button { font-family: inherit; cursor: pointer; }
+.presentation-callout .presentation-callout-close { border: 0; background: none; color: #555; font-size: 21px; line-height: 24px; width: 24px; min-height: 24px; padding: 0; margin-left: auto; }
+.presentation-callout button:focus-visible { outline: 3px solid #111; outline-offset: 3px; }
+.presentation-callout-footer { display: flex; justify-content: flex-end; flex-shrink: 0; margin-top: 8px; }
+.presentation-callout-footer:empty { display: none; }
+body[data-experiment-mode="presentation"] .presentation-callout #resume-button {
+  min-height: 32px; padding: 6px 14px; border: 1px solid #111; border-radius: 5px;
+  background: #fff; color: #111; font: 13px/1.4 system-ui;
+}
+body[data-experiment-mode="presentation"] .presentation-callout #resume-button:hover:not(:disabled) { background: #f2f2f2; }
+body[data-experiment-mode="presentation"] #presentation-story { overflow: visible; white-space: pre-line; overflow-wrap: anywhere; }
+.presentation-callout p { margin: 0; }
+.presentation-evidence-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 12; }
+body[data-experiment-mode="presentation"] .presentation-prediction-callout { position: absolute; z-index: 2; overflow: auto; }
+.presentation-evidence-leader { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+body[data-experiment-mode="presentation"] #presentation-evidence { max-height: none; overflow: visible; border: 0; padding: 6px 0 0; margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
 #presentation-editor { width: min(1120px, 94vw); max-height: 92vh; overflow: auto; border: 1px solid #d9dfd4; border-radius: 18px; padding: 24px; color: #29392d; background: #fffdf8; font: 14px/1.4 system-ui; }
 #presentation-editor::backdrop { background: #23302688; }
 #presentation-editor label { display: grid; gap: 5px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
@@ -134,20 +162,14 @@ body[data-experiment-mode="presentation"] .probability-panel { padding-block: 12
 .presentation-editor-footer { border-top: 1px solid #d9dfd4; padding-top: 16px; }
 #presentation-editor-status { flex: 1; }
 @media (max-width: 760px) { .presentation-editor-layout { grid-template-columns: 1fr; } }
-body[data-experiment-mode="presentation"] .presentation-card { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden; }
-#presentation-story { min-height: 0; overflow: auto; }
-#presentation-evidence { max-height: 108px; overflow: auto; }
-#presentation-continue { position: static; float: none; justify-self: end; margin-top: 6px; box-shadow: none; }
 body[data-experiment-mode="presentation"] .eeg-panel-card { padding: 12px 16px; }
 .presentation-only[hidden] { display: none !important; }
 
-.presentation-story-row p { display: inline; }
-#presentation-story summary { cursor: pointer; font-weight: 600; }
 body[data-experiment-mode="presentation"] .display-surface .stage-center .control-panel { width: 800px; }
-#presentation-editor button, #presentation-continue {
+#presentation-editor button {
   border: 1px solid #cbd6c6; border-radius: 8px; padding: 7px 12px;
   background: #f6f8f2; color: #334b37; font: 600 12px/1.3 system-ui; cursor: pointer;
 }
-#presentation-editor button:hover, #presentation-continue:hover { background: #e8efdf; }
+#presentation-editor button:hover { background: #e8efdf; }
 #presentation-editor #presentation-save { background: #4d795f; color: white; border-color: #4d795f; }
 #presentation-editor button:disabled { opacity: .5; cursor: default; }

@@ -1,14 +1,17 @@
 /* Scoped to the interactive NVA paper diagram. */
 #nva-project .nv-navigation {
-  --nav-expected: light-dark(#808080, #b1b1b1);
-  --nav-observed: light-dark(#b68f6a, #d0ab88);
+  /* Match Overview's human and AI trajectory colors in both themes. */
+  --nav-expected: light-dark(#afb4bc, #8993a3);
+  --nav-observed: light-dark(#111111, #edf1f8);
   border: 1px solid var(--nv-line); border-radius: 7px; padding: 14px 22px;
   margin-bottom: 16px;
 }
+#nva-project .nv-navigation .nv-navigation-intro { margin: 0 0 16px; color: var(--nav-observed); font-size: 14px; line-height: 1.5; }
+#nva-project .nv-navigation-intro strong { font-weight: 700; }
 #nva-project .nv-navigation-legend { display: flex; flex-wrap: wrap; gap: 10px 25px; margin-bottom: 10px; font-size: 12px; color: var(--nv-muted); }
 #nva-project .nv-navigation-legend > span { display: inline-flex; gap: 8px; align-items: center; }
 #nva-project .nv-navigation-legend i { width: 25px; height: 0; display: inline-block; border-top: 2px solid var(--nav-expected); }
-#nva-project .nv-navigation-legend .nv-navigation-observed-line { border-top: 2px dashed var(--nav-observed); }
+#nva-project .nv-navigation-legend .nv-navigation-observed-line { border-top: 2px solid var(--nav-observed); }
 #nva-project .nv-navigation-layout { display: grid; grid-template-columns: minmax(0, 448px) minmax(0, 1fr); gap: 40px; align-items: start; }
 #nva-project .nv-navigation-grid-panel { width: 100%; max-width: 448px; justify-self: center; }
 #nva-project .nv-navigation-board { width: 100%; aspect-ratio: 7 / 5; position: relative; isolation: isolate; }
@@ -42,14 +45,6 @@
 #nva-project .nv-navigation-results p { color: var(--nv-muted); font-size: 11px; margin-top: 6px; line-height: 1.6; }
 #nva-project .nv-navigation-rpe { color: var(--nv-blue); }
 #nva-project .nv-navigation-spe { color: var(--nv-pink); }
-#nva-project .nv-navigation-status { font-size: 11px; color: var(--nv-muted); margin-top: 10px; min-height: 18px; }
-#nva-project .nv-navigation-history { margin-top: 8px; border-top: 1px solid var(--nv-line); font-size: 11px; color: var(--nv-muted); }
-#nva-project .nv-navigation-history summary { padding: 8px 0 0; width: fit-content; }
-#nva-project .nv-navigation-history table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; font-variant-numeric: tabular-nums; }
-#nva-project .nv-navigation-history th { font-weight: 500; color: var(--nv-ink); }
-#nva-project .nv-navigation-history th, #nva-project .nv-navigation-history td { padding: 7px 5px; border-bottom: 1px solid var(--nv-line); }
-#nva-project .nv-navigation-history th:first-child, #nva-project .nv-navigation-history td:first-child { padding-left: 0; }
-#nva-project .nv-navigation-history .nv-navigation-distance-column { text-align: right; }
 @media (max-width: 850px) {
   #nva-project .nv-navigation-layout { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; }
   #nva-project .nv-navigation { padding: 16px; }
@@ -64,10 +59,8 @@
   #nva-project .nv-navigation-drawing, #nva-project .nv-navigation-movement { margin: 0; padding: 0; border: 0; }
   #nva-project .nv-navigation-placement { grid-column: 1 / -1; padding-bottom: 14px; border-bottom: 1px solid var(--nv-line); }
   #nva-project .nv-navigation-reset-actions { grid-column: 1 / -1; margin-top: 0; }
-  #nva-project .nv-navigation-status, #nva-project .nv-navigation-history { grid-column: 1 / -1; margin-top: 0; }
   #nva-project .nv-navigation-route-actions { flex-wrap: wrap; }
   #nva-project .nv-navigation-results { gap: 17px; }
-  #nva-project .nv-navigation-history .nv-navigation-distance-column { display: none; }
 }
 @media (max-width: 380px) {
   #nva-project .nv-navigation { padding: 14px 12px; }

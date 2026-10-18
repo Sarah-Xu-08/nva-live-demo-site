@@ -8,11 +8,11 @@
     <script src="static/project/theme.js?v=theme-icons-v1"></script>
     <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64" href="static/favicon-sage.ico?v=1">
     <link rel="icon" type="image/png" sizes="64x64" href="static/favicon-sage.png?v=1">
-    <link rel="stylesheet" href="static/css/warm.css?v=footer-cleanup-v1">
-    <link rel="stylesheet" href="static/css/trial-editor.css?v=editor-focus-v1">
-    <link rel="stylesheet" href="static/css/participant-guide.css?v=5">
-    <link rel="stylesheet" href="static/css/playing.css?v=game-history-v1">
-    <link rel="stylesheet" href="static/css/research-ui.css?v=transparent-art-v1">
+    <link rel="stylesheet" href="static/css/warm.css?v=uniform-worktops-v2-signal-panel-button-width-v1">
+    <link rel="stylesheet" href="static/css/trial-editor.css?v=editor-save-row-v1">
+    <link rel="stylesheet" href="static/css/participant-guide.css?v=uniform-worktops-v2-5">
+    <link rel="stylesheet" href="static/css/playing.css?v=fe16060b72cf">
+    <link rel="stylesheet" href="static/css/research-ui.css?v=live-reviewed-trials-v1">
     <link rel="stylesheet" href="static/css/math.css?v=1">
     <link rel="stylesheet" href="static/css/demo-loading.css?v=recording-compact-v2">
     <link rel="stylesheet" href="static/css/site-fullscreen.css?v=3"><script src="static/js/site-fullscreen.js?v=4" defer></script>
@@ -72,6 +72,7 @@
             <label for="recording-pe-count"><span>PE each</span><input id="recording-pe-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="recording-count-error" required></label>
             <p id="recording-count-error" role="status" hidden>Enter whole numbers of zero or more; total must be at least 1.</p>
           </div>
+          <label for="recording-speed" hidden><span>Speed</span><select id="recording-speed" aria-label="Recording speed"></select></label>
           <div id="participant-options" class="participant-options" hidden>
             <label><input id="instructions-enabled" type="checkbox"> Enable instructions</label>
             <label><input id="ratings-enabled" type="checkbox"> Collect trial ratings</label>
@@ -114,7 +115,7 @@
       <div class="editor-grid">
         <section class="editor-card editor-playback"><div class="editor-section-heading"><h3>Draft playback</h3><span id="editor-dirty" class="editor-tag">Saved revision</span></div>
           <div class="editor-buttons"><button id="editor-play" class="primary" type="button">Play draft</button><button id="editor-prev" type="button">← Action</button><button id="editor-next" type="button">Action →</button><button id="editor-initial" type="button">Initial state</button><label class="editor-inline">State<select id="editor-state-phase"><option value="after">After action</option><option value="before">Before action</option></select></label></div>
-          <div class="editor-section-heading editor-board-options"><span class="editor-small">Human · gray chef &nbsp; AI partner · blue robot</span><label class="editor-inline"><input id="editor-compare" type="checkbox"><span id="editor-compare-label">Compare saved revision</span></label></div>
+          <div class="editor-section-heading editor-board-options"><span class="editor-small">Human · gray chef &nbsp; AI partner · sage robot</span><label class="editor-inline"><input id="editor-compare" type="checkbox"><span id="editor-compare-label">Compare saved revision</span></label></div>
           <div id="editor-boards" class="editor-boards"><div><div id="editor-draft-board" class="editor-board"></div><p id="editor-draft-caption" class="editor-small"></p></div><div id="editor-original-panel" hidden><h4 id="editor-reference-title">Saved revision</h4><div id="editor-original-board" class="editor-board"></div><p id="editor-original-caption" class="editor-small"></p></div></div>
           <div class="editor-section-heading"><h3>Action timeline</h3><span id="editor-playhead-label" class="editor-small"></span></div>
           <input id="editor-playhead" type="range" min="0" max="1" value="0" aria-label="Editor action playhead">
@@ -192,11 +193,27 @@
           </section>
         </aside>
       </div>
-      <section class="editor-card editor-savebar"><div class="editor-section-heading"><div><h3>Save trial revision</h3><p class="editor-small">Apply subtask edits, validate, then save JSON. Reload applies saved revisions to new sessions.</p></div><div class="editor-buttons"><button id="editor-validate" type="button">Validate all versions / speeds</button><button id="editor-save" class="primary" type="button" disabled>Save JSON revision</button><button id="editor-reload" type="button">Reload library</button></div></div>
-        <div class="editor-review-checks" aria-label="Review completion for selected trial version"><label class="editor-inline"><input id="editor-check-playback" type="checkbox">Playback checked</label><label class="editor-inline"><input id="editor-check-subtasks" type="checkbox">Subtasks checked</label><label class="editor-inline"><input id="editor-check-hint" type="checkbox" aria-describedby="editor-hint-check-help">Briefing checked</label></div>
-        <p id="editor-hint-check-help" class="editor-small">Briefing checked applies to nonPE and PE. Checking or unchecking it saves this trial draft automatically.</p>
-        <div id="editor-validation"></div><div class="editor-buttons editor-checkpoint-approval"><label class="editor-inline"><input id="editor-review-confirm" type="checkbox">I reviewed these states and the listed collisions.</label><button id="editor-accept-checks" type="button" disabled>Use reviewed checkpoints and collisions</button></div><div class="editor-buttons editor-file-actions"><button id="editor-revert" type="button">Reopen saved</button><button id="editor-export" type="button">Export draft</button></div></section>
-      <details class="editor-card editor-advanced"><summary>Advanced inspection · checkpoints, action table and JSON</summary><details id="editor-review" class="editor-details"><summary>Review checkpoint states and collisions</summary><p class="editor-small">Inspect these states against your intended design. Accepting records assertions and declares collisions; it does not establish RPE or SPE validity.</p><div id="editor-review-versions"></div><div id="editor-review-data"></div></details><details class="editor-details"><summary>Action-by-action inspection</summary><div class="editor-table-wrap"><table class="editor-action-table"><thead><tr><th>Action</th><th>Time</th><th>Human</th><th>AI partner</th><th>Marker / scope</th><th>Expected subtask before action</th><th>Note</th></tr></thead><tbody id="editor-action-table"></tbody></table></div></details><details class="editor-details"><summary>Physical state at selected action</summary><pre id="editor-state-json"></pre></details><details class="editor-details"><summary>Inspect draft JSON</summary><pre id="editor-json"></pre></details></details>
+      <section class="editor-card editor-savebar" aria-label="Trial revision controls">
+        <div class="editor-save-controls">
+          <div class="editor-review-checks" aria-label="Review completion for selected trial version"><label class="editor-inline"><input id="editor-check-playback" type="checkbox">Playback checked</label><label class="editor-inline"><input id="editor-check-subtasks" type="checkbox">Subtasks checked</label><label class="editor-inline"><input id="editor-check-hint" type="checkbox">Briefing checked</label></div>
+          <div class="editor-buttons"><button id="editor-validate" type="button">Validate</button><button id="editor-save" class="primary" type="button" disabled>Save JSON revision</button><button id="editor-reload" type="button">Reload library</button></div>
+        </div>
+        <p id="editor-save-help" class="editor-small" role="status"></p>
+        <div id="editor-validation"></div>
+        <section id="editor-review" class="editor-review-item" hidden aria-labelledby="editor-review-heading">
+          <h4 id="editor-review-heading">Review updated playback</h4>
+          <p class="editor-small">Action or timing edits can change the expected states. Inspect the affected versions in Playback, then confirm their updated checkpoints and collision list.</p>
+          <div id="editor-review-versions"></div><div id="editor-review-data" class="editor-small"></div>
+          <label class="editor-inline"><input id="editor-review-confirm" type="checkbox">I reviewed playback and the listed collisions for the selected versions.</label>
+          <div class="editor-buttons"><button id="editor-accept-checks" type="button" disabled>Use reviewed checkpoints and collisions</button></div>
+        </section>
+        <div class="editor-buttons editor-file-actions"><button id="editor-revert" type="button">Reopen saved</button><button id="editor-export" type="button">Export draft</button></div></section>
+      <!-- Retain internal diagnostic targets used by the editor controller and
+           regression checks; advanced inspection is no longer a workspace UI. -->
+      <div hidden inert aria-hidden="true">
+        <table><tbody id="editor-action-table"></tbody></table>
+        <pre id="editor-state-json"></pre><pre id="editor-json"></pre>
+      </div>
       <dialog id="editor-reopen-dialog" class="editor-reopen-dialog" aria-labelledby="editor-reopen-title" aria-describedby="editor-reopen-warning">
         <form method="dialog">
           <h2 id="editor-reopen-title">Reopen saved trial?</h2>
@@ -328,8 +345,8 @@
         </div>
         <aside class="eeg-sidebar" aria-label="Human EEG and decoded response">
           <div id="recording-eeg-controls" class="recording-eeg-controls">
-            <small>Display only · recording continues</small>
-            <button id="raw-eeg-toggle" class="raw-eeg-toggle" type="button" aria-pressed="true">Raw EEG: On</button>
+            <button id="raw-eeg-toggle" class="raw-eeg-toggle" type="button" aria-controls="raw-eeg-panel" aria-pressed="true">Raw EEG: On</button>
+            <button id="probability-toggle" class="raw-eeg-toggle" type="button" aria-controls="probability-panel" aria-pressed="true" hidden>Probability: On</button>
           </div>
           <section id="raw-eeg-panel" class="eeg-panel-card eeg-signal-card">
             <div class="eeg-card-heading">
@@ -342,11 +359,6 @@
             </div>
             <small id="eeg-quality-detail" class="eeg-quality-detail">Waiting for headset quality readings</small>
             <canvas id="eeg-waveform" width="360" height="228" aria-label="Rolling 1.8-second, six-channel EEG waveform"></canvas>
-            <div class="lsl-marker-controls" aria-label="EmotivPRO LSL marker test">
-              <label for="marker-code"><span>Marker code</span><input id="marker-code" type="number" min="0" max="2147483647" value="1" inputmode="numeric"></label>
-              <button id="send-marker" type="button">Send test marker</button>
-              <small id="marker-status">Marker outlet starting…</small>
-            </div>
             <div class="runtime-hooks" aria-hidden="true">
               <span id="eeg-stream-label">Emotiv LSL / deterministic replay</span>
               <span id="eeg-badge">CONNECTING</span>
@@ -356,7 +368,7 @@
             </div>
           </section>
 
-          <section class="eeg-panel-card decoder-panel-card playing-only" hidden>
+          <section id="probability-panel" class="eeg-panel-card decoder-panel-card playing-only" hidden>
             <div class="decoder-panel-heading">
               <h3>RPE / SPE probability</h3>
               <div class="probability-key" aria-label="Probability plot legend">
@@ -416,45 +428,45 @@
       <div class="instructions-content">
         <section><h3>Your role</h3><p>Imagine you are the chef labeled <strong>You</strong>. Both chefs move automatically; you only watch.</p>
           <p>The <strong>Briefing</strong> introduces the scene and your team’s plan. Read it before each scene and imagine this is <strong>how you want to work together</strong>. Then watch what your AI partner does.</p>
-          <div class="guide-chefs"><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-grayhat.png" role="img" aria-label="Gray human chef"></canvas><figcaption>You</figcaption></figure><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-bluehat.png" role="img" aria-label="Blue AI robot chef"></canvas><figcaption>AI partner</figcaption></figure></div>
+          <div class="guide-chefs"><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-grayhat.png" role="img" aria-label="Gray human chef"></canvas><figcaption>You</figcaption></figure><figure><canvas width="96" height="96" data-guide-art="chefs:SOUTH-sagehat.png" role="img" aria-label="Sage green AI robot chef"></canvas><figcaption>AI partner</figcaption></figure></div>
         </section>
         <section id="guide-soup-section"><h3>Make and serve soup</h3>
           <p>Check the orders above the kitchen. Each soup needs <strong>3 onions or 3 tomatoes</strong>. Both recipes follow these steps.</p>
           <ol class="guide-cooking-steps">
             <li class="guide-step"><h4><span class="guide-step-number">1</span> Choose an ingredient</h4>
               <div class="guide-visual-row guide-sources">
-                <figure><canvas width="96" height="96" data-guide-art="terrain:onions.png" role="img" aria-label="Onion dispenser"></canvas><figcaption>Onion source</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="terrain:onions.png" role="img" aria-label="Onion dispenser"></canvas><figcaption>Onion source</figcaption></figure>
                 <span class="guide-or">or</span>
-                <figure><canvas width="96" height="96" data-guide-art="terrain:tomatoes.png" role="img" aria-label="Tomato dispenser"></canvas><figcaption>Tomato source</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="terrain:tomatoes.png" role="img" aria-label="Tomato dispenser"></canvas><figcaption>Tomato source</figcaption></figure>
               </div>
               <p>Choose onions or tomatoes to match the order. <strong>Do not mix them in one pot.</strong></p>
             </li>
             <li class="guide-step"><h4><span class="guide-step-number">2</span> Fill a pot</h4>
               <div class="guide-visual-row">
-                <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-1-cooking.png" role="img" aria-label="One onion in a pot"></canvas><figcaption>1 ingredient</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-1-cooking.png" role="img" aria-label="One onion in a pot"></canvas><figcaption>1 ingredient</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
-                <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-2-cooking.png" role="img" aria-label="Two onions in a pot"></canvas><figcaption>2 ingredients</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-2-cooking.png" role="img" aria-label="Two onions in a pot"></canvas><figcaption>2 ingredients</figcaption></figure>
               </div>
               <p>Add ingredients one at a time. Cooking starts automatically after the <strong>third onion or tomato</strong>.</p>
             </li>
             <li class="guide-step guide-step-wide"><h4><span class="guide-step-number">3</span> Wait until the soup is ready</h4>
               <div class="guide-ready-comparison">
                 <div class="guide-ready-recipe"><h5>Onion soup</h5><div class="guide-visual-row">
-                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-3-cooking.png" role="img" aria-label="Full onion pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-3-cooking.png" role="img" aria-label="Full onion pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
                   <span class="guide-arrow" aria-hidden="true">→</span>
-                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-onion-cooked.png" role="img" aria-label="Ready onion soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-cooked.png" role="img" aria-label="Ready onion soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
                 </div></div>
                 <div class="guide-ready-recipe"><h5>Tomato soup</h5><div class="guide-visual-row">
-                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-tomato-3-cooking.png" role="img" aria-label="Full tomato pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-tomato-3-cooking.png" role="img" aria-label="Full tomato pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
                   <span class="guide-arrow" aria-hidden="true">→</span>
-                  <figure><canvas width="96" height="96" data-guide-art="pot:soup-tomato-cooked.png" role="img" aria-label="Ready tomato soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-tomato-cooked.png" role="img" aria-label="Ready tomato soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
                 </div></div>
               </div>
               <p>A full pot is still cooking. Wait until it looks like the <strong>ready pot</strong> above.</p>
             </li>
             <li class="guide-step"><h4><span class="guide-step-number">4</span> Plate the ready soup</h4>
               <div class="guide-visual-row">
-                <figure><canvas width="96" height="96" data-guide-art="terrain:dishes.png" role="img" aria-label="Plate dispenser"></canvas><figcaption>Plate source</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="terrain:dishes.png" role="img" aria-label="Plate dispenser"></canvas><figcaption>Plate source</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
                 <figure><canvas width="96" height="96" data-guide-art="objects:soup-onion-dish.png" role="img" aria-label="Onion soup collected on a plate"></canvas><figcaption>Plated soup</figcaption></figure>
               </div>
@@ -464,7 +476,7 @@
               <div class="guide-visual-row">
                 <figure><canvas width="96" height="96" data-guide-art="chefs:EAST-grayhat-soup-onion.png" role="img" aria-label="Chef carrying plated onion soup"></canvas><figcaption>Carry the soup</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
-                <figure><canvas width="96" height="96" data-guide-art="serving:serve.png" role="img" aria-label="Serving station"></canvas><figcaption>Serving station</figcaption></figure>
+                <figure><canvas width="96" height="124" data-guide-art="serving:serve.png" role="img" aria-label="Serving station"></canvas><figcaption>Serving station</figcaption></figure>
               </div>
               <p>Deliver the plated soup to the <strong>serving station</strong>. Make sure it matches the order.</p>
             </li>
@@ -476,7 +488,7 @@
           <p><strong>A handoff counter is a counter both chefs can reach from their respective work areas.</strong> One chef places an item on it, and the other chef picks it up. Ingredients, empty plates, and ready soup can be passed this way.</p>
           <div class="guide-map-card">
             <div class="guide-map-heading"><span><i class="hat human"></i> Your work area</span><span><i class="hat ai"></i> AI partner’s work area</span></div>
-            <figure class="guide-kitchen"><canvas id="guide-kitchen" width="448" height="320" role="img" aria-label="Sample kitchen: the gray chef is on the left and the blue AI chef is on the right. Handoff counters A and B lie between them. Counter C is at the outer edge."></canvas></figure>
+            <figure class="guide-kitchen"><canvas id="guide-kitchen" width="448" height="339" role="img" aria-label="Sample kitchen: the gray chef is on the left and the sage green AI chef is on the right. Handoff counters A and B lie between them. Counter C is at the outer edge."></canvas></figure>
             <div class="guide-map-key"><p><span class="guide-key-badge">A</span><span class="guide-key-badge">B</span> <strong>Handoff counters</strong> — both chefs can reach these.</p><p><span class="guide-key-badge guide-key-ordinary">C</span> <strong>Ordinary counter</strong> — only you can reach this one.</p></div>
           </div>
           <h4 class="guide-subheading">How an exchange works</h4>
@@ -507,13 +519,14 @@
       </div>
     </dialog>
     <script>window.DemoLoading.mount();</script>
-    <script src="static/vendor/overcooked-window.js?v=trial-renderer-v13-clocked"></script>
+    <script src="static/vendor/overcooked-window.js?v=trial-renderer-v14-editor-art"></script>
     <script src="static/js/trial-clock.js?v=readable-previews-v13"></script>
-    <script src="static/js/participant-guide.js?v=5"></script>
-    <script src="static/js/presentation.js?v=c9921617c659"></script>
-    <script src="static/js/playing.js?v=68949f1edf66"></script>
+    <script src="static/js/participant-guide.js?v=uniform-worktops-v2-5"></script>
+    <script src="static/js/presentation.js?v=4e5f78cea114"></script>
+    <script src="static/js/playing.js?v=403ef85aec7e"></script>
     <script src="static/js/demo-navigation.js?v=introduction-v1"></script>
-    <script src="static/js/static-replay.js"></script>
-    <script src="static/js/q-demo.js?v=mode-loading-v1"></script>
+    <script src="static/js/kitchen-style.js?v=uniform-worktops-v2"></script>
+    <script src="static/js/static-replay.js?v=461f1ec9450b"></script>
+    <script src="static/js/q-demo.js?v=uniform-worktops-v2-live-reviewed-trials-v1"></script>
   </body>
 </html>

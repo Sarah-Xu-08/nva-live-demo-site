@@ -5,6 +5,8 @@
   const el = Object.fromEntries(ids.map(id => [id, document.getElementById(`editor-${id}`)]));
   const reopenDialog = document.getElementById("editor-reopen-dialog");
   const root = document.getElementById("trial-editor");
+  const saveHelp = document.getElementById("editor-save-help");
+  el.save.setAttribute("aria-describedby", "editor-save-help");
   const clone = data => JSON.parse(JSON.stringify(data));
   const speeds = [750];
   const reviewSections = ["playback", "subtasks", "hint"];
@@ -39,7 +41,7 @@
     if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`);
     return result;
   }
-  function pause() { state.playing = false; clearTimeout(state.timer); el.play.textContent = "Play draft"; }
+  function pause() { state.playing = false; clearTimeout(state.timer); state.games.forEach(game => game.editorWalking.finish()); el.play.textContent = "Play draft"; }
   function controls() {
     const loaded = Boolean(state.draft && state.preview);
     for (const id of ["check-playback", "check-subtasks", "check-hint", "trial", "version", "speed", "scope", "library", "revert", "export", "play", "prev", "next", "initial", "show-critical", "show-correction", "reset-critical", "reset-correction", "state-phase", "playhead", "critical", "mark-critical", "human", "ai", "note", "apply-action", "insert", "delete", "trim-start", "trim-end", "set-start", "set-end", "trim", "hint", "validate"]) el[id].disabled = state.busy || !loaded;
@@ -50,12 +52,20 @@
     el.redo.disabled = state.busy || !state.redo.length;
     el["show-correction"].disabled = el["reset-correction"].disabled = el.correction.disabled = el["mark-correction"].disabled = state.busy || !loaded || version() === "nonPE";
     for (const id of ["apply-action", "insert", "delete", "mark-critical", "mark-correction", "set-start", "set-end"]) if (!selected()) el[id].disabled = true;
-    el.save.disabled = state.busy || !dirty() || !state.validation?.valid;
+    const saveReason = state.busy ? "Wait for the current operation to finish." : !loaded ? "Choose a trial to edit." :
+      pendingSubtask ? "Apply or reset the pending Subtasks form before validating and saving." :
+      !dirty() ? "No unsaved changes." : !state.validation ? "Validate all versions / speeds to enable Save JSON revision." :
+      !state.validation.valid ? "Resolve the validation issues below before saving." : "Validation passed. Ready to save JSON revision.";
+    el.save.disabled = state.busy || !loaded || !dirty() || !state.validation?.valid;
+    el.save.title = saveHelp.textContent = saveReason;
     el.reload.disabled = state.busy;
     el["review-status-toggle"].disabled = state.busy || !state.catalog;
     el["review-status-refresh"].disabled = state.busy;
     el["review-status-rows"].querySelectorAll("button").forEach(button => { button.disabled = state.busy || pendingSubtask; });
-    el["accept-checks"].disabled = state.busy || !state.validation || !el["review-confirm"].checked;
+    const reviewChoices = el["review-versions"].querySelectorAll("input");
+    reviewChoices.forEach(input => { input.disabled = state.busy || pendingSubtask; });
+    el["review-confirm"].disabled = state.busy || pendingSubtask || !state.validation;
+    el["accept-checks"].disabled = state.busy || !state.validation || !el["review-confirm"].checked || ![...reviewChoices].some(input => input.checked);
     el.dirty.textContent = dirty() ? "Unsaved draft" : "Saved revision";
     el.dirty.classList.toggle("dirty", dirty());
     root.setAttribute("aria-busy", String(state.busy));
@@ -72,7 +82,7 @@
     try { await fn(); } catch (error) { if (state.preview) { renderTiming(); renderReviewChecks(); } status(error.message, true); }
     finally { state.busy = false; controls(); }
   }
-  function invalidate() { state.validation = null; el.validation.replaceChildren(); el["review-data"].replaceChildren(); el["review-versions"].replaceChildren(); el["review-confirm"].checked = false; controls(); }
+  function invalidate() { state.validation = null; el.validation.replaceChildren(); el.review.hidden = true; el["review-data"].replaceChildren(); el["review-versions"].replaceChildren(); el["review-confirm"].checked = false; controls(); }
   function remember() {
     state.undo.push(clone(state.draft)); if (state.undo.length > 60) state.undo.shift(); state.redo = []; invalidate();
   }
@@ -187,7 +197,7 @@
     if (state.draft.variants[preferredVersion || cached?.version]) el.version.value = preferredVersion || cached.version;
     el.hint.value = state.draft.human_expectation;
     invalidate(); await refresh();
-    status(`Opened ${alias}, revision ${state.original.revision}. Human is gray; AI partner is blue. Drafts stay available when switching designs.`);
+    status(`Opened ${alias}, revision ${state.original.revision}. Human is gray; AI partner is sage green. Drafts stay available when switching designs.`);
   }
   function makeGames() {
     const grid = state.draft.layout.grid;
@@ -204,8 +214,17 @@
     const tile = Math.min(compare ? 58 : 76, Math.floor(width / grid[0].length), Math.floor(440 / grid.length));
     (compare ? ["draft", "original"] : ["draft"]).forEach(kind => {
       const container = document.getElementById(`editor-${kind}-board`); container.replaceChildren();
-      const game = new Game({ start_grid: grid, container_id: container.id, tileSize: tile, gameWidth: tile * grid[0].length, gameHeight: tile * grid.length, ANIMATION_DURATION: Math.round(.75 * speed()), assets_loc: "static/assets/warm/", chef_atlas: "chefs-onion-preview", COOK_TIME: 2, explosion_time: Number.MAX_SAFE_INTEGER, DELIVERY_REWARD: 20, player_colors: { 0: "gray", 1: "blue" } });
-      game.state = physical(kind === "draft" || version() !== "nonPE" ? state.draft.initial_state : state.original.initial_state); game.init(); state.games.push(game);
+      const game = new Game({
+        start_grid: grid, container_id: container.id, tileSize: tile,
+        gameWidth: tile * grid[0].length, gameHeight: tile * grid.length,
+        ANIMATION_DURATION: speed(),
+        ...KitchenStyle.options(),
+        COOK_TIME: 2, explosion_time: Number.MAX_SAFE_INTEGER, DELIVERY_REWARD: 20
+      });
+      game.state = physical(kind === "draft" || version() !== "nonPE" ? state.draft.initial_state : state.original.initial_state);
+      KitchenStyle.attach(game, { tileSize: tile });
+      game.editorWalking = TrialEditorWalking.attach(game, { tileSize: tile });
+      game.init(); state.games.push(game);
     });
   }
   function physical(raw) {
@@ -286,7 +305,17 @@
     if (r && !matched) referenceIndex = Math.min(state.tick, reference.rows.length - 1);
     const referencePhase = completed ? "after" : phase;
     const referenceRaw = referenceIndex < 0 ? (nonpe ? state.draft : state.original).initial_state : reference.frames[referenceIndex][referencePhase];
-    state.games.forEach((g, i) => { const value = physical(i ? referenceRaw : raw); if (animate) g.drawState(value); else g.drawSnapshot(value); });
+    state.games.forEach((g, i) => {
+      const value = physical(i ? referenceRaw : raw);
+      const replay = i ? reference : state.preview, replayIndex = i ? referenceIndex : state.tick;
+      const active = replayIndex >= 0 && !(i && completed);
+      const nextFrame = active ? replay.frames[replayIndex + 1] : null;
+      if (animate) g.editorWalking.drawState(value, {
+        actions: active ? replay.frames[replayIndex].actions : ["STAY", "STAY"],
+        nextState: nextFrame?.[i ? referencePhase : phase], nextActions: nextFrame?.actions
+      });
+      else g.drawSnapshot(value);
+    });
     const time = state.tick < 0 ? 0 : (state.tick + (phase === "after" ? 1 : 0)) * speed();
     el["playhead-label"].textContent = r ? `Action ${state.tick} · ${phase} · state at ${sec(time)}` : "Initial state · 0.00 s";
     el.playhead.value = Math.max(0, state.tick);
@@ -340,12 +369,14 @@
   }
   function renderValidation(report) {
     state.validation = report; el["review-confirm"].checked = false;
-    el.validation.replaceChildren(node("p", report.valid ? `Passed ${report.replays} production replays. Checkpoints, collisions and recording roster are valid.` : `${report.issues.length} validation issue(s). Inspect the draft and the states below.`, report.valid ? "editor-validation-ok" : "editor-validation-issues"));
+    el.validation.replaceChildren(node("p", report.valid ? `Passed ${report.replays} production replays. Checkpoints, collisions and recording roster are valid.` : `${report.issues.length} validation issue(s). Review the differences below and inspect the affected versions in Playback.`, report.valid ? "editor-validation-ok" : "editor-validation-issues"));
     if (report.issues.length) { const list = node("ul", null, "editor-validation-issues"); report.issues.forEach(issue => list.append(node("li", `${issue.version || "Roster"}${issue.speed_ms ? " · " + issue.speed_ms + " ms" : ""}: ${issue.message}`))); el.validation.append(list); }
     const choices = node("div", null, "editor-review-choices");
-    Object.keys(state.draft.variants).forEach(v => { const label = node("label", null, "editor-inline"), input = node("input"); input.type = "checkbox"; input.value = v; input.checked = report.issues.some(i => i.version === v) || v === version(); input.addEventListener("change", () => { el["review-confirm"].checked = false; controls(); }); label.append(input, document.createTextNode(v)); choices.append(label); });
+    const affected = new Set(report.issues.filter(i => ["checks", "collisions"].includes(i.kind)).map(i => i.version));
+    el.review.hidden = !affected.size;
+    Object.keys(state.draft.variants).filter(v => affected.has(v)).forEach(v => { const label = node("label", null, "editor-inline"), input = node("input"); input.type = "checkbox"; input.value = v; input.checked = true; input.addEventListener("change", () => { el["review-confirm"].checked = false; controls(); }); label.append(input, document.createTextNode(v)); choices.append(label); });
     el["review-versions"].replaceChildren(choices);
-    el["review-data"].replaceChildren(...report.review.filter(r => r.speed_ms === 750).map(r => { const details = node("details", null, "editor-review-item"); details.append(node("summary", `${r.version} · ${r.speed_ms} ms · collisions: ${r.collisions.length ? r.collisions.join(", ") : "none"} · critical ${r.critical_tick}${r.correction_tick == null ? "" : " · correction " + r.correction_tick}`), node("pre", JSON.stringify(r.checkpoints, null, 2))); return details; }));
+    el["review-data"].replaceChildren(...report.review.filter(r => r.speed_ms === 750 && affected.has(r.version)).map(r => node("p", `${r.version} · critical action ${r.critical_tick}${r.correction_tick == null ? "" : " · correction action " + r.correction_tick} · collision actions: ${r.collisions.length ? r.collisions.join(", ") : "none"}`)));
     controls();
   }
   async function validate() { status("Replaying every version at all four speeds and checking the recording roster…"); const report = await api("validate", { definition: state.draft }); renderValidation(report); status(report.valid ? "Validation passed. The draft can be saved." : "Validation found differences. Review the physical results before accepting updated checkpoints.", !report.valid); }

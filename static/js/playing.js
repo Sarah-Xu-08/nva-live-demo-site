@@ -66,7 +66,7 @@
       $("playing-random").addEventListener("click", () => this.choose("random"));
       $("pause-button").addEventListener("click", () => this.pause());
       $("resume-button").addEventListener("click", () => this.resume());
-      $("playing-history").addEventListener("input", () => this.pan(Number($("playing-history").value)));
+      $("playing-history").addEventListener("input", () => this.pan(Number($("playing-history").value) + this.timelineStart));
       $("playing-history-left").addEventListener("click", () => this.pan(this.viewEnd - .5));
       $("playing-history-right").addEventListener("click", () => this.pan(this.viewEnd + .5));
       this.resize = new ResizeObserver(() => this.scheduleDraw());
@@ -92,6 +92,8 @@
     get busy() { return ["FIXATION", "RUNNING"].includes(this.state); }
     get reviewing() { return ["PAUSED", "COMPLETE"].includes(this.state); }
     get timelineStart() { return this.presenting ? (this.session?.playback_start || 0) : 0; }
+    // Presentation labels start at gameplay; retained data and replay stay on the source clock.
+    displayTime(time) { return Math.max(0, time - this.timelineStart); }
     get focused() {
       // The setup disclosure is shared by all session modes, independently of
       // Playing's inference lifecycle.
@@ -148,7 +150,10 @@
         if (this.presenting) await this.guide.load();
         if (!this.active || generation !== this.generation) return;
         this.populate();
-        if (!this.recorded) this.host.selectLive();
+        if (!this.recorded) {
+          await this.loadLiveTrials(generation);
+          if (!this.active || generation !== this.generation) return;
+        }
         await this.prepare();
       } catch (error) { if (generation === this.generation) this.unavailable(error); }
     }
@@ -194,6 +199,12 @@
       }));
       if (this.matching.some(r => r.id === old)) $("playing-recording").value = old;
     }
+    async loadLiveTrials(generation) {
+      const catalogue = await this.host.api("/api/playing/trials");
+      if (!this.active || generation !== this.generation) return;
+      this.liveTrials = catalogue.trials;
+      this.host.selectLive();
+    }
     async selectionChanged(id) {
       try {
         const generation = await this.cancel();
@@ -202,7 +213,10 @@
         this.visibility();
         if (this.keyboardSelected || !this.catalogue) { await this.activate(); return; }
         this.populate();
-        if (id === "playing-session-type" && !this.recorded) this.host.selectLive();
+        if (id === "playing-session-type" && !this.recorded) {
+          await this.loadLiveTrials(generation);
+          if (!this.active || generation !== this.generation) return;
+        }
         await this.prepare();
       } catch (error) { this.unavailable(error); }
     }
@@ -241,6 +255,8 @@
         $("decoder-confidence").textContent = "Preparing recorded EEG";
         this.visibility(); this.syncControls(); this.draw();
         if (this.presenting && !this.matching.length) throw new Error("No trials in this presentation set. Use Edit presentation set to add recordings.");
+        if (!this.recorded && !this.liveTrials?.length)
+          throw new Error("No double-checked trials. Save Playback and Subtasks checks in Trial Editor, then reopen Real-time session.");
         const chosen = this.matching.find(r => r.id === $("playing-recording").value);
         if (this.recorded && !chosen?.available) throw new Error(chosen?.error || "Original recording unavailable");
         const request = {experiment_mode: this.presenting ? "presentation" : "play",
@@ -377,6 +393,7 @@
       const active = this.active;
       $("briefing-title").classList.toggle("visually-hidden", !active);
       document.body.dataset.playingSession = active ? $("playing-session-type").value : "";
+      this.host.syncPanels();
       document.querySelectorAll("[data-playing-field]").forEach(e => e.hidden = !active);
       $("playing-participant").closest("label").hidden = !active || this.keyboardSelected;
       document.querySelectorAll("[data-playing-recorded]").forEach(e => e.hidden = !active || !this.recorded);
@@ -385,7 +402,6 @@
       if (!active) for (const id of ["pause-button", "resume-button"]) $(id).hidden = true;
       if (!active) {
         this.guide.visibility();
-        document.querySelector(".lsl-marker-controls").hidden = false;
         document.querySelector(".speed-hover-control").hidden = false;
         $("eeg-connect").hidden = false;
         return;
@@ -403,7 +419,6 @@
         $(id).closest("label").hidden = this.recorded;
       $("eeg-top-connect").hidden = this.recorded;
       $("eeg-connect").hidden = this.recorded;
-      document.querySelector(".lsl-marker-controls").hidden = true;
       document.querySelector(".speed-hover-control").hidden = this.recorded;
       document.querySelector(".eeg-card-heading h2").textContent = "EEG · 1.5 s";
       $("eeg-waveform").setAttribute("aria-label", "Six-channel EEG · shared 1.5-second timeline");
@@ -436,7 +451,8 @@
       $("reset-button").disabled = false;
       $("pause-button").hidden = !this.recorded || !this.busy;
       $("pause-button").disabled = !this.busy || this.commandPending;
-      $("resume-button").hidden = !this.recorded || !(this.reviewing || this.state === "RESTORING");
+      $("resume-button").hidden = !this.recorded || !(this.reviewing || this.state === "RESTORING")
+        || (this.presenting && this.viewEnd >= this.session?.duration);
       $("resume-button").disabled = !this.reviewing || this.commandPending || this.viewEnd >= this.session?.duration;
       $("confirm-hint").hidden = !["PREPARING", "BRIEFING"].includes(this.state);
       $("confirm-hint").disabled = this.state !== "BRIEFING" || this.starting;
@@ -474,7 +490,7 @@
       this.showGame(time);
       const fixation = time < this.session.fixation_seconds;
       $("pre-scenario-overlay").hidden = !fixation;
-      $("playback-status").textContent = `${this.state === "PAUSED" ? "Paused" : "Game"} at ${time.toFixed(2)} s${fixation ? " · Fixation" : ""}`;
+      $("playback-status").textContent = `${this.state === "PAUSED" ? "Paused" : "Game"} at ${this.displayTime(time).toFixed(2)} s${fixation ? " · Fixation" : ""}`;
       this.readout(this.viewEnd); this.guide.update();
       this.syncControls();
     }
@@ -509,6 +525,8 @@
       const start = this.presenting ? this.timelineStart : Math.max(0, this.viewEnd - WINDOW);
       const span = this.presenting ? Math.max(.001, (this.session?.duration || WINDOW) - start) : WINDOW;
       const axes = (id, probabilities) => {
+        const canvas = $(id);
+        if (canvas.closest('.eeg-panel-card').hidden || !canvas.clientWidth || !canvas.clientHeight) return null;
         const {ctx, width, height, text, grid, surface} = this.canvas(id);
         const left = 36, right = width - 10, top = 12, bottom = height - 25;
         ctx.font = '11px system-ui'; ctx.lineWidth = 1;
@@ -516,7 +534,7 @@
           const x = left + (right - left) * i / 3;
           ctx.strokeStyle = grid; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
           ctx.fillStyle = text; ctx.textAlign = i === 3 ? 'right' : 'left';
-          ctx.fillText(`${(start + i * span / 3).toFixed(2)} s`, x, height - 6);
+          ctx.fillText(`${this.displayTime(start + i * span / 3).toFixed(2)} s`, x, height - 6);
         }
         if (probabilities) for (const value of [0, .5, 1]) {
           const y = bottom - value * (bottom - top);
@@ -533,12 +551,12 @@
       const p = axes("probability-chart", true);
       const rows = this.probabilities.filter(r => r.sample_elapsed >= start && r.sample_elapsed <= this.viewEnd
         && (r.display_elapsed ?? r.available_elapsed) <= this.viewEnd + 1e-9 && (!this.recorded || r.sample_elapsed >= this.session?.fixation_seconds));
-      if (this.presenting) for (const interval of window.PresentationGuide.correctIntervals(rows)) {
+      if (p && this.presenting) for (const interval of window.PresentationGuide.correctIntervals(rows)) {
         p.ctx.fillStyle = colorsForEvidence(interval.label, .12);
         p.ctx.fillRect(p.x(interval.start), p.top,
           Math.max(2, p.x(interval.end) - p.x(interval.start)), p.bottom - p.top);
       }
-      if (this.recorded && !this.presenting && this.session && !['IDLE', 'PREPARING', 'BRIEFING', 'CANCELLED', 'UNAVAILABLE'].includes(this.state)) {
+      if (p && this.recorded && !this.presenting && this.session && !['IDLE', 'PREPARING', 'BRIEFING', 'CANCELLED', 'UNAVAILABLE'].includes(this.state)) {
         const end = Math.min(this.viewEnd, this.session.fixation_seconds);
         if (end >= start) {
           p.ctx.strokeStyle = '#7b8188'; p.ctx.lineWidth = 2; p.ctx.setLineDash([3, 3]);
@@ -546,7 +564,7 @@
           p.ctx.beginPath(); p.ctx.moveTo(p.x(start), y); p.ctx.lineTo(p.x(end), y); p.ctx.stroke(); p.ctx.setLineDash([]);
         }
       }
-      COLORS.forEach((color, channel) => {
+      if (p) COLORS.forEach((color, channel) => {
         p.ctx.strokeStyle = color; p.ctx.lineWidth = 2; p.ctx.beginPath(); let last = null;
         for (const row of rows) {
           const value = row.probabilities?.[channel], t = row.sample_elapsed;
@@ -558,21 +576,28 @@
         p.ctx.stroke();
       });
       const e = axes("eeg-waveform", false);
-      if (this.presenting && this.guide.info) {
+      if (p && e && this.presenting && this.guide.info) {
         const info = this.guide.info;
         if (info.critical_onset <= this.viewEnd) for (const chart of [p, e]) {
-          chart.ctx.strokeStyle = '#63765b'; chart.ctx.setLineDash([4, 3]);
+          chart.ctx.strokeStyle = chart.text; chart.ctx.setLineDash([4, 3]);
           chart.ctx.beginPath(); chart.ctx.moveTo(chart.x(info.critical_onset), chart.top);
           chart.ctx.lineTo(chart.x(info.critical_onset), chart.bottom); chart.ctx.stroke(); chart.ctx.setLineDash([]);
         }
         const evidence = info.evidence;
         if (evidence && evidence.at <= this.viewEnd && evidence.available_elapsed <= this.viewEnd + 1e-9 && this.viewEnd >= info.action_stop) {
+          if (this.guide.annotating) {
+            e.ctx.fillStyle = e.text; e.ctx.globalAlpha = .08;
+            e.ctx.fillRect(e.x(evidence.interval.start), e.top,
+              Math.max(2, e.x(Math.min(evidence.interval.end, this.viewEnd)) - e.x(evidence.interval.start)), e.bottom - e.top);
+            e.ctx.globalAlpha = 1; e.ctx.strokeStyle = e.text; e.ctx.setLineDash([2, 3]);
+            e.ctx.beginPath(); e.ctx.moveTo(e.x(evidence.at), e.top); e.ctx.lineTo(e.x(evidence.at), e.bottom); e.ctx.stroke(); e.ctx.setLineDash([]);
+          }
           p.ctx.strokeStyle = COLORS[evidence.label]; p.ctx.fillStyle = p.surface; p.ctx.lineWidth = 3;
           p.ctx.beginPath(); p.ctx.arc(p.x(evidence.at), p.bottom - evidence.probability * (p.bottom - p.top), 5, 0, Math.PI * 2); p.ctx.fill(); p.ctx.stroke();
         }
       }
       const raw = this.raw.filter(r => r.time >= start && r.time <= this.viewEnd);
-      CHANNEL_INDICES.forEach((channel, index) => {
+      if (e) CHANNEL_INDICES.forEach((channel, index) => {
         const values = raw.map(r => r.values[channel]).filter(v => v != null && Number.isFinite(v)).sort((a, b) => a - b);
         const median = values[Math.floor(values.length / 2)] || 0;
         const scale = Math.max(25, Math.min(250, (values.at(-1) - values[0]) || 25));
@@ -588,11 +613,12 @@
         }
         e.ctx.stroke();
       });
-      $("playing-history").min = String(this.timelineStart);
+      $("playing-history").min = '0';
       // Keep a fixed full-trial scale; elapsed limits seeking, not the axis.
-      $("playing-history").max = String(Math.max(this.timelineStart, this.session?.duration ?? this.elapsed));
-      $("playing-history").value = String(this.viewEnd);
-      $("playing-time-range").textContent = `${this.viewEnd.toFixed(2)} s · ${start.toFixed(2)}–${(start + span).toFixed(2)} s`;
+      $("playing-history").max = String(this.displayTime(this.session?.duration ?? this.elapsed));
+      $("playing-history").value = String(this.displayTime(this.viewEnd));
+      $("playing-time-range").textContent = `${this.displayTime(this.viewEnd).toFixed(2)} s · ${this.displayTime(start).toFixed(2)}–${this.displayTime(start + span).toFixed(2)} s`;
+      if (this.presenting && p && e) this.guide.layout({p, e});
     }
   };
 })();

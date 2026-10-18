@@ -22,7 +22,7 @@
 
 \title{Stepwise Reward and State Prediction Errors\\in Human--AI Collaboration}
 \author{}
-\date{Working Methods formulation --- 16 October 2026}
+\date{Working Methods formulation --- 18 October 2026}
 
 \begin{document}
 \maketitle
@@ -42,40 +42,37 @@ instructions, reviewed demonstrations, and the current task phase; an
 erroneous AI action does not itself redefine it.
 
 Following the distinction between goal-related and state-transition-related
-discrepancies in neural value alignment~\cite{xu2026nva}, we assign two binary
-labels to each step. Reward prediction error (RPE) indicates incompatibility
-with the expected task. State prediction error (SPE) indicates that the
-observed next state falls outside acceptable execution of that task. These
-are operational behavioral labels, rather than estimates of a participant's
-neural response or numerical temporal-difference errors.
+discrepancies in neural value alignment~\cite{xu2026nva}, the general
+formulation allows two continuous errors. Reward prediction error (RPE)
+compares observed reward with human-expected reward. State prediction error
+(SPE) measures execution distance to an accepted next-state representation.
+These conceptual quantities do not estimate a participant's neural response.
+The Overcooked operationalization below reports separate binary behavioral
+annotations.
 
 \subsection{RPE: compatibility with the expected task}
-We define a binary task-alignment reward,
 \begin{equation}
- r_{t+1}^{G}
- =R_G^{\AIH}\!\left(s_t,a_t^{\mathrm H},a_t^{\mathrm{AI}},s_{t+1};\gt\right)
- \in\{0,1\}.
- \label{eq:reward}
-\end{equation}
-Here, $G$ identifies the goal-alignment component, and $R_G^{\AIH}$ evaluates
-whether the AI contribution supports the human's expected task.
-A value of $1$ denotes compatible progress or an established justification
-for preparation, waiting, coordination, or recovery. A value of $0$ denotes
-a contradiction of the required task, content, recipient, or destination,
-or unjustified regression or nonprogress when a feasible advancing action
-exists. These criteria are operationalized for each domain using the
-expectation evidence and current constraints. Immediate task completion is
-not required at every step.
-
-Taking compatible behavior, $r_{t+1}^{G}=1$, as the normative reference gives
-\begin{equation}
- \boxed{\RPE_t=1-r_{t+1}^{G}.}
+ \boxed{\RPE_t=r_{t+1}^{\mathrm{AI}}-r_{t+1}^{\AIH}.}
  \label{eq:rpe}
 \end{equation}
-Thus, $\RPE_t=1$ means that the observed contribution is incompatible with
-the expected task; $\RPE_t=0$ means that it is compatible. This reward is
-an annotation of task alignment, not the environment's game score, a
-learned reward model, or an empirically measured human reward expectation.
+RPE compares the observed reward the AI achieved in the team,
+$r_{t+1}^{\mathrm{AI}}$, with the reward the human expected,
+$r_{t+1}^{\AIH}$. The expected reward is computed using the human reward
+function on the transition and expected goal:
+\begin{equation}
+ r_{t+1}^{\AIH}
+ =R^{\mathrm H}\!\left(s_t,a_t^{\mathrm H},a_t^{\mathrm{AI}},s_{t+1};\gt\right)
+ \in\mathbb{R}.
+ \label{eq:reward}
+\end{equation}
+Here, $R^{\mathrm H}$ is the human reward function evaluating how well the AI
+contribution supports the human-expected goal. Uppercase $R$ denotes the
+function; $r_{t+1}^{\AIH}$ is the reward expected of the AI under that function.
+The achieved team reward is denoted separately by $r_{t+1}^{\mathrm{AI}}$.
+Positive and negative errors indicate higher and lower reward than expected,
+respectively. The reward function, scale and expected reference must be
+specified for each application. This equation compares one observed reward
+with its expected reference; it does not add a temporal-difference value term.
 
 \subsection{SPE: compatibility with acceptable execution}
 Let $\At$ be the set of AI actions accepted under the established human
@@ -99,26 +96,38 @@ representations are
 \end{equation}
 The symbol $a$ is a candidate AI action. The braces collect the next-state
 representation produced by each accepted candidate while keeping the same
-starting state and human action. SPE is then
+starting state and human action. Let $d$ measure distance between
+execution-relevant representations. For a nonempty accepted set with an
+attained nearest representation, SPE is
 \begin{equation}
- \boxed{\SPE_t=\ind\!\left[\phi(s_{t+1})\notin\Et\right].}
+ \boxed{\SPE_t=\min_{z\in\Et}d\!\left(\phi(s_{t+1}),z\right).}
  \label{eq:spe}
 \end{equation}
-The indicator $\ind[\cdot]$ equals $1$ when its condition is true and $0$
-otherwise. Therefore, execution is accepted if its observed representation
-matches at least one accepted alternative. Different commands can receive
-the same label when they produce the same relevant state transition.
+This is a nonnegative execution discrepancy whose scale depends on the
+chosen distance. Exact agreement with an accepted representation gives zero
+distance; deviations can vary continuously. Different commands can have the
+same discrepancy when they produce the same relevant state transition.
 
-The two labels answer different questions: whether the contribution
-supports the expected task, and whether its execution is acceptable.
-They may rely on overlapping evidence and may both equal $1$; they are not
+The two errors answer different questions: how reward differs from the
+human's expectation, and how far execution is from accepted alternatives.
+They may rely on overlapping evidence and may both be nonzero; they are not
 assumed to be statistically independent. When the expected task or accepted
-execution cannot be established, the corresponding label remains
+execution cannot be established, the corresponding error remains
 unresolved. The fixed-human-action comparison is a retrospective,
 conditional assessment, not a requirement that the AI anticipate an
 unobserved simultaneous human action.
 
 \subsection{Operationalization in Overcooked}
+The current Overcooked example uses a binary task-alignment reward
+$r_{t+1}^{\mathrm{AI}}\in\{0,1\}$ and reports binary behavioral labels:
+\begin{equation}
+ \RPE_t^{\mathrm{bin}}=1-r_{t+1}^{\mathrm{AI}},\qquad
+ \SPE_t^{\mathrm{bin}}=\ind\!\left[\phi(s_{t+1})\notin\Et\right].
+\end{equation}
+These annotations identify task incompatibility and an unaccepted outcome.
+They are distinct from the numerical continuous errors defined above.
+The indicator $\ind[\cdot]$ is one when its condition holds and zero otherwise.
+
 In Overcooked, the shared state contains both chefs' positions,
 orientations and held items, counter objects, pot contents and cooking
 states, remaining orders, and the established task context. Each chef can
@@ -139,7 +148,7 @@ can remain goal-compatible, although execution preferences can still
 favor a particular target or route.
 
 For RPE, appropriate approach, necessary facing, human-blocked intended
-progress, and justified detours or yielding can receive $r_{t+1}^{G}=1$.
+progress, and justified detours or yielding can receive $r_{t+1}^{\mathrm{AI}}=1$.
 Consequently, unchanged distance alone does not establish a goal error.
 For SPE, accepted actions respect the preferred target and established
 human passage, including justified waiting and clearance. The production
@@ -161,7 +170,7 @@ be compatible with both expectations.
  \label{tab:handoff}
  \begin{tabularx}{\linewidth}{@{}Ycc@{}}
  \toprule
- AI contribution & $\RPE_t$ & $\SPE_t$ \\
+ AI contribution & $\RPE_t^{\mathrm{bin}}$ & $\SPE_t^{\mathrm{bin}}$ \\
  \midrule
  Accepted approach or handoff & 0 & 0 \\
  Pursues the handoff but unnecessarily blocks the human's passage & 0 & 1 \\
@@ -185,9 +194,10 @@ For LLM-assisted writing, $s_t$ can contain the shared document,
 instructions and relevant conversation; an AI action can be an entire
 response, edit or tool call, and $T$ updates that shared state. If the
 expected task is to summarize Article A in three cited bullets, a faithful
-summary in the accepted format can receive $(\RPE_t,\SPE_t)=(0,0)$.
-A faithful summary in an unrequested prose format can receive $(0,1)$,
-whereas translating instead of summarizing can receive $(1,1)$.
+summary in the expected format can satisfy both expectations. An unrequested
+prose format can preserve the goal reward while producing an execution
+distance; translating instead of summarizing can change both the reward
+and the next-state representation.
 Requesting genuinely missing source text can be accepted preparation.
 Here, $\phi$ describes execution properties such as structure, citation
 preservation and document modifications; explicit annotation or a
@@ -213,15 +223,20 @@ predictive acceptance region rather than exact point matching.
  in Equation~\eqref{eq:expected}. \\
  $\AIH$ & Expected of the AI by the human. \\
  $\gt$ & Human's currently established preferred AI task. \\
- $R_G^{\AIH},\ r_{t+1}^{G}$ & Task-alignment evaluator and its binary value;
- $G$ denotes goal alignment. \\
+ $R^{\mathrm H}$ & Human reward function for evaluating AI goal compatibility. \\
+ $r_{t+1}^{\mathrm{AI}}$ & Observed reward achieved by the AI in the team. \\
+ $r_{t+1}^{\AIH}$ & Reward expected of the AI, computed using $R^{\mathrm H}$;
+ the reference for continuous RPE. \\
+ $d$ & Distance between execution-relevant representations. \\
  $\At$ & Set of acceptable candidate AI actions in the current context. \\
  $a$ & One candidate AI action used in the comparison. \\
  $\phi$ & Mapping from a state to execution-relevant state features. \\
  $\Et$ & Set of next-state representations generated by accepted actions. \\
- $\ind[\cdot]$ & Indicator: $1$ for a true condition, otherwise $0$. \\
+ $\ind[\cdot]$ & Indicator used in the binary behavioral annotation. \\
  $\notin$ & Is not an element of the specified set. \\
- $\RPE_t,\ \SPE_t$ & Binary task-mismatch and execution-mismatch labels. \\
+ $\RPE_t,\ \SPE_t$ & Continuous reward discrepancy and execution distance. \\
+ $\RPE_t^{\mathrm{bin}},\ \SPE_t^{\mathrm{bin}}$ & Binary task-mismatch and
+ execution-mismatch annotations in the Overcooked example. \\
  \bottomrule
  \end{tabularx}
 \end{table}
@@ -238,18 +253,18 @@ Equation~\eqref{eq:expected} expands to
 \end{equation*}
 The colon in Equation~\eqref{eq:expected} means ``for each accepted action.''
 There is no policy probability or probability threshold in this
-definition. If the observed next-state representation equals either
-listed representation, SPE is $0$; otherwise it is $1$. This is an
+definition. General SPE is the distance to the nearer accepted representation.
+The binary Overcooked annotation instead checks membership in the set. This is an
 illustration of the notation, not a claim that east and stay are always
 acceptable together.
 
 \paragraph{Why state features are different from reward.}
-The binary reward compresses the contribution into a task-compatibility
-judgment. The state representation retains execution details. Two
-goal-compatible contributions can therefore both earn reward $1$ while
+The scalar reward summarizes the contribution's goal-related value.
+The state representation retains execution details. Two
+goal-compatible contributions can therefore earn the same reward while
 differing in whether they obstruct the human or preserve a requested
 document structure. The feature mapping should be specified before
-classification: retaining only reward would discard precisely the
+evaluation: retaining only reward would discard precisely the
 execution differences that SPE is intended to detect.
 
 \begin{thebibliography}{1}

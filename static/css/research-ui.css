@@ -57,10 +57,17 @@ body .display-surface .site-header.hybrid-header {
 body .display-surface .scenario-dropdowns { gap: 14px; align-items: end; }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .scenario-dropdowns { grid-template-columns: 1.2fr .8fr .9fr 2.5fr .8fr; }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .playing-recording-field { grid-column: auto; }
-body[data-experiment-mode="play"] .scenario-dropdowns:has(#playing-session-type option[value="real_time"]:checked) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body[data-experiment-mode="play"][data-playing-session="real_time"] .display-surface .scenario-dropdowns {
+  grid-template-columns: 166px 112px minmax(170px, 2.4fr) 100px minmax(110px, 1.3fr) minmax(150px, 1.7fr) auto;
+  min-width: 1000px;
+}
+body[data-experiment-mode="play"][data-playing-session="real_time"] .display-surface .scenario-browser { overflow-x: auto; }
+body[data-experiment-mode="play"][data-playing-session="real_time"] .display-surface .scenario-dropdowns .event-picker { grid-column: auto; }
+body[data-experiment-mode="play"][data-playing-session="real_time"]:not(.is-focus-mode) #eeg-top-connect { min-height: 36px; height: 36px; }
 body[data-experiment-mode="presentation"] .display-surface .scenario-dropdowns { grid-template-columns: .8fr 1.4fr 2.8fr .8fr; }
-body[data-experiment-mode="recording"] .display-surface .scenario-dropdowns { grid-template-columns: 1fr 1.7fr 1.7fr auto; }
+body[data-experiment-mode="recording"] .display-surface .scenario-dropdowns { grid-template-columns: 1fr 1.5fr .9fr 1.7fr auto; }
 body[data-experiment-mode="recording"] .map-overlay-controls,
+body[data-experiment-mode="recording"] .speed-hover-control,
 body[data-experiment-mode="recording"] .left-sidebar { display: none !important; }
 .scenario-dropdowns label, .trial-editor label { color: var(--muted); font-size: 12px; font-weight: 400; }
 body .scenario-dropdowns select, body .scenario-dropdowns input,
@@ -79,12 +86,21 @@ body .scenario-dropdowns select, body .scenario-dropdowns input:not([type="check
 .scenario-dropdowns #decoder-field { grid-column: span 2; }
 body[data-experiment-mode="editor"] .display-surface .hybrid-header .scenario-browser { display: none; }
 body .display-surface .page-shell { padding-top: 24px; }
-/* Equal side tracks keep Recording's kitchen centered even with EEG hidden. */
+/* Equal side tracks keep the kitchen centered; the wider EEG card can overlap it. */
 body[data-experiment-mode="recording"] .display-surface .stage { width: 1392px; grid-template-columns: 272px 800px 272px; gap: 24px; }
 body[data-experiment-mode="recording"] .display-surface .stage-center { grid-column: 2; grid-row: 1; width: 800px; }
-body[data-experiment-mode="recording"] .display-surface .stage > .eeg-sidebar { grid-column: 3; grid-row: 1 / span 2; width: 272px; margin-top: 0; align-self: start; }
+body[data-experiment-mode="recording"] .display-surface .stage > .eeg-sidebar {
+  grid-column: 3; grid-row: 1 / span 2; width: 440px;
+  margin-top: var(--recording-eeg-top, 0px); align-self: start; justify-self: end;
+  position: relative; z-index: 40;
+}
 body[data-experiment-mode="recording"] .display-surface .left-sidebar { grid-column: 2; grid-row: 2; width: 800px; transform: none; }
-body[data-experiment-mode="recording"] .eeg-sidebar #eeg-waveform { width: 100%; height: 228px; }
+body[data-experiment-mode="recording"] .display-surface .eeg-sidebar #eeg-waveform { width: 100%; height: 260px; }
+body[data-experiment-mode="recording"] .eeg-sidebar .status-chip { font-size: 11px; }
+body[data-experiment-mode="recording"] .eeg-sidebar .status-chip strong { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+body[data-experiment-mode="recording"] .eeg-sidebar .eeg-quality-detail { font-size: 12px; overflow-wrap: anywhere; }
+/* Reserve the on-state geometry so the display toggle never jumps on hide. */
+body[data-experiment-mode="recording"] #raw-eeg-panel[hidden] { display: block !important; visibility: hidden; pointer-events: none; }
 .display-surface .game-heading { margin-bottom: 10px; }
 .game-meta { color: var(--muted); font-size: 12px; }
 #session-progress { font-size: 12px; color: var(--muted); font-weight: 400; }
@@ -146,12 +162,12 @@ body .display-surface .stage-center .control-buttons { display: flex; flex-wrap:
 body[data-experiment-mode="play"] .control-panel #playing-trial-navigation { margin-left: 0; }
 .control-panel button, .trial-editor button, #presentation-editor button,
 .playing-history button, .eeg-top-connect, .eeg-reconnect, .raw-eeg-toggle,
-.overlay-toggle, #send-marker, .focus-mode-toggle, .response-actions button {
+.overlay-toggle, .focus-mode-toggle, .response-actions button {
   border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: none; font-weight: 400; border-radius: 5px;
 }
 .control-panel button.subtle { border-color: var(--line); background: var(--surface); color: var(--ink); }
 .control-panel button.primary, #confirm-hint, .trial-editor button.primary,
-#presentation-editor #presentation-save, #presentation-continue,
+#presentation-editor #presentation-save,
 .response-actions button.primary { border-color: var(--ink); background: var(--ink); color: var(--paper); font-weight: 400; border-radius: 5px; }
 #confirm-hint { font-size: 13px; }
 .control-panel button:hover:not(:disabled), .trial-editor button:hover:not(:disabled) { transform: none; filter: none; border-color: var(--muted); }
@@ -161,22 +177,27 @@ body[data-experiment-mode="play"] .control-panel #playing-trial-navigation { mar
 .playing-history small { color: var(--muted); font-size: 11px; }
 .playing-history input, .trial-editor input[type="range"] { accent-color: var(--ink); }
 .playing-history button { padding: 5px 10px; }
-/* The signal cards share the available height; Presentation adds a third card. */
+/* The two signal cards share the available height in Playing and Presentation. */
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) { --playing-panel-count: 2; }
-body[data-experiment-mode="presentation"] { --playing-panel-count: 3; }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .stage > .eeg-sidebar {
   height: max(780px, calc(100dvh - 100px));
   grid-template-rows: repeat(var(--playing-panel-count), minmax(0, 1fr));
   align-items: stretch; gap: 16px;
 }
+body[data-experiment-mode="play"] .display-surface .stage > .eeg-sidebar {
+  grid-template-rows: 32px repeat(var(--playing-panel-count), minmax(0, 1fr));
+}
+body[data-experiment-mode="play"] .recording-eeg-controls { align-self: start; }
+body[data-experiment-mode="play"][data-playing-panels="0"] .display-surface .stage-center {
+  grid-column: 1 / -1; justify-self: center;
+}
+body[data-experiment-mode="play"][data-playing-panels="0"] .eeg-sidebar { pointer-events: none; }
+body[data-experiment-mode="play"][data-playing-panels="0"] .recording-eeg-controls { pointer-events: auto; }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]).is-focus-mode .display-surface .stage > .eeg-sidebar {
   height: calc(var(--display-viewport-height) - 44px - max(64px, calc(64px / var(--display-scale))));
 }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .eeg-sidebar > .eeg-panel-card {
   display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
-}
-body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .eeg-sidebar > .presentation-card {
-  min-height: 0; height: 100%;
 }
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .eeg-sidebar #eeg-waveform,
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .display-surface .eeg-sidebar #probability-chart {
@@ -194,8 +215,6 @@ body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]) .e
 .demo-attribution p { margin: 0; }
 .demo-attribution a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .demo-attribution a:hover { color: var(--muted); }
-.lsl-marker-controls { border-color: var(--line); }
-.lsl-marker-controls input { border-color: var(--line); background: var(--surface); }
 .recording-eeg-controls { color: var(--muted); }
 .raw-eeg-toggle[aria-pressed="true"] { border-color: var(--line); background: var(--cream); color: var(--ink); }
 .overlay-toggle[aria-pressed="true"] { border-color: var(--line); background: var(--cream); color: var(--ink); }
@@ -227,7 +246,7 @@ body[data-experiment-mode="editor"] .display-surface .site-header.hybrid-header 
 .editor-details > summary, .editor-advanced > summary { color: var(--muted); font-weight: 500; }
 .editor-savebar { border-radius: var(--ui-radius); box-shadow: none; }
 .presentation-card { color: var(--ink); }
-#presentation-condition, #presentation-preview-detail, #presentation-editor-status { color: var(--muted); }
+#presentation-preview-detail, #presentation-editor-status { color: var(--muted); }
 #presentation-evidence:not(:empty), .presentation-editor-footer { border-color: var(--line); }
 #presentation-editor, .trial-response-panel, .participant-instructions {
   border-color: var(--line); border-radius: 10px; color: var(--ink); background: var(--surface);
@@ -311,6 +330,9 @@ body:not(.is-focus-mode) .display-surface .page-shell,
 body:not(.is-focus-mode) .display-surface footer { width: calc(100% - 80px); }
 body:not(.is-focus-mode) .display-surface .stage { width: 100%; grid-template-columns: minmax(0, 800fr) minmax(0, 568fr); gap: 24px; }
 body:not(.is-focus-mode) .display-surface .stage-center { grid-column: 1; grid-row: 1; width: 100%; }
+body[data-experiment-mode="play"][data-playing-panels="0"]:not(.is-focus-mode) .display-surface .stage-center {
+  width: calc((100% - 24px) * 800 / 1368);
+}
 /* On taller normal pages, use spare space to center the game without covering setup. */
 body:is([data-experiment-mode="play"], [data-experiment-mode="presentation"]):not(.is-focus-mode) .display-surface .page-shell {
   padding-top: max(24px, calc((var(--display-viewport-height) - var(--game-window-height)) / 2 - var(--game-heading-height, 100px) - 10px - var(--playing-header-height, 500px)));
@@ -320,8 +342,7 @@ body:not(.is-focus-mode) .display-surface .left-sidebar { grid-column: 1; grid-r
 body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 272fr) minmax(0, 800fr) minmax(0, 272fr); }
 body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage-center,
 body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .left-sidebar { grid-column: 2; }
-body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 3; }
-body[data-experiment-mode="recording"]:not(.is-focus-mode) .lsl-marker-controls { grid-template-columns: minmax(0, 1fr); }
+body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 3; width: 440px; margin-top: var(--recording-eeg-top, 0px); }
 body:not(.is-focus-mode) .display-surface .stage-center .control-panel,
 body:not(.is-focus-mode) .display-surface .map-overlay-controls { width: 100%; }
 body:not(.is-focus-mode) .display-surface .eeg-panel-card { padding: 16px; }
@@ -352,7 +373,6 @@ body[data-experiment-mode="editor"].is-focus-mode .trial-editor { padding-top: 1
 .display-surface .hybrid-header .scenario-dropdowns select,
 .display-surface .hybrid-header .scenario-dropdowns input { background: var(--surface); color: var(--ink); border-radius: 4px; }
 .presentation-editor-footer, .editor-details, .editor-advanced { border-color: var(--line); }
-#presentation-continue { box-shadow: 0 0 10px 5px var(--surface); }
 .status-chip.is-working { background: light-dark(#f3faf5, #1a3028); color: light-dark(#4f735f, #9fc7b1); border-color: light-dark(#d8eadf, #345244); }
 .status-chip.is-warning { background: light-dark(#fff9ec, #352b19); color: light-dark(#80602b, #e0c186); border-color: light-dark(#eddcb9, #514329); }
 .trial-editor th, .editor-details pre, .editor-action-table tbody tr:hover,
@@ -387,17 +407,20 @@ body:not(.is-focus-mode) .example-review { left: auto; right: 0; }
   body:not(.is-focus-mode) .scenario-dropdowns .playing-recording-field { grid-column: 1 / -1; }
   body:not(.is-focus-mode) .editor-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
   /* Keep the centered kitchen and readable EEG controls on smaller pages. */
   body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 1fr); }
   body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage-center,
   body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .left-sidebar,
   body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 1; }
-  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-row: 3; }
+  body[data-experiment-mode="recording"]:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar {
+    grid-row: 3; width: min(100%, 440px); margin-top: 0; justify-self: center;
+  }
 }
 @media (max-width: 760px) {
   body:not(.is-focus-mode) .display-surface .stage { grid-template-columns: minmax(0, 1fr); }
   body:not(.is-focus-mode) .display-surface .stage > .eeg-sidebar { grid-column: 1; grid-row: 3; }
+  body[data-experiment-mode="play"][data-playing-panels="0"]:not(.is-focus-mode) .display-surface .stage-center { width: 100%; }
   body:not(.is-focus-mode) .editor-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {

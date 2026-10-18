@@ -840,6 +840,9 @@ class OvercookedGame {
         player_colors = { 0: 'green', 1: 'blue' },
         assets_loc = "./assets/",
         chef_atlas = "chefs",
+        serving_frames = null,
+        pixel_art = true,
+        render_resolution = 1,
         show_post_cook_time = false,
 
         COOK_TIME = 2,
@@ -856,6 +859,9 @@ class OvercookedGame {
         this.player_colors = player_colors;
         this.assets_loc = assets_loc;
         this.chef_atlas = chef_atlas;
+        this.serving_frames = serving_frames;
+        this.pixel_art = pixel_art;
+        this.render_resolution = render_resolution;
         this.show_post_cook_time = show_post_cook_time;
 
         let gameparent = this;
@@ -904,14 +910,16 @@ class OvercookedGame {
                     for (let i = 0; i < pos_dict[ttype].length; i++) {
                         let [x, y] = pos_dict[ttype][i];
                         const serving = ttype === 'S' && this.gameparent.assets_loc.includes("/warm/");
-                        let tile = this.add.sprite(tileSize * x, tileSize * y, serving ? "serving" : "tiles", terrain_to_img[ttype]);
+                        const servingAngle = serving ? this.servingAngle(x, y) : 0;
+                        const servingFrame = serving && this.gameparent.serving_frames?.[servingAngle];
+                        let tile = this.add.sprite(tileSize * x, tileSize * y, serving ? "serving" : "tiles", servingFrame || terrain_to_img[ttype]);
                         tile.setDisplaySize(tileSize, tileSize);
-                        if (serving) {
+                        if (serving && !servingFrame) {
                             // Rotate around the cell center, keeping the whole
                             // station in its original square at every angle.
                             tile.setOrigin(.5);
                             tile.setPosition(tileSize * (x + .5), tileSize * (y + .5));
-                            tile.setAngle(this.servingAngle(x, y));
+                            tile.setAngle(servingAngle);
                         } else {
                             tile.setOrigin(0);
                         }
@@ -1189,7 +1197,8 @@ class OvercookedGame {
             height: this.gameHeight,
             scene: [this.scene],
             parent: this.container_id,
-            pixelArt: true,
+            pixelArt: this.pixel_art,
+            resolution: this.render_resolution,
             audio: {
                 noAudio: true
             }

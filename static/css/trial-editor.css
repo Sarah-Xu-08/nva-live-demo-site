@@ -91,7 +91,11 @@ body[data-experiment-mode="editor"] .display-surface footer { display: none; }
 .editor-tabs button { flex: 1; font-weight: 650; }
 .editor-tabs button[aria-selected="true"] { background: #607557; color: white; }
 .editor-review-checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.editor-savebar .editor-review-checks { margin: 8px 0 14px; }
+.editor-save-controls { display: flex; align-items: center; justify-content: space-between; gap: 24px; overflow-x: auto; padding: 2px 0 6px; }
+.editor-save-controls > * { flex: 0 0 auto; }
+.editor-save-controls .editor-review-checks { display: flex; gap: 20px; margin: 0; }
+.editor-save-controls .editor-buttons { flex-wrap: nowrap; }
+.editor-save-controls label, .editor-save-controls button { white-space: nowrap; }
 .editor-review-checks input { accent-color: #607557; flex-shrink: 0; }
 .editor-timing { grid-template-columns: minmax(0, 1fr); gap: 0; }
 .editor-savebar { position: relative; z-index: 3; box-shadow: 0 4px 16px #38463618; padding: 12px 18px; }

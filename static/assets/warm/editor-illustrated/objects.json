@@ -1,0 +1,313 @@
+{
+  "frames": {
+    "dish.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "onion.png": {
+      "frame": {
+        "x": 198,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "tomato.png": {
+      "frame": {
+        "x": 396,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-onion-dish.png": {
+      "frame": {
+        "x": 594,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-dish.png": {
+      "frame": {
+        "x": 792,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-onion-1-cooking.png": {
+      "frame": {
+        "x": 990,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-onion-2-cooking.png": {
+      "frame": {
+        "x": 1188,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-onion-3-cooking.png": {
+      "frame": {
+        "x": 1386,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-onion-cooked.png": {
+      "frame": {
+        "x": 0,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-1-cooking.png": {
+      "frame": {
+        "x": 198,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-2-cooking.png": {
+      "frame": {
+        "x": 396,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-3-cooking.png": {
+      "frame": {
+        "x": 594,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-cooked.png": {
+      "frame": {
+        "x": 792,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "soup-tomato-3-0.png": {
+      "frame": {
+        "x": 990,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    },
+    "pot-explosion.png": {
+      "frame": {
+        "x": 1188,
+        "y": 198,
+        "w": 196,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 196
+      }
+    }
+  },
+  "meta": {
+    "app": "Trial Editor illustrated asset packer",
+    "image": "objects.png",
+    "size": {
+      "w": 1584,
+      "h": 396
+    },
+    "scale": "1"
+  }
+}

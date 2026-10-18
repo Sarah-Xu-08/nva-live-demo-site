@@ -20,20 +20,19 @@
     });
   }
   function chooseEstimate(key) {
-    const probabilities = { clear: [12, 24, 64], uncertain: [32, 35, 33], missing: null };
+    const probabilities = { clear: [12, 24, 64], uncertain: [32, 35, 33] };
     if (!(key in probabilities)) return;
     const p = probabilities[key], chart = root.querySelector('.nv-stacked-prob');
     root.querySelectorAll('[data-estimate]').forEach(el => el.setAttribute('aria-pressed', String(el.dataset.estimate === key)));
     for (let i = 0; i < 3; i++) {
-      root.querySelector(`[data-segment="${i}"]`).style.width = `${p ? p[i] : 0}%`;
-      root.querySelector(`[data-p="${i}"]`).textContent = p ? `${p[i]}%` : '—';
+      root.querySelector(`[data-segment="${i}"]`).style.width = `${p[i]}%`;
+      root.querySelector(`[data-p="${i}"]`).textContent = `${p[i]}%`;
     }
-    chart.classList.toggle('nv-missing', !p);
-    chart.setAttribute('aria-label', p ? `Illustrative class probabilities: nonPE ${p[0]} percent, SPE-only ${p[1]} percent, RPE plus SPE ${p[2]} percent` : 'Probabilities unavailable: no valid neural signals');
-    const sorted = p ? [...p].sort((a, b) => b - a) : null;
-    const margin = sorted ? sorted[0] - sorted[1] : null;
-    root.querySelector('[data-verdict]').textContent = !p ? 'Unavailable' : margin >= 10 ? ['nonPE', 'SPE-only', 'RPE+SPE'][p.indexOf(sorted[0])] : 'Uncertain';
-    root.querySelector('[data-margin]').textContent = !p ? 'Missing data / filter warm-up' : `${margin} pp lead · ${margin >= 10 ? '≥10 pp required' : 'below 10 pp'}`;
+    chart.setAttribute('aria-label', `Illustrative class probabilities: nonPE ${p[0]} percent, SPE ${p[1]} percent, RPE ${p[2]} percent`);
+    const sorted = [...p].sort((a, b) => b - a);
+    const margin = sorted[0] - sorted[1];
+    root.querySelector('[data-verdict]').textContent = margin >= 10 ? ['nonPE', 'SPE', 'RPE'][p.indexOf(sorted[0])] : 'Uncertain';
+    root.querySelector('[data-margin]').textContent = `${margin} pp lead · ${margin >= 10 ? '≥10 pp required' : 'below 10 pp'}`;
   }
   const handoffs = {
     accepted: { rpe: 0, spe: 0, outcome: 'Accepted counter', recipient: 'Human receives', text: 'The expected subtask and its execution are both satisfied.' },
@@ -83,11 +82,75 @@
     window.addEventListener('hashchange', chooseSection);
     window.addEventListener('popstate', chooseSection);
   });
+  const framework = root.querySelector('[data-framework-diagram]');
+  if (framework) {
+    const wires = framework.querySelector('.nv-framework-wires');
+    function drawFramework() {
+      const bounds = framework.getBoundingClientRect();
+      if (!bounds.width) return;
+      wires.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+      const rect = selector => {
+        const box = framework.querySelector(selector).getBoundingClientRect();
+        return {left: box.left - bounds.left, right: box.right - bounds.left, top: box.top - bounds.top, bottom: box.bottom - bounds.top, x: box.left - bounds.left + box.width / 2, y: box.top - bounds.top + box.height / 2};
+      };
+      const context = rect('.nv-framework-context'), observed = rect('.nv-framework-observed');
+      const rpe = rect('.nv-framework-rpe'), spe = rect('.nv-framework-spe');
+      const path = (edge, d) => framework.querySelector(`[data-framework-edge="${edge}"]`).setAttribute('d', d);
+      if (matchMedia('(max-width:680px)').matches) {
+        const joinX = bounds.width / 2, joinY = Math.max(context.bottom, observed.bottom) + 20, busX = 5;
+        path('context-bus', `M ${context.x} ${context.bottom} V ${joinY} H ${joinX}`);
+        path('observed-bus', `M ${observed.x} ${observed.bottom} V ${joinY} H ${joinX}`);
+        path('bus', `M ${joinX} ${joinY} H ${busX} V ${spe.y}`);
+        path('bus-rpe', `M ${busX} ${rpe.y} H ${rpe.left - 2}`);
+        path('bus-spe', `M ${busX} ${spe.y} H ${spe.left - 2}`);
+      } else {
+        for (const [target, name] of [[rpe, 'rpe'], [spe, 'spe']]) {
+          for (const [source, side] of [[context, 'context'], [observed, 'observed']]) {
+            const x1 = side === 'context' ? source.right : source.left;
+            const x2 = side === 'context' ? target.left - 2 : target.right + 2;
+            const mid = (x1 + x2) / 2;
+            // Keep a diagonal approach so the automatic arrowhead follows the curve into the check.
+            const approachY = target.y + (source.y - target.y) * .35;
+            path(`${side}-${name}`, `M ${x1} ${source.y} C ${mid} ${source.y}, ${mid} ${approachY}, ${x2} ${target.y}`);
+          }
+        }
+      }
+    }
+    if ('ResizeObserver' in window) new ResizeObserver(drawFramework).observe(framework);
+    else window.addEventListener('resize', drawFramework);
+    requestAnimationFrame(drawFramework);
+  }
+  const notationDialog = root.querySelector('#nv-notation-dialog');
+  const notationReference = root.querySelector('#nv-shared-notation-reference');
+  if (notationDialog && notationReference && typeof notationDialog.showModal === 'function') {
+    const referenceCopy = notationReference.cloneNode(true);
+    referenceCopy.removeAttribute('id');
+    notationDialog.querySelector('[data-shared-notation-body]').appendChild(referenceCopy);
+    let notationTrigger;
+    root.querySelectorAll('[data-shared-notation]').forEach(button => {
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        notationTrigger = button;
+        notationDialog.showModal();
+        notationDialog.scrollTop = 0;
+        document.documentElement.classList.add('nv-notation-open');
+      });
+    });
+    notationDialog.querySelector('[data-close-shared-notation]').addEventListener('click', () => notationDialog.close());
+    notationDialog.addEventListener('click', event => {
+      if (event.target !== notationDialog) return;
+      const bounds = notationDialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) notationDialog.close();
+    });
+    notationDialog.addEventListener('close', () => {
+      document.documentElement.classList.remove('nv-notation-open');
+      notationTrigger?.focus({preventScroll: true});
+    });
+  }
   const epochExample = root.querySelector('[data-epoch-explainer]');
   if (epochExample) {
     const svg = epochExample.querySelector('.nv-epoch-timeline');
     const drag = epochExample.querySelector('[data-epoch-drag]');
-    const peLabel = epochExample.querySelector('[data-epoch-pe-label]');
     const x = seconds => 160 + (seconds + 4) * 120;
     const time = seconds => `${seconds < 0 ? '−' : '+'}${Math.abs(seconds).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`;
     let end = 0.75, critical = 'pe', gesture = null;
@@ -97,28 +160,18 @@
       const leadIn = end >= -1.75 && end < -0.125;
       const response = end >= 0.5 && end < (critical === 'pe' ? 1 : 2.5);
       const eligible = leadIn || response;
-      const assigned = !eligible ? 'None · excluded' : leadIn || critical === 'nonpe' ? 'nonPE' : peLabel.value;
-      const reason = leadIn ? 'Ends in the audited nonPE lead-in.'
-        : response ? (critical === 'pe' ? 'Ends in the critical-response interval.' : 'Ends in a verified nonPE period.')
-        : end < -1.75 ? 'Ends before gameplay +0.25 s.'
-        : end < 0.5 ? 'Ends in the excluded interval around the critical action.'
-        : end >= 2.5 ? 'The training interval excludes the trial-end boundary.'
-        : 'Ends at or after C +1 s, outside PE response training.';
+      const assigned = !eligible ? '—' : leadIn || critical === 'nonpe' ? 'nonPE' : 'PE';
       drag.setAttribute('transform', `translate(${x(end - 2)} 280)`);
       drag.setAttribute('aria-valuenow', String(end));
-      drag.setAttribute('aria-valuetext', `End ${time(end)} seconds; training ${eligible ? 'eligible' : 'excluded'}; label ${assigned}`);
+      drag.setAttribute('aria-valuetext', `End ${time(end)} seconds; training ${eligible ? 'eligible' : 'excluded'}; label ${eligible ? assigned : 'none'}`);
       const dot = epochExample.querySelector('[data-epoch-dot]');
       dot.setAttribute('cx', x(end)); dot.setAttribute('cy', critical === 'pe' ? 101 : 186);
       const endLabel = epochExample.querySelector('[data-epoch-end-label]');
       endLabel.setAttribute('x', x(end)); endLabel.textContent = `Ends at C ${time(end)} s`;
-      epochExample.querySelector('[data-epoch-readout]').textContent = `${time(end - 1)} to ${time(end)} s`;
-      epochExample.querySelector('[data-epoch-baseline-readout]').textContent = `Baseline: ${time(end - 2)} to ${time(end - 1)} s`;
       epochExample.querySelector('[data-epoch-eligibility]').textContent = eligible ? 'Eligible' : 'Excluded';
       epochExample.querySelector('[data-epoch-assigned-label]').textContent = assigned;
-      epochExample.querySelector('[data-epoch-reason]').textContent = reason;
       epochExample.querySelectorAll('[data-epoch-critical]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.epochCritical === critical)));
       epochExample.querySelectorAll('[data-epoch-track]').forEach(track => track.classList.toggle('nv-epoch-track-inactive', track.dataset.epochTrack !== critical));
-      peLabel.disabled = critical !== 'pe';
     }
     function moveEpoch(value) {
       end = Math.max(-2, Math.min(2.5, Math.round(value * 16) / 16));
@@ -153,7 +206,6 @@
     epochExample.querySelectorAll('[data-epoch-critical]').forEach(button => button.addEventListener('click', () => {
       critical = button.dataset.epochCritical; updateEpochExample();
     }));
-    peLabel.addEventListener('change', updateEpochExample);
     updateEpochExample();
   }
   const probabilityExample = root.querySelector('[data-probability-explainer]');
@@ -178,7 +230,7 @@
       probabilityExample.querySelector('[data-sigmoid-guide]').setAttribute('d', `M40 ${y}H${x}V158`);
       const dot = probabilityExample.querySelector('[data-sigmoid-point]');
       dot.setAttribute('cx', x); dot.setAttribute('cy', y);
-      probabilityExample.querySelector('[data-sigmoid-chart]').setAttribute('aria-label', `Illustrative sigmoid: RPE+SPE score ${score.toFixed(2)} maps to an estimate of ${q.toFixed(3)}`);
+      probabilityExample.querySelector('[data-sigmoid-chart]').setAttribute('aria-label', `Illustrative sigmoid: RPE score ${score.toFixed(2)} maps to an estimate of ${q.toFixed(3)}`);
       estimates.forEach((estimate, i) => {
         const percent = estimate / total * 100;
         probabilityExample.querySelector(`[data-normalized-value="${i}"]`).textContent = `${percent.toFixed(1)}%`;

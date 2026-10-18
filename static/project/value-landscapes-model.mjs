@@ -94,7 +94,8 @@ export function predictionErrors(human, ai, current = CURRENT_STATE) {
 }
 
 export function createExamples() {
-  const base = {gx: .74, gy: .68, wx: .3, wy: .22, bend: 0, goalAngle: 0};
+  // A wider start-to-goal span fills the compact plot without stretching its axes.
+  const base = {gx: 2.2, gy: .68, wx: .3, wy: .22, bend: 0, goalAngle: 0};
   const withStep = model => ({...model, step: nextState(model, CURRENT_STATE)});
   const human = model => ({...withStep(model), tx: .10, ty: .075, toleranceAngle: 0});
   const examples = {
