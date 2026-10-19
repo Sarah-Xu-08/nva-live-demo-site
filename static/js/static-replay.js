@@ -17,7 +17,7 @@
     if (!response.ok) throw new Error(`Saved demo file unavailable: ${path}`);
     return response.json();
   };
-  const catalogue = () => cataloguePromise ||= json('data/catalogue.json?v=46db9811b12c');
+  const catalogue = () => cataloguePromise ||= json('data/catalogue.json?v=4991e3e87dd9');
   const lowerBound = (rows, time, field = null) => {
     let lo = 0, hi = rows.length;
     while (lo < hi) {
@@ -113,11 +113,13 @@
     stops() {
       if (!this.presentation) return [];
       const {action_stop: first, prediction_stop: second} = this.presentation.checkpoints;
-      return [[second != null && second <= first ? 'action_and_prediction' : 'action', first],
-        ...(second != null && second > first ? [['prediction', second]] : [])];
+      return [['action', first],
+        ...(second != null ? [['prediction', Math.max(first, second)]] : [])];
     }
     run(time = this.elapsed, restoring = false) {
       cancelAnimationFrame(this.timer);
+      const continuingCheckpoint = restoring && this.state === 'PAUSED' && this.checkpoint
+        && Math.abs(time - this.elapsed) <= 1e-9;
       this.elapsed = Math.max(this.start, Math.min(this.data.duration, time));
       this.checkpoint = null;
       if (restoring) {
@@ -126,7 +128,7 @@
         this.emit('playing_state', this.public());
       }
       this.resetCursors(this.elapsed, restoring);
-      this.pendingStops = this.stops().filter(([, at]) => at > this.elapsed + 1e-8);
+      if (!continuingCheckpoint) this.pendingStops = this.stops().filter(([, at]) => at > this.elapsed + 1e-8);
       this.origin = performance.now() - this.wallAt(this.elapsed) * 1000;
       this.state = this.elapsed < this.data.fixation_seconds ? 'FIXATION' : 'RUNNING';
       this.emit('playing_state', this.public());

@@ -100,7 +100,8 @@
     get recorded() { return this.presenting || $("playing-session-type").value === "pre_recorded"; }
     get participant() { return this.catalogue?.participants.find(p => p.id === $("playing-participant").value); }
     get matching() {
-      if (this.presenting) return this.guide.entries.map(e => this.participant?.recordings.find(r => r.id === e.recording_id)).filter(Boolean);
+      if (this.presenting) return this.guide.entries.map(e => this.participant?.recordings.find(r => r.id === e.recording_id))
+        .filter(r => r && r.condition === this.guide.type);
       return (this.participant?.recordings || []).filter(r => $("playing-condition").value === "All"
         || r.condition === $("playing-condition").value);
     }
@@ -272,7 +273,7 @@
         setText("decoder-confidence", this.recorded ? "Preparing recorded EEG" : "Preparing trial");
         setText("playback-status", "Preparing trial…");
         this.visibility(); this.syncControls(); this.draw();
-        if (this.presenting && !this.matching.length) throw new Error("No trials in this presentation set. Use Edit presentation set to add recordings.");
+        if (this.presenting && !this.matching.length) throw new Error("No trials of this PE type in the presentation set. Use Edit presentation set to add recordings.");
         if (!this.recorded && !this.liveTrials?.length)
           throw new Error("No double-checked trials. Save Playback and Subtasks checks in Trial Editor, then reopen Real-time session.");
         const chosen = this.matching.find(r => r.id === $("playing-recording").value);

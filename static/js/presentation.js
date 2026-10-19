@@ -31,7 +31,7 @@
       this.player = player;
       this.header = document.createElement('label');
       this.header.className = 'presentation-only'; this.header.hidden = true;
-      this.header.innerHTML = '<span>Presentation set</span><select id="presentation-set" aria-label="Presentation set"></select>';
+      this.header.innerHTML = '<span>PE trial type</span><select id="presentation-type" aria-label="PE trial type"><option value="SPE">SPE</option><option value="RPE+SPE">RPE</option></select>';
       $('playing-condition').closest('label').before(this.header);
       const edit = document.createElement('button');
       edit.hidden = true; edit.id = 'presentation-edit'; edit.type = 'button'; edit.className = 'presentation-only'; edit.textContent = 'Edit presentation set';
@@ -56,10 +56,7 @@
         </div></div><div class="presentation-editor-footer"><span id="presentation-editor-status" role="status"></span><button type="button" id="presentation-save-copy">Save as new set</button><button type="button" id="presentation-save">Save set</button></div>`;
       document.body.append(this.dialog);
       edit.onclick = () => this.openEditor();
-      $('presentation-set').onchange = async () => {
-        this.selected = copy(this.sets.find(s => s.id === $('presentation-set').value));
-        player.populate(); await player.prepare();
-      };
+      $('presentation-type').onchange = () => player.selectionChanged('presentation-type');
       $('presentation-entries').onchange = () => this.editEntry();
       $('presentation-name').oninput = () => { this.draft.name = $('presentation-name').value; };
       for (const key of textFields) $('presentation-' + key).oninput = () => {
@@ -309,6 +306,7 @@
     get visibleEvidence() {
       const evidence = this.info?.evidence, time = this.player.viewEnd;
       return this.active && this.info && time >= this.info.action_stop - 1e-8 && evidence
+        && !(this.info.checkpoint === 'action' && Math.abs(time - this.player.elapsed) <= 1e-8)
         && evidence.at <= time && evidence.available_elapsed <= time + 1e-9;
     }
     label(recording) { return `${this.player.recordingLabel(recording)} · ${recording.condition}`; }
@@ -317,12 +315,16 @@
       this.candidates = catalogue.candidates;
       this.sets = saved.sets.length ? saved.sets : [catalogue.suggested_set];
       this.selected = this.selected && this.sets.find(s => s.id === this.selected.id) || copy(this.sets[0]);
-      this.renderSets();
+      this.renderTypes();
     }
-    renderSets() {
-      $('presentation-set').replaceChildren(...this.sets.map(s => new Option(s.name, s.id)));
-      $('presentation-set').value = this.selected.id;
+    renderTypes() {
+      const select = $('presentation-type');
+      const conditions = new Set(this.entries.map(e => e.condition
+        || this.candidates.find(c => c.id === e.recording_id)?.condition));
+      for (const option of select.options) option.disabled = !conditions.has(option.value);
+      if (!conditions.has(select.value)) select.value = [...select.options].find(option => !option.disabled)?.value || '';
     }
+    get type() { return $('presentation-type').value; }
     get entries() { return this.selected?.entries || []; }
     get entry() { return this.entries.find(e => e.recording_id === $('playing-recording').value); }
     visibility() {
@@ -335,7 +337,6 @@
       }
       if (window.StaticReplay) {
         $('presentation-edit').hidden = true;
-        this.header.hidden = true;
         $('playing-participant').closest('label').hidden = true;
       }
       if (this.active) {
@@ -465,7 +466,7 @@
       try {
         const saved = await this.player.host.api('/api/presentation/sets', {method: 'POST', body: JSON.stringify(payload)});
         this.sets = this.sets.filter(s => s.id !== saved.id && s.id !== 'suggested'); this.sets.push(saved); this.selected = saved;
-        this.renderSets(); this.dialog.close(); this.player.populate(); await this.player.prepare();
+        this.renderTypes(); this.dialog.close(); this.player.populate(); await this.player.prepare();
       } catch (error) { $('presentation-editor-status').textContent = error.message; }
       finally { $('presentation-save').disabled = $('presentation-save-copy').disabled = false; }
     }

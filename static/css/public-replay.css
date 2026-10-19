@@ -13,16 +13,14 @@
   text-decoration: underline;
 }
 
-/* Published replays use the saved participant and set automatically. Keep the
-   backing controls for the shared replay engine, but omit them from the panel. */
-body[data-public-replay="true"] .scenario-dropdowns > label:has(> #playing-participant),
-body[data-public-replay="true"] .scenario-dropdowns > label:has(> #presentation-set) {
+/* Published replays use the saved participant and set automatically. */
+body[data-public-replay="true"] .scenario-dropdowns > label:has(> #playing-participant) {
   display: none;
 }
 
 /* Give the trial name the available row width; speed needs only a short field. */
 body[data-public-replay="true"][data-experiment-mode="presentation"] .display-surface .scenario-dropdowns {
-  grid-template-columns: minmax(0, 1fr) 180px;
+  grid-template-columns: 150px minmax(0, 1fr) 180px;
 }
 body[data-public-replay="true"][data-experiment-mode="presentation"] .scenario-dropdowns .playing-recording-field {
   grid-column: auto;

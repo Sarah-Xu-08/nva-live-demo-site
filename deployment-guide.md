@@ -42,7 +42,7 @@ count below describes the current selection, not a permanently fixed limit.
    Presentation description link.
 
 5. **Publish only recordings saved in Presentation.** The current selection is
-   10 recordings in "Selected presentation trials". Derive the selection from
+   16 recordings in "Selected presentation trials". Derive the selection from
    the saved Presentation sets, not a hard-coded count, suggested set, or full
    catalogue. Preserve their saved game actions, original signal values and
    timestamps, and saved prediction results. Include no unrelated recordings or
@@ -58,8 +58,11 @@ count below describes the current selection, not a permanently fixed limit.
    described by Run Locally; preserve those local capabilities.
 
 7. **Preserve the public Presentation panel customizations.** Hide Participant
-   and Presentation set and load the saved selection automatically; retain both
-   selectors in the local app. Use the latest local custom recording names from
+   and load the saved selection automatically. Presentation replaces the set
+   dropdown with **PE trial type**, offering SPE and RPE (the saved RPE+SPE
+   condition), in both local and published replay. Filter Picked recording and
+   Previous/Next within that saved selection; retain all entries in the editor.
+   Use the latest local custom recording names from
    `static/data/recording-names.json` for Picked Recording, preserving their
    recording associations instead of reverting to old catalogue/default names.
    Keep the selector wide enough to show the full current trial names, with a
@@ -102,7 +105,7 @@ the relative links needed by a GitHub project site. The exporter fails if saved
 recordings, models used for provenance validation, prediction archives or saved
 presentation identities are missing/incompatible. It never trains or decodes.
 Only recordings referenced by saved Presentation sets are included (currently
-10 trials in “Selected presentation trials”). Presentation uses this selection.
+16 trials in “Selected presentation trials”). Presentation uses this selection.
 Other recordings' signals, predictions and catalogue entries,
 and the local editor's trial library, are omitted. If multiple sets are saved,
 their combined selection is exported once per recording. A missing or empty set
