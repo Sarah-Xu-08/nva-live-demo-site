@@ -13,11 +13,28 @@
   const sessions = new Map();
   let cataloguePromise, serial = 0;
   const json = async path => {
-    const response = await fetch(path);
-    if (!response.ok) throw new Error(`Saved demo file unavailable: ${path}`);
-    return response.json();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        let target = path;
+        if (attempt) {
+          const fresh = new URL(path, location.href);
+          fresh.searchParams.set('_retry', `${Date.now()}-${attempt}`);
+          target = fresh.href;
+        }
+        const response = await fetch(target, attempt ? {cache: 'no-store'} : {});
+        if (!response.ok) throw new Error(`Saved demo file unavailable: ${path} (HTTP ${response.status})`);
+        return await response.json();
+      } catch (error) {
+        if (attempt === 2) throw error;
+        // A temporary Pages/CDN response must not strand an otherwise valid replay.
+        await new Promise(resolve => setTimeout(resolve, attempt ? 600 : 200));
+      }
+    }
   };
-  const catalogue = () => cataloguePromise ||= json('data/catalogue.json?v=4991e3e87dd9');
+  const catalogue = () => cataloguePromise ||= json('data/catalogue.json?v=4991e3e87dd9').catch(error => {
+    cataloguePromise = null;
+    throw error;
+  });
   const lowerBound = (rows, time, field = null) => {
     let lo = 0, hi = rows.length;
     while (lo < hi) {
