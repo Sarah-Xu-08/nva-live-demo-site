@@ -2125,6 +2125,23 @@
 
   const playing = new window.PlayingSessions({
     api, status: setSystemStatus, eegStatus: () => runtime.eegStatus,
+    floorIndicators: (marks = []) => {
+      const scene = runtime.game?.game?.scene?.getScene('PlayGame');
+      if (!scene?.add) return;
+      const graphics = scene.presentationFloor ||= scene.add.graphics().setDepth(.05);
+      graphics.clear(); scene.presentationFloorIndicators = marks;
+      // Floor tiles are depth 0; chefs, loose items and cabinet rows cover
+      // these marks naturally, using the kitchen's existing ground order.
+      for (const mark of marks) for (const [width, color] of [[6, 0xffffff], [2.5, parseInt(mark.color.slice(1), 16)]]) {
+        graphics.lineStyle(width, color, 1); graphics.fillStyle(color, 1);
+        for (const points of mark.segments) {
+          graphics.beginPath();
+          points.forEach(([x, y], i) => graphics[i ? 'lineTo' : 'moveTo'](x * runtime.tileSize, y * runtime.tileSize));
+          graphics.strokePath();
+          for (const [x, y] of points) graphics.fillCircle(x * runtime.tileSize, y * runtime.tileSize, width / 2);
+        }
+      }
+    },
     syncPanels: syncRawEegVisibility,
     selectLive: () => selectCategory(elements.classFilter.value),
     liveSelection: () => ({scenario_id: runtime.selectedScenarioId,

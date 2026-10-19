@@ -17,7 +17,7 @@
     if (!response.ok) throw new Error(`Saved demo file unavailable: ${path}`);
     return response.json();
   };
-  const catalogue = () => cataloguePromise ||= json('data/catalogue.json');
+  const catalogue = () => cataloguePromise ||= json('data/catalogue.json?v=46db9811b12c');
   const lowerBound = (rows, time, field = null) => {
     let lo = 0, hi = rows.length;
     while (lo < hi) {

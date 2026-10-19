@@ -53,6 +53,24 @@
   font-weight:500;
   color:var(--nv-ink);
 }
+#nva-project .nv-overview-citation {
+  font-size:11px;
+  line-height:1.65;
+  color:var(--nv-muted);
+}
+#nva-project .nv-overview-citation-label {
+  font-size:9px;
+  font-weight:600;
+  letter-spacing:.45px;
+  text-transform:uppercase;
+}
+#nva-project .nv-overview-citation a {
+  color:inherit;
+  white-space:normal;
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:3px;
+}
 #nva-project .nv-overview-diagram {
   margin:16px auto 30px;
   width:100%;

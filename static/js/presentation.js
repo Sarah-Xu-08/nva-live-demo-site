@@ -191,11 +191,18 @@
           ? to.map((value, axis) => from[axis] + (value - from[axis]) * amount) : to;
       });
       const matching = critical && positions.every((position, i) => position.every((v, axis) => Math.abs(v - critical.state.players[i].position[axis]) < .01));
+      const floorMarks = [];
       positions.forEach((position, i) => {
-        const box = actorBox(position, 4), color = actorColors[i];
-        protectedBoxes.push(box);
-        this.mapSvg.append(svgNode('rect', {...box, rx: 12, fill: 'none', stroke: 'white', 'stroke-width': 7}),
-          svgNode('rect', {...box, rx: 12, fill: 'none', stroke: color, 'stroke-width': 3, 'data-actor': i === 0 ? 'human' : 'ai'}));
+        const color = actorColors[i], actor = i === 0 ? 'human' : 'ai';
+        protectedBoxes.push(actorBox(position, 4), tileBox(position, 3));
+        const [x, y] = position, inset = .07, leg = .19;
+        const left = x + inset, right = x + 1 - inset, top = y + inset, bottom = y + 1 - inset;
+        floorMarks.push({kind: 'bracket', actor, color, position, segments: [
+          [[left, top + leg], [left, top], [left + leg, top]],
+          [[right - leg, top], [right, top], [right, top + leg]],
+          [[left, bottom - leg], [left, bottom], [left + leg, bottom]],
+          [[right - leg, bottom], [right, bottom], [right, bottom - leg]],
+        ]});
         if (!matching || !critical.before) return;
         const from = critical.before.players[i], action = critical.actions[i];
         const delta = directions[action] || (action === 'INTERACT' ? from.orientation : null);
@@ -203,22 +210,37 @@
         const target = from.position.map((v, axis) => v + delta[axis]);
         const raised = action === 'INTERACT' && counterAt(target);
         protectedBoxes.push(tileBox(target, 6, raised));
+        if (action !== 'INTERACT') {
+          // A southern worktop covers the boots. Keep one shared floor lane
+          // just above that lip so both directions into a tile stay readable.
+          const contact = Math.min(KitchenStyle.actorGround(1), 1 - KitchenStyle.gridOffset(1) - .1);
+          const start = [from.position[0] + .5, from.position[1] + contact];
+          // Leave more room at an occupied destination so the arriving chef
+          // does not cover the arrowhead on the floor beneath it.
+          const gap = positions.some(p => p.every((v, axis) => Math.abs(v - target[axis]) < .01)) ? .33 : .11;
+          const end = [target[0] + .5 - delta[0] * gap, target[1] + contact - delta[1] * gap];
+          const [ux, uy] = delta;
+          floorMarks.push({kind: 'movement', actor, color, target, segments: [
+            [start, end],
+            [[end[0] - ux * .13 - uy * .075, end[1] - uy * .13 + ux * .075], end,
+              [end[0] - ux * .13 + uy * .075, end[1] - uy * .13 - ux * .075]],
+          ]});
+          return;
+        }
         const start = center(from.position), end = center(target, raised);
-        // Floor arrows follow the chefs' lowered foot contact. Interactions
-        // still point to the center of the raised worktop.
         start.y += KitchenStyle.actorGround(th) - th / 2;
         if (!raised) end.y += KitchenStyle.actorGround(th) - th / 2;
         const dx = end.x - start.x, dy = end.y - start.y, length = Math.hypot(dx, dy), ux = dx / length, uy = dy / length;
-        // Separate joint attempts at a shared tile without changing their destinations.
-        const offset = i === 0 ? -5 : 5;
-        const sx = start.x - uy * offset, sy = start.y + ux * offset;
-        const ex = end.x - ux * 9 - uy * offset, ey = end.y - uy * 9 + ux * offset;
-        const d = `M ${sx} ${sy} L ${ex} ${ey} M ${ex - ux * 10 - uy * 6} ${ey - uy * 10 + ux * 6} L ${ex} ${ey} L ${ex - ux * 10 + uy * 6} ${ey - uy * 10 - ux * 6}`;
+        // Interaction pointers are shorter and lift to the worktop; movement
+        // arrows remain on the floor and never run across a carried item.
+        const sx = end.x - ux * Math.min(length * .42, tw * .38), sy = end.y - uy * Math.min(length * .42, th * .38);
+        const ex = end.x - ux * 7, ey = end.y - uy * 7;
+        const d = `M ${sx} ${sy} L ${ex} ${ey} M ${ex - ux * 7 - uy * 4} ${ey - uy * 7 + ux * 4} L ${ex} ${ey} L ${ex - ux * 7 + uy * 4} ${ey - uy * 7 - ux * 4}`;
         this.mapSvg.append(svgNode('path', {d, fill: 'none', stroke: 'white', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}),
-          svgNode('path', {d, fill: 'none', stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'data-action-actor': i === 0 ? 'human' : 'ai'}));
+          svgNode('path', {d, fill: 'none', stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'data-action-actor': actor, 'data-action-kind': 'interaction'}));
       });
+      this.player.host.floorIndicators(floorMarks);
       const anchor = center(positions[1] || positions[0]);
-      anchor.y += KitchenStyle.actorOffset(th);
       if (this.card.hidden) return;
       if (this.card.parentNode !== this.mapLayer) this.mapLayer.append(this.card);
       this.card.classList.remove('is-docked');
@@ -256,7 +278,7 @@
       this.card.style.left = `${best.x}px`; this.card.style.top = `${best.y}px`;
       const edge = {x: Math.max(best.x + 14, Math.min(best.x + card.width - 14, anchor.x)), y: Math.max(best.y + 14, Math.min(best.y + card.height - 14, anchor.y))};
       const dx = edge.x - anchor.x, dy = edge.y - anchor.y;
-      const toOutline = Math.min((tw / 2 + 4) / Math.max(.001, Math.abs(dx)), (th / 2 + 4) / Math.max(.001, Math.abs(dy)));
+      const toOutline = Math.min(tw * .43 / Math.max(.001, Math.abs(dx)), th * .43 / Math.max(.001, Math.abs(dy)));
       const end = {x: anchor.x + dx * toOutline, y: anchor.y + dy * toOutline};
       const d = `M ${edge.x} ${edge.y} L ${end.x} ${end.y}`;
       this.mapSvg.prepend(svgNode('path', {d, stroke: 'white', 'stroke-width': 5}), svgNode('path', {d, stroke: '#111', 'stroke-width': 1.5}));
@@ -306,6 +328,7 @@
     visibility() {
       document.querySelectorAll('.presentation-only').forEach(e => e.hidden = !this.active);
       if (!this.active) {
+        this.player.host.floorIndicators();
         this.mapLayer.hidden = this.mapDock.hidden = this.evidenceOverlay.hidden = this.mapReopen.hidden = this.evidenceReopen.hidden = true;
         this.evidenceSvg.toggleAttribute('hidden', true);
         this.syncContinue();
@@ -333,6 +356,7 @@
       if (!this.active) { this.syncContinue(); return; }
       const time = this.player.viewEnd;
       const shown = !!this.annotating, visibleEvidence = shown && !!this.visibleEvidence;
+      if (!shown) this.player.host.floorIndicators();
       const error = shown && !visibleEvidence && info.evidence_error;
       const actionAvailable = shown && ((!visibleEvidence && !error) || time >= this.player.session.duration);
       this.mapLayer.hidden = !shown;
