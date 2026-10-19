@@ -56,8 +56,8 @@
       const target = document.getElementById(id);
       return sections.find(section => section === target || section.contains(target));
     }
-    function chooseSection() {
-      const selected = sectionFor(location.hash) || sections[0];
+    function chooseSection(hash = location.hash) {
+      const selected = sectionFor(hash) || sections[0];
       sections.forEach(section => { section.hidden = section !== selected; });
       links.forEach(link => {
         if (link.hash === `#${selected.id}`) link.setAttribute('aria-current', 'location');
@@ -71,16 +71,22 @@
       const selected = sectionFor(link.hash);
       if (!selected) return;
       event.preventDefault();
-      if (location.hash !== link.hash) history.pushState(null, '', link.hash);
-      chooseSection();
+      // Rendering must not depend on the History API accepting an update.
+      // Browsers can throttle it while the rest of the page remains interactive.
+      try {
+        if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+      } catch (error) {
+        if (error.name !== 'SecurityError') throw error;
+      }
+      chooseSection(link.hash);
       if (!tabs.contains(link)) {
         // A link at the end of a stage returns readers to the tab bar.
         links.find(item => item.hash === `#${selected.id}`).focus({ preventScroll: true });
         tabs.scrollIntoView({ block: 'start' });
       }
     });
-    window.addEventListener('hashchange', chooseSection);
-    window.addEventListener('popstate', chooseSection);
+    window.addEventListener('hashchange', () => chooseSection());
+    window.addEventListener('popstate', () => chooseSection());
   });
   const framework = root.querySelector('[data-framework-diagram]');
   if (framework) {

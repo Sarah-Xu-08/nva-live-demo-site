@@ -2,7 +2,22 @@
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
+  // Live frames change values, not the surrounding controls. Preserve text
+  // nodes and skip equal writes so observers/native menus do not redraw setup.
+  const setText = (id, value) => {
+    const element = $(id);
+    if (element.textContent === value) return;
+    if (element.childNodes.length === 1 && element.firstChild.nodeType === Node.TEXT_NODE)
+      element.firstChild.data = value;
+    else element.textContent = value;
+  };
+  const setControl = (id, property, value) => {
+    const element = $(id);
+    if (element[property] !== value) element[property] = value;
+  };
   const WINDOW = 1.5;
+  const LIVE_SAMPLE_MAX_AGE = .25;
+  const LIVE_ESTIMATE_HOLD = .5;
   const COLORS = ["#7b8188", "#d783a6", "#4f83cc"];
   const colorsForEvidence = (label, alpha) => label === 1 ? `rgba(215,131,166,${alpha})` : `rgba(79,131,204,${alpha})`;
   const CHANNELS = ["AF3", "F7", "F3", "FC5", "T7", "O1"];
@@ -104,8 +119,10 @@
       clearTimeout(this.setupClose);
       open = this.focused && open;
       document.body.classList.toggle("playing-setup-open", open);
-      this.setupBar.setAttribute("aria-expanded", String(open));
-      this.setupHeader.inert = this.focused && !open;
+      if (this.setupBar.getAttribute("aria-expanded") !== String(open))
+        this.setupBar.setAttribute("aria-expanded", String(open));
+      const inert = this.focused && !open;
+      if (this.setupHeader.inert !== inert) this.setupHeader.inert = inert;
     }
     deferSetupClose() {
       clearTimeout(this.setupClose);
@@ -252,7 +269,8 @@
         this.raw = []; this.probabilities = []; this.gameHistory = []; this.elapsed = 0; this.viewEnd = 0;
         for (const id of ["rpe-value", "spe-value", "nonpe-value"]) $(id).textContent = "—";
         $("decoded-class").textContent = "Unavailable";
-        $("decoder-confidence").textContent = "Preparing recorded EEG";
+        setText("decoder-confidence", this.recorded ? "Preparing recorded EEG" : "Preparing trial");
+        setText("playback-status", "Preparing trial…");
         this.visibility(); this.syncControls(); this.draw();
         if (this.presenting && !this.matching.length) throw new Error("No trials in this presentation set. Use Edit presentation set to add recordings.");
         if (!this.recorded && !this.liveTrials?.length)
@@ -289,10 +307,11 @@
             $("playback-status").textContent = "Playback connection interrupted · reconnecting";
         };
         const pollPreparation = async () => {
-          if (generation !== this.generation || this.state !== "PREPARING") return;
+          const pending = () => this.state === "PREPARING" || (!this.recorded && this.state === "BRIEFING");
+          if (generation !== this.generation || !pending()) return;
           try {
             const status = await this.host.api(`/api/session/${session.session_id}`);
-            if (generation !== this.generation) return;
+            if (generation !== this.generation || !pending()) return;
             this.applyState(status);
             this.poll = setTimeout(pollPreparation, 500);
           } catch (error) { if (generation === this.generation) this.unavailable(error); }
@@ -360,9 +379,8 @@
         BRIEFING: "Read the Briefing, then confirm to begin", FIXATION: "Fixation", RUNNING: "Watch the collaboration",
         PAUSED: "Paused · move Trial history, then Resume", RESTORING: "Restoring EEG at the selected time…",
         COMPLETE: this.presenting ? "Complete · Replay, Previous, or Next" : "Complete · Replay, Next, or Random"}[this.state] || this.state;
-      $("playback-status").textContent = text;
+      setText("playback-status", text);
       this.host.status(text, this.state !== "PREPARING");
-      if (this.state === "BRIEFING") $("decoder-confidence").textContent = "";
       if (this.state === "RESTORING") $("decoder-confidence").textContent = "Restoring causal decoder state";
       if (this.state === "COMPLETE" && !this.recorded) this.stream?.close();
       if (this.reviewing) { this.elapsed = session.elapsed; this.pan(this.elapsed); }
@@ -375,7 +393,12 @@
       this.elapsed = frame.elapsed;
       this.state = frame.state;
       frame.timestamps.forEach((time, i) => this.raw.push({time, values: frame.samples[i]}));
-      this.probabilities.push(...frame.predictions.map(row => ({...row, display_elapsed: frame.elapsed})));
+      // missing_eeg is a delivery-time notification with no source sample.
+      // Keep only actual decoder outputs in history. A delayed, contiguous
+      // packet can then fill its real sample times without a permanent hole.
+      this.probabilities.push(...frame.predictions
+        .filter(row => this.recorded || row.reason !== 'missing_eeg')
+        .map(row => ({...row, display_elapsed: frame.elapsed})));
       for (const action of frame.actions) {
         const snapshot = this.host.action(action, this.recorded);
         if (snapshot) this.gameHistory.push(snapshot);
@@ -383,11 +406,11 @@
       // Recorded animation uses the same source time as the EEG, including
       // partial moves after a seek. No independent tween can run while paused.
       if (this.recorded) this.showGame(this.elapsed);
-      $("pre-scenario-overlay").hidden = this.state !== "FIXATION";
+      setControl("pre-scenario-overlay", "hidden", this.state !== "FIXATION");
       this.viewEnd = this.elapsed;
       this.readout(this.viewEnd); this.guide.update(frame.presentation);
-      $("playback-status").textContent = this.state === "FIXATION" ? "Fixation" : "Watch the collaboration";
-      this.syncControls(); this.draw();
+      setText("playback-status", this.state === "FIXATION" ? "Fixation" : "Watch the collaboration");
+      this.syncControls(); this.scheduleDraw();
     }
     visibility() {
       const active = this.active;
@@ -397,6 +420,10 @@
       document.querySelectorAll("[data-playing-field]").forEach(e => e.hidden = !active);
       $("playing-participant").closest("label").hidden = !active || this.keyboardSelected;
       document.querySelectorAll("[data-playing-recorded]").forEach(e => e.hidden = !active || !this.recorded);
+      if (active) {
+        $("recording-speed").closest("label").hidden = this.recorded || this.keyboardSelected;
+        $("recording-speed").setAttribute("aria-label", "Movement speed");
+      } else $("recording-speed").setAttribute("aria-label", "Recording speed");
       for (const id of ["playing-trial-navigation", "playing-next", "playing-random"]) $(id).hidden = !active || !this.recorded;
       $("playing-previous").hidden = !this.presenting;
       if (!active) for (const id of ["pause-button", "resume-button"]) $(id).hidden = true;
@@ -415,11 +442,12 @@
       }
       $("participant-id").closest("label").hidden = true;
       $("decoder-field").hidden = true;
-      for (const id of ["class-filter", "scenario-select", "layout-select", "eeg-stream-select"])
+      for (const id of ["class-filter", "scenario-select", "eeg-stream-select"])
         $(id).closest("label").hidden = this.recorded;
+      $("layout-select").closest("label").hidden = true;
       $("eeg-top-connect").hidden = this.recorded;
       $("eeg-connect").hidden = this.recorded;
-      document.querySelector(".speed-hover-control").hidden = this.recorded;
+      document.querySelector(".speed-hover-control").hidden = true;
       document.querySelector(".eeg-card-heading h2").textContent = "EEG · 1.5 s";
       $("eeg-waveform").setAttribute("aria-label", "Six-channel EEG · shared 1.5-second timeline");
       $("probability-chart").setAttribute("aria-label", "RPE, SPE and nonPE probabilities · shared 1.5-second timeline");
@@ -429,53 +457,56 @@
     status(status) {
       if (!this.active || this.keyboardSelected) return;
       if (this.recorded) {
-        $("eeg-connection").textContent = "Recorded EEG";
-        $("eeg-quality").textContent = "128 Hz · 14 channels";
-        $("eeg-quality-detail").textContent = window.StaticReplay
+        setText("eeg-connection", "Recorded EEG");
+        setText("eeg-quality", "128 Hz · 14 channels");
+        setText("eeg-quality-detail", window.StaticReplay
           ? "Recorded signals and saved predictions · replay only"
-          : "Original samples · causal decoding during playback";
+          : "Original samples · causal decoding during playback");
         $("eeg-connection").closest(".status-chip").classList.remove("is-alert");
       } else {
-        $("eeg-connection").textContent = status?.mode === "live" ? status.status : "Live EEG required";
-        $("eeg-quality").textContent = "128 Hz · 14 channels";
-        $("eeg-quality-detail").textContent = "Mean of five saved session models · no retraining";
+        setText("eeg-connection", status?.mode === "live" ? status.status : "Live EEG required");
+        setText("eeg-quality", "128 Hz · 14 channels");
+        setText("eeg-quality-detail", "Mean of five saved session models · no retraining");
       }
     }
     syncControls() {
       if (!this.active) return;
-      if (this.keyboardSelected) { document.body.dataset.playingState = "KEYBOARD"; $("experiment-mode").disabled = false; return; }
-      document.body.dataset.playingState = this.state;
-      $("start-button").hidden = true;
-      $("start-recording-session").hidden = true;
-      $("reset-button").textContent = this.busy || ["PREPARING", "RESTORING"].includes(this.state) ? "Cancel" : "Replay";
-      $("reset-button").disabled = false;
-      $("pause-button").hidden = !this.recorded || !this.busy;
-      $("pause-button").disabled = !this.busy || this.commandPending;
-      $("resume-button").hidden = !this.recorded || !(this.reviewing || this.state === "RESTORING")
-        || (this.presenting && this.viewEnd >= this.session?.duration);
-      $("resume-button").disabled = !this.reviewing || this.commandPending || this.viewEnd >= this.session?.duration;
-      $("confirm-hint").hidden = !["PREPARING", "BRIEFING"].includes(this.state);
-      $("confirm-hint").disabled = this.state !== "BRIEFING" || this.starting;
-      $("confirm-hint").textContent = "I’ve read the Briefing";
-      $("playing-playback-rate").disabled = this.busy || ["PAUSED", "RESTORING"].includes(this.state);
+      const state = this.keyboardSelected ? "KEYBOARD" : this.state;
+      if (document.body.dataset.playingState !== state) document.body.dataset.playingState = state;
+      if (this.keyboardSelected) { setControl("experiment-mode", "disabled", false); return; }
+      setControl("start-button", "hidden", true);
+      setControl("start-recording-session", "hidden", true);
+      setText("reset-button", this.busy || ["PREPARING", "RESTORING"].includes(this.state) ? "Cancel" : "Replay");
+      setControl("reset-button", "disabled", false);
+      setControl("pause-button", "hidden", !this.recorded || !this.busy);
+      setControl("pause-button", "disabled", !this.busy || !!this.commandPending);
+      setControl("resume-button", "hidden", !this.recorded || !(this.reviewing || this.state === "RESTORING")
+        || (this.presenting && this.viewEnd >= this.session?.duration));
+      setControl("resume-button", "disabled", !this.reviewing || !!this.commandPending || this.viewEnd >= this.session?.duration);
+      setControl("confirm-hint", "hidden", !["PREPARING", "BRIEFING"].includes(this.state));
+      setControl("confirm-hint", "disabled", this.state !== "BRIEFING" || !!this.starting
+        || (!this.recorded && !this.session?.live_decoder?.ready));
+      setText("confirm-hint", "I’ve read the Briefing");
+      setControl("playing-playback-rate", "disabled", this.busy || ["PAUSED", "RESTORING"].includes(this.state));
       document.querySelector(".hint-control").classList.toggle("hint-required", ["PREPARING", "BRIEFING"].includes(this.state));
-      $("trial-briefing").setAttribute("role", "region");
-      $("control-state").textContent = this.state === "BRIEFING" ? "Ready" : this.state.toLowerCase();
-      $("session-progress").textContent = this.recorded ? `${this.matching.length} picked recordings` : "Live EEG";
-      $("resume-button").textContent = this.presenting ? "Continue" : "Resume";
+      if ($("trial-briefing").getAttribute("role") !== "region") $("trial-briefing").setAttribute("role", "region");
+      setText("control-state", this.state === "BRIEFING" ? "Ready" : this.state.toLowerCase());
+      setText("session-progress", this.recorded ? `${this.matching.length} picked recordings` : "Live EEG");
+      setText("resume-button", this.presenting ? "Continue" : "Resume");
       // Selectors stay available so changing source always cancels obsolete work.
-      for (const id of ["experiment-mode", "class-filter", "scenario-select", "layout-select", "movement-speed", "eeg-stream-select", "eeg-top-connect", "eeg-connect"])
-        $(id).disabled = id === "movement-speed" && (this.recorded || this.starting
-          || this.busy || ["PAUSED", "RESTORING"].includes(this.state));
-      $("playing-next").disabled = $("playing-random").disabled = !this.matching.length;
-      $("playing-previous").disabled = this.matching.findIndex(r => r.id === $("playing-recording").value) <= 0;
+      for (const id of ["experiment-mode", "class-filter", "scenario-select", "layout-select", "movement-speed", "recording-speed", "eeg-stream-select", "eeg-top-connect", "eeg-connect"])
+        setControl(id, "disabled", ["movement-speed", "recording-speed"].includes(id) && (this.recorded || !!this.starting
+          || this.busy || ["PAUSED", "RESTORING"].includes(this.state)));
+      setControl("recording-speed", "value", $("movement-speed").value);
+      for (const id of ["playing-next", "playing-random"]) setControl(id, "disabled", !this.matching.length);
+      setControl("playing-previous", "disabled", this.matching.findIndex(r => r.id === $("playing-recording").value) <= 0);
       for (const id of ["playing-history", "playing-history-left", "playing-history-right"])
-        $(id).disabled = !this.reviewing || this.elapsed <= 0 || this.commandPending;
+        setControl(id, "disabled", !this.reviewing || this.elapsed <= 0 || !!this.commandPending);
       this.guide.update();
-      $("playing-history-help").textContent = this.presenting ? "Shaded bands: correct PE · ring: selected pause point. Pause to seek; Continue resumes all views." : this.reviewing
+      setText("playing-history-help", this.presenting ? "Shaded bands: correct PE · ring: selected pause point. Pause to seek; Continue resumes all views." : this.reviewing
         ? this.recorded ? "Move all three views together, then Resume from the selected time." : "Scroll game, EEG and probabilities together."
         : this.recorded ? "Pause to move Trial history, then Resume. Both plots show 1.5 seconds."
-        : "Both panels show the latest 1.5 seconds.";
+        : "Both panels show the latest 1.5 seconds.");
     }
     async reset() {
       if (this.busy || ["PREPARING", "RESTORING"].includes(this.state)) {
@@ -495,17 +526,48 @@
       this.syncControls();
     }
     readout(time) {
+      if (this.state === 'BRIEFING' && !this.recorded) {
+        const live = this.session?.live_decoder;
+        const waiting = !live?.ready && !!live?.last_estimate;
+        const probabilities = live?.probabilities || (waiting ? live.last_estimate.probabilities : null);
+        for (const [i, id] of ['nonpe-value', 'spe-value', 'rpe-value'].entries())
+          setText(id, probabilities?.[i] == null ? '—' : `${(probabilities[i] * 100).toFixed(1)}%`);
+        setText('decoded-class', waiting ? 'WAITING' : live?.decoded_class || 'UNAVAILABLE');
+        setText('decoder-confidence', waiting ? 'Last estimate · awaiting live EEG'
+          : live?.ready ? ''
+          : `${live?.reason || 'Waiting for live EEG'}${live?.reason === 'Warming live EEG decoder'
+            ? ` · ${live.warmup_elapsed.toFixed(1)} / ${live.warmup_seconds} s` : ''}`);
+        return;
+      }
       if (['PREPARING', 'BRIEFING', 'RESTORING', 'UNAVAILABLE', 'CANCELLED', 'IDLE'].includes(this.state)) return;
       const fixation = this.recorded && this.session && time < this.session.fixation_seconds
         && !['IDLE', 'PREPARING', 'BRIEFING', 'UNAVAILABLE', 'CANCELLED'].includes(this.state);
-      const result = this.probabilities.filter(r => r.sample_elapsed <= time
+      const visible = this.probabilities.filter(r => r.sample_elapsed <= time
         && (r.display_elapsed ?? r.available_elapsed) <= time + 1e-9 && r.sample_elapsed >= time - WINDOW
-        && (!this.recorded || r.sample_elapsed >= this.session.fixation_seconds)).at(-1);
+        && (!this.recorded || r.sample_elapsed >= this.session.fixation_seconds));
+      let result = visible.at(-1), waiting = false;
+      if (!this.recorded && result?.reason === 'missing_eeg') {
+        // A brief packet wait is not a new prediction. Keep the last estimate
+        // labeled as earlier evidence; never bridge a decoder-invalid window.
+        const previous = visible.filter(row => row.reason !== 'missing_eeg').at(-1);
+        if (previous?.valid && time - previous.sample_elapsed <= LIVE_ESTIMATE_HOLD) {
+          result = previous; waiting = true;
+        }
+      }
+      if (!this.recorded && result?.valid) {
+        const age = time - result.sample_elapsed;
+        const lastSample = this.raw.findLast(row => row.time <= time);
+        const sampleAge = time - (lastSample?.time ?? result.sample_elapsed);
+        if (age > LIVE_ESTIMATE_HOLD) result = null;
+        else if (sampleAge > LIVE_SAMPLE_MAX_AGE) waiting = true;
+      }
       for (const [i, id] of ['nonpe-value', 'spe-value', 'rpe-value'].entries())
-        $(id).textContent = fixation ? '33.3%' : result?.probabilities?.[i] == null ? '—' : `${(result.probabilities[i] * 100).toFixed(1)}%`;
-      $('decoded-class').textContent = fixation ? 'Fixation' : result?.decoded_class || 'UNAVAILABLE';
-      $('decoder-confidence').textContent = fixation ? 'Equal baseline · display only' : result?.valid
-        ? '10 pp margin · observation only' : result?.reason === 'missing_eeg' ? 'EEG unavailable' : 'Waiting for a valid prediction';
+        setText(id, fixation ? '33.3%' : result?.probabilities?.[i] == null ? '—' : `${(result.probabilities[i] * 100).toFixed(1)}%`);
+      setText('decoded-class', fixation ? 'Fixation' : waiting ? 'WAITING' : result?.decoded_class || 'UNAVAILABLE');
+      setText('decoder-confidence', fixation ? 'Equal baseline · display only' : waiting
+        ? 'Last estimate · awaiting live EEG' : result?.valid
+        ? ''
+        : result?.reason === 'missing_eeg' ? 'EEG unavailable' : 'Waiting for a valid prediction');
     }
     showGame(time, restore = false) {
       const snapshot = this.gameHistory.filter(row => row.at <= time).at(-1);
@@ -551,6 +613,10 @@
       const p = axes("probability-chart", true);
       const rows = this.probabilities.filter(r => r.sample_elapsed >= start && r.sample_elapsed <= this.viewEnd
         && (r.display_elapsed ?? r.available_elapsed) <= this.viewEnd + 1e-9 && (!this.recorded || r.sample_elapsed >= this.session?.fixation_seconds));
+      // Display the estimate already available at onset at the left boundary;
+      // retained rows keep the original pre-onset sample and availability times.
+      const carried = !this.recorded && start === 0 && this.probabilities.find(row => row.carried_in);
+      if (carried) rows.unshift({...carried, sample_elapsed: 0});
       if (p && this.presenting) for (const interval of window.PresentationGuide.correctIntervals(rows)) {
         p.ctx.fillStyle = colorsForEvidence(interval.label, .12);
         p.ctx.fillRect(p.x(interval.start), p.top,
@@ -574,6 +640,11 @@
           last = t;
         }
         p.ctx.stroke();
+        if (carried?.probabilities?.[channel] != null) {
+          p.ctx.fillStyle = color; p.ctx.beginPath();
+          p.ctx.arc(p.x(0), p.bottom - carried.probabilities[channel] * (p.bottom - p.top), 2.5, 0, Math.PI * 2);
+          p.ctx.fill();
+        }
       });
       const e = axes("eeg-waveform", false);
       if (p && e && this.presenting && this.guide.info) {
@@ -613,11 +684,11 @@
         }
         e.ctx.stroke();
       });
-      $("playing-history").min = '0';
+      setControl("playing-history", "min", '0');
       // Keep a fixed full-trial scale; elapsed limits seeking, not the axis.
-      $("playing-history").max = String(this.displayTime(this.session?.duration ?? this.elapsed));
-      $("playing-history").value = String(this.displayTime(this.viewEnd));
-      $("playing-time-range").textContent = `${this.displayTime(this.viewEnd).toFixed(2)} s · ${this.displayTime(start).toFixed(2)}–${this.displayTime(start + span).toFixed(2)} s`;
+      setControl("playing-history", "max", String(this.displayTime(this.session?.duration ?? this.elapsed)));
+      setControl("playing-history", "value", String(this.displayTime(this.viewEnd)));
+      setText("playing-time-range", `${this.displayTime(this.viewEnd).toFixed(2)} s · ${this.displayTime(start).toFixed(2)}–${this.displayTime(start + span).toFixed(2)} s`);
       if (this.presenting && p && e) this.guide.layout({p, e});
     }
   };

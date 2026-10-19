@@ -170,6 +170,26 @@ Only “Goal mismatch” and “Action mismatch” appear as text in the artwork
 decoding route on mobile to keep the labels readable. The diagram and
 interactive panel are 800 px wide at most; the TL;DR is 730 px wide at most.
 The existing light/dark switch also styles the illustration.
+The active first diagram is `../assets/overview/brain-feedback-single-stream-clean-300dpi.png`.
+Its white scratches and scuffed outlines were cleaned with ImageGen while
+preserving the scene, tangled speech bubble, single signal stream, colors and
+labels. The PNG has 300 dpi metadata at 1774 × 887 pixels, matching the
+companion's print settings. The original `brain-feedback-single-stream.png`
+remains available. Desktop and both mobile crops use the same cleaned asset.
+
+The TL;DR connects unspoken goal/action feedback with the aim of distilling a
+personalized AI partner. Below the interactive panel, a paragraph marked
+“(ongoing work)” introduces using decoded feedback to refine collaborative
+behavior. The approved `../assets/overview/partner-distillation-clean-300dpi.png` companion
+shows the human and robot jointly holding the white cylinder, black traces
+inside the human brain, blue/pink paths entering the distiller from above, and
+one output entering the robot head from the left. It retains its full framing
+at up to 800 px wide and uses the same light/dark treatment as the first diagram.
+The cleaned companion has continuous outlines and 300 dpi metadata at 1774 ×
+887 pixels (about 5.91 × 2.96 inches in print). The original companion remains
+saved as `partner-distillation.png`. The first decoding diagram keeps its
+original scene and information flow. This describes a research
+direction; it does not enable adaptation in the interactive panel or demo.
 
 The **Find the mismatch** panel combines each agent’s goal-defined rewards and
 trajectory states into its value function. `value-landscapes.css`,

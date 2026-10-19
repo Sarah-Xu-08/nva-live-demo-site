@@ -361,6 +361,7 @@
       DELIVERY_REWARD: 20,
     });
     KitchenStyle.attach(runtime.game, {tileSize: runtime.tileSize});
+    KitchenMotion.attach(runtime.game, {tileSize: runtime.tileSize, actionMs: runtime.playback?.step_ms});
     runtime.state = runtime.game.mdp.get_start_state(
       runtime.scenarioName === "split_work" ? ["onion", "onion"] : ["onion"]
     );
@@ -1009,7 +1010,7 @@
         joint_action: [Action.INDEX_TO_ACTION[4], Action.INDEX_TO_ACTION[repair.final_ai_action]],
       });
       runtime.state = transition[0][0];
-      runtime.game.drawState(runtime.state);
+      runtime.game.motion.drawState(runtime.state, {actions: ['STAY', repair.final_ai_action_name]});
       elements.decoderAction.textContent = `${repair.repair_phase.replaceAll("_", " ")} · ${repair.final_ai_action_name}`;
       if (repair.eeg_revision) runtime.revisions += 1;
       elements.revisions.textContent = String(runtime.revisions);
@@ -1057,18 +1058,22 @@
     if (runtime.experimentMode === "recording") {
       elements.speedTiming.textContent = `2 s fixation per trial · scripted correction +${(1500 + 3 * selected.step_ms) / 1000} s`;
     }
-    elements.playbackStatus.textContent = "Ready · play this example";
-    elements.sessionLabel.textContent = "No active session";
-    setSystemStatus("Ready · play the selected example", true);
     elements.scenario.value = usesTrialFiles() ? selected.trial_alias : selected.id;
-    elements.briefingTitle.textContent = selected.title;
-    elements.briefingExpectation.textContent = selected.human_expectation;
+    if (!["play", "presentation"].includes(runtime.experimentMode)) {
+      elements.playbackStatus.textContent = "Ready · play this example";
+      elements.sessionLabel.textContent = "No active session";
+      setSystemStatus("Ready · play the selected example", true);
+      elements.briefingTitle.textContent = selected.title;
+      elements.briefingExpectation.textContent = selected.human_expectation;
+    }
     // Recorded playback mounts its frozen occurrence, and the editor owns its
-    // preview. Do not show a temporary catalogue kitchen in either mode.
-    if (runtime.catalogueReady && (!["editor", "play", "presentation"].includes(runtime.experimentMode)
-        || (playing.active && !playing.recorded))) initializeGame();
-    resetReadout();
-    resetDecoderUI();
+    // preview. Keep Playing's last frozen kitchen/Briefing until the next
+    // occurrence is ready instead of briefly laying out catalogue content.
+    if (runtime.catalogueReady && !["editor", "play", "presentation"].includes(runtime.experimentMode)) initializeGame();
+    if (!["play", "presentation"].includes(runtime.experimentMode)) {
+      resetReadout();
+      resetDecoderUI();
+    }
     syncControls();
   }
 
@@ -1394,7 +1399,7 @@
     elements.category.closest("label").hidden = !isPreview || isEditor;
     if (isPreview) window.clearTimeout(runtime.eegReconnectTimer);
     elements.participantId.closest("label").hidden = isPreview;
-    elements.recordingSpeed.closest("label").hidden = runtime.experimentMode !== "recording";
+    elements.recordingSpeed.closest("label").hidden = runtime.experimentMode !== "recording" && !usingLiveTrialLibrary();
     elements.eegStreamSelect.closest("label").hidden = isPreview;
     elements.eegTopConnect.hidden = isPreview;
     elements.exampleReviewControl.hidden = !isPreview || isEditor;
@@ -1556,7 +1561,9 @@
       runtime.score += transition[1];
       renderOrders(runtime.state);
       runtime.tick += 1;
-      runtime.game.drawState(runtime.state);
+      runtime.game.motion.drawState(runtime.state, {
+        actions: [humanName, aiName], nextActions: runtime.playback.trajectory[runtime.tick]
+      });
       runtime.game.drawScore(runtime.score);
       elements.playbackStatus.textContent = isCorrection
         ? `Scripted correction · +${runtime.playback.correction_delay_ms / 1000} s`
@@ -1791,6 +1798,7 @@
   function pauseDemo() {
     if (!runtime.running || runtime.paused) return;
     runtime.paused = true;
+    runtime.game?.motion.finish();
     window.clearTimeout(runtime.timer);
     syncControls();
     setSystemStatus("Demo paused", true);
@@ -1872,6 +1880,7 @@
 
   async function finishDemo() {
     if (!runtime.running) return;
+    runtime.game?.motion.finish();
     const id = runtime.sessionId;
     window.clearTimeout(runtime.timer);
     hidePreScenarioFixation();
@@ -2021,7 +2030,7 @@
     const changeSpeed = () => changeSelection(() => selectScenario(runtime.selectedScenarioId));
     elements.speed.addEventListener("input", changeSpeed);
     elements.recordingSpeed.addEventListener("change", () => {
-      if (runtime.experimentMode !== "recording" || elements.speed.disabled) return;
+      if ((runtime.experimentMode !== "recording" && !usingLiveTrialLibrary()) || elements.speed.disabled) return;
       elements.speed.value = elements.recordingSpeed.value;
       changeSpeed();
     });
@@ -2159,10 +2168,19 @@
       const transition = runtime.game.mdp.get_transition_states_and_probs({state: runtime.state,
         joint_action: row.actions.map(name => Action.INDEX_TO_ACTION[names.indexOf(name)])});
       runtime.state = transition[0][0]; runtime.score += transition[1]; runtime.tick = row.index + 1;
-      if (!clocked) runtime.game.drawState(runtime.state);
+      if (!clocked) runtime.game.motion.drawState(runtime.state, {
+        actions: row.actions, nextActions: runtime.playback.trajectory[row.index + 1]
+      });
+      const motion = row.actions.map((action, player) => {
+        let distance = 0;
+        for (let i = row.index - 1; i >= 0 && runtime.playback.trajectory[i]?.[player]
+          && runtime.playback.trajectory[i][player] !== 'STAY'; i--) distance++;
+        const next = runtime.playback.trajectory[row.index + 1]?.[player];
+        return {distance, wasMoving: distance > 0, continues: next !== undefined && next !== 'STAY'};
+      });
       renderOrders(runtime.state);
       return {at: row.at, tick: runtime.tick, score: runtime.score,
-        state: JSON.parse(JSON.stringify(runtime.state)), before, actions: [...row.actions]};
+        state: JSON.parse(JSON.stringify(runtime.state)), before, actions: [...row.actions], motion};
     },
     showHistory: (snapshot, time, animationMs, restore) => {
       const {OvercookedState} = window.Overcooked.OvercookedMDP;
@@ -2170,20 +2188,13 @@
         runtime.state = OvercookedState.from_object(JSON.parse(JSON.stringify(snapshot.state)));
         runtime.tick = snapshot.tick; runtime.score = snapshot.score;
       }
-      // Reproduce the original linear movement at this source time without
-      // replaying actions or letting an old animation continue after seeking.
-      // Fractional positions exist only in the display copy, never in the MDP.
-      const display = JSON.parse(JSON.stringify(snapshot.state));
+      // The same eased movement and gait follow the recorded source time.
+      // Fractional positions belong only to the display copy, never the MDP.
       const progress = Math.max(0, Math.min(1, (time - snapshot.at) * 1000 / animationMs));
-      if (snapshot.before && progress < 1) display.players.forEach((player, i) => {
-        const from = snapshot.before.players[i].position, to = player.position;
-        const distance = Math.abs(to[0] - from[0]) + Math.abs(to[1] - from[1]);
-        if ((from[0] === to[0] || from[1] === to[1]) && distance <= 1) {
-          player.position = to.map((value, axis) => from[axis] + (value - from[axis]) * progress);
-          if (player.held_object) player.held_object.position = [...player.position];
-        }
+      const gaitProgress = Math.max(0, Math.min(1, (time - snapshot.at) * 1000 / runtime.playback.step_ms));
+      runtime.game.motion.drawAt(OvercookedState.from_object(JSON.parse(JSON.stringify(snapshot.state))), {
+        before: snapshot.before, actions: snapshot.actions, progress, gaitProgress, motion: snapshot.motion
       });
-      runtime.game.drawSnapshot(OvercookedState.from_object(display));
       renderOrders(OvercookedState.from_object(JSON.parse(JSON.stringify(snapshot.state))));
     },
   });

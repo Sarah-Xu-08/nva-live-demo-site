@@ -22,7 +22,7 @@
       };
     }
     for (const name of ['hashchange', 'popstate', 'pageshow']) window.addEventListener(name, () => updatePage());
-    window.addEventListener('scroll', () => host.saveScroll?.(window), {passive: true});
+    window.addEventListener('scroll', () => host.scheduleScroll?.(window), {passive: true});
     document.addEventListener('click', event => {
       const link = event.target.closest?.('a[href]');
       if (event.defaultPrevented || !link || event.button !== 0 || event.metaKey || event.ctrlKey

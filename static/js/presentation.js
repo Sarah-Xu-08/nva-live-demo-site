@@ -164,27 +164,35 @@
       const width = this.mapLayer.clientWidth, height = this.mapWindow.clientHeight;
       const origin = {x: (board.left - bounds.left) / scale, y: (board.top - bounds.top) / scale};
       const tw = board.width / scale / grid[0].length;
-      // The canvas includes cabinet depth below the grid, outside its tiles.
+      // Raised countertops reserve space above the physical floor/agent grid.
       const th = board.height / scale / KitchenStyle.dimensions(grid).height;
-      const center = position => ({x: origin.x + (position[0] + .5) * tw, y: origin.y + (position[1] + .5) * th});
-      const tileBox = (position, pad = 0) => ({x: origin.x + position[0] * tw - pad, y: origin.y + position[1] * th - pad, width: tw + 2 * pad, height: th + 2 * pad});
+      origin.y += KitchenStyle.gridOffset(th);
+      const elevation = KitchenStyle.gridOffset(th);
+      const counterAt = position => 'XOTDPS'.includes(grid[position[1]]?.[position[0]] || '?');
+      const center = (position, raised = false) => ({x: origin.x + (position[0] + .5) * tw, y: origin.y + (position[1] + .5) * th - (raised ? elevation : 0)});
+      const tileBox = (position, pad = 0, raised = false) => ({x: origin.x + position[0] * tw - pad, y: origin.y + position[1] * th - pad - (raised ? elevation : 0), width: tw + 2 * pad, height: th + 2 * pad});
+      const actorBox = (position, pad = 0) => {
+        const box = tileBox(position, pad); box.y += KitchenStyle.actorOffset(th); return box;
+      };
       const style = getComputedStyle(this.mapWindow), actorColors = [style.getPropertyValue('--human').trim(), style.getPropertyValue('--ai').trim()];
       this.mapSvg.setAttribute('viewBox', `0 0 ${width} ${height}`); this.mapSvg.replaceChildren();
       const protectedBoxes = [], fixtures = [], floor = [];
       grid.forEach((row, y) => [...row].forEach((cell, x) => {
-        if (!['X', ' ', '1', '2'].includes(cell)) fixtures.push(tileBox([x, y], 3));
+        if (!['X', ' ', '1', '2'].includes(cell)) fixtures.push(tileBox([x, y], 3, true));
         else if (cell !== 'X') floor.push(tileBox([x, y]));
       }));
-      for (const object of Object.values(current.state.objects || {})) if (object.position) protectedBoxes.push(tileBox(object.position, 3));
+      for (const object of Object.values(current.state.objects || {})) if (object.position) protectedBoxes.push(tileBox(object.position, 3, counterAt(object.position)));
       const progress = Math.min(1, Math.max(0, (this.player.viewEnd - current.at) * 1000 / (this.player.session.playback.animation_ms || 375)));
       const positions = current.state.players.map((actor, i) => {
         const from = current.before?.players[i].position, to = actor.position;
+        const motion = current.motion?.[i];
+        const amount = KitchenMotion.fraction(progress, motion?.wasMoving, motion?.continues);
         return from && Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) === 1
-          ? to.map((value, axis) => from[axis] + (value - from[axis]) * progress) : to;
+          ? to.map((value, axis) => from[axis] + (value - from[axis]) * amount) : to;
       });
       const matching = critical && positions.every((position, i) => position.every((v, axis) => Math.abs(v - critical.state.players[i].position[axis]) < .01));
       positions.forEach((position, i) => {
-        const box = tileBox(position, 4), color = actorColors[i];
+        const box = actorBox(position, 4), color = actorColors[i];
         protectedBoxes.push(box);
         this.mapSvg.append(svgNode('rect', {...box, rx: 12, fill: 'none', stroke: 'white', 'stroke-width': 7}),
           svgNode('rect', {...box, rx: 12, fill: 'none', stroke: color, 'stroke-width': 3, 'data-actor': i === 0 ? 'human' : 'ai'}));
@@ -193,8 +201,13 @@
         const delta = directions[action] || (action === 'INTERACT' ? from.orientation : null);
         if (!delta) return;
         const target = from.position.map((v, axis) => v + delta[axis]);
-        protectedBoxes.push(tileBox(target, 6));
-        const start = center(from.position), end = center(target);
+        const raised = action === 'INTERACT' && counterAt(target);
+        protectedBoxes.push(tileBox(target, 6, raised));
+        const start = center(from.position), end = center(target, raised);
+        // Floor arrows follow the chefs' lowered foot contact. Interactions
+        // still point to the center of the raised worktop.
+        start.y += KitchenStyle.actorGround(th) - th / 2;
+        if (!raised) end.y += KitchenStyle.actorGround(th) - th / 2;
         const dx = end.x - start.x, dy = end.y - start.y, length = Math.hypot(dx, dy), ux = dx / length, uy = dy / length;
         // Separate joint attempts at a shared tile without changing their destinations.
         const offset = i === 0 ? -5 : 5;
@@ -205,6 +218,7 @@
           svgNode('path', {d, fill: 'none', stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'data-action-actor': i === 0 ? 'human' : 'ai'}));
       });
       const anchor = center(positions[1] || positions[0]);
+      anchor.y += KitchenStyle.actorOffset(th);
       if (this.card.hidden) return;
       if (this.card.parentNode !== this.mapLayer) this.mapLayer.append(this.card);
       this.card.classList.remove('is-docked');

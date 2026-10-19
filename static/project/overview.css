@@ -64,13 +64,15 @@
   aspect-ratio:1774/600;
   overflow:hidden;
 }
-#nva-project .nv-overview-diagram img {
+#nva-project .nv-overview-diagram img,
+#nva-project .nv-overview-partner-diagram img {
   display:block;
   max-width:none;
   height:auto;
   mix-blend-mode:multiply;
 }
-html[data-theme="dark"] #nva-project .nv-overview-diagram img {
+html[data-theme="dark"] #nva-project .nv-overview-diagram img,
+html[data-theme="dark"] #nva-project .nv-overview-partner-diagram img {
   filter:invert(1) hue-rotate(180deg);
   mix-blend-mode:screen;
 }
@@ -82,6 +84,27 @@ html[data-theme="dark"] #nva-project .nv-overview-diagram img {
 }
 #nva-project .nv-overview-art-mobile {
   display:none;
+}
+#nva-project .nv-overview-partner {
+  width:100%;
+  max-width:800px;
+  margin:32px auto 28px;
+}
+#nva-project .nv-overview-partner-intro {
+  max-width:730px;
+  margin:0 auto;
+  font-size:14px;
+  line-height:1.7;
+  color:var(--nv-muted);
+}
+#nva-project .nv-overview-work-status {
+  white-space:nowrap;
+}
+#nva-project .nv-overview-partner-diagram {
+  margin:16px 0 0;
+}
+#nva-project .nv-overview-partner-diagram img {
+  width:100%;
 }
 @media(max-width:600px) {
 #nva-project .nv-overview-hero {
@@ -101,6 +124,9 @@ html[data-theme="dark"] #nva-project .nv-overview-diagram img {
   margin-top:22px;
 }
 #nva-project .nv-overview-tldr p {
+  font-size:13px;
+}
+#nva-project .nv-overview-partner-intro {
   font-size:13px;
 }
 /* Stack two crops of the same artwork so the output labels stay readable. */

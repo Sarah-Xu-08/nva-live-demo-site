@@ -12,10 +12,10 @@
     <link rel="stylesheet" href="static/css/trial-editor.css?v=editor-save-row-v1">
     <link rel="stylesheet" href="static/css/participant-guide.css?v=uniform-worktops-v2-5">
     <link rel="stylesheet" href="static/css/playing.css?v=fe16060b72cf">
-    <link rel="stylesheet" href="static/css/research-ui.css?v=live-reviewed-trials-v1">
+    <link rel="stylesheet" href="static/css/research-ui.css?v=live-layout-stability-v3">
     <link rel="stylesheet" href="static/css/math.css?v=1">
     <link rel="stylesheet" href="static/css/demo-loading.css?v=recording-compact-v2">
-    <link rel="stylesheet" href="static/css/site-fullscreen.css?v=3"><script src="static/js/site-fullscreen.js?v=4" defer></script>
+    <link rel="stylesheet" href="static/css/site-fullscreen.css?v=3"><script src="static/js/site-fullscreen.js?v=5" defer></script>
   <link rel="stylesheet" href="static/css/public-replay.css?v=9dc213fe9a78">
   <script defer src="static/js/private-analytics.js?v=44b573a6df8d"></script>
 </head>
@@ -72,7 +72,6 @@
             <label for="recording-pe-count"><span>PE each</span><input id="recording-pe-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="recording-count-error" required></label>
             <p id="recording-count-error" role="status" hidden>Enter whole numbers of zero or more; total must be at least 1.</p>
           </div>
-          <label for="recording-speed" hidden><span>Speed</span><select id="recording-speed" aria-label="Recording speed"></select></label>
           <div id="participant-options" class="participant-options" hidden>
             <label><input id="instructions-enabled" type="checkbox"> Enable instructions</label>
             <label><input id="ratings-enabled" type="checkbox"> Collect trial ratings</label>
@@ -80,6 +79,7 @@
           <label for="class-filter"><span id="condition-select-label">Condition</span><select id="class-filter"><option value="nonPE" selected>nonPE</option><option value="RPE">RPE</option><option value="SPE">SPE</option><option value="RPE+SPE">RPE+SPE</option></select></label>
           <label class="event-picker" for="scenario-select"><span id="example-select-label">Example</span><select id="scenario-select" aria-label="Example"></select></label>
           <label for="layout-select"><span>Kitchen layout</span><select id="layout-select"><option value="all" selected>All layouts</option></select></label>
+          <label for="recording-speed" hidden><span>Speed</span><select id="recording-speed" aria-label="Recording speed"></select></label>
           <label class="eeg-source-field" for="eeg-stream-select"><span>EEG source</span><select id="eeg-stream-select" aria-label="Available EEG source"><option value="">Live EEG · auto-discover</option><option value="mock-eeg">Mock EEG · no hardware</option></select></label>
           <button id="eeg-top-connect" class="eeg-top-connect" type="button">Connect EEG</button>
           <label id="decoder-field" for="decoder-select" hidden><span>Pretrained decoder</span><select id="decoder-select" aria-label="Selected pretrained decoder"></select></label>
@@ -435,38 +435,38 @@
           <ol class="guide-cooking-steps">
             <li class="guide-step"><h4><span class="guide-step-number">1</span> Choose an ingredient</h4>
               <div class="guide-visual-row guide-sources">
-                <figure><canvas width="96" height="124" data-guide-art="terrain:onions.png" role="img" aria-label="Onion dispenser"></canvas><figcaption>Onion source</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="terrain:onions.png" role="img" aria-label="Onion dispenser"></canvas><figcaption>Onion source</figcaption></figure>
                 <span class="guide-or">or</span>
-                <figure><canvas width="96" height="124" data-guide-art="terrain:tomatoes.png" role="img" aria-label="Tomato dispenser"></canvas><figcaption>Tomato source</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="terrain:tomatoes.png" role="img" aria-label="Tomato dispenser"></canvas><figcaption>Tomato source</figcaption></figure>
               </div>
               <p>Choose onions or tomatoes to match the order. <strong>Do not mix them in one pot.</strong></p>
             </li>
             <li class="guide-step"><h4><span class="guide-step-number">2</span> Fill a pot</h4>
               <div class="guide-visual-row">
-                <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-1-cooking.png" role="img" aria-label="One onion in a pot"></canvas><figcaption>1 ingredient</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="pot:soup-onion-1-cooking.png" role="img" aria-label="One onion in a pot"></canvas><figcaption>1 ingredient</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
-                <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-2-cooking.png" role="img" aria-label="Two onions in a pot"></canvas><figcaption>2 ingredients</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="pot:soup-onion-2-cooking.png" role="img" aria-label="Two onions in a pot"></canvas><figcaption>2 ingredients</figcaption></figure>
               </div>
               <p>Add ingredients one at a time. Cooking starts automatically after the <strong>third onion or tomato</strong>.</p>
             </li>
             <li class="guide-step guide-step-wide"><h4><span class="guide-step-number">3</span> Wait until the soup is ready</h4>
               <div class="guide-ready-comparison">
                 <div class="guide-ready-recipe"><h5>Onion soup</h5><div class="guide-visual-row">
-                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-3-cooking.png" role="img" aria-label="Full onion pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <figure><canvas width="96" height="136" data-guide-art="pot:soup-onion-3-cooking.png" role="img" aria-label="Full onion pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
                   <span class="guide-arrow" aria-hidden="true">→</span>
-                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-onion-cooked.png" role="img" aria-label="Ready onion soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                  <figure><canvas width="96" height="136" data-guide-art="pot:soup-onion-cooked.png" role="img" aria-label="Ready onion soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
                 </div></div>
                 <div class="guide-ready-recipe"><h5>Tomato soup</h5><div class="guide-visual-row">
-                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-tomato-3-cooking.png" role="img" aria-label="Full tomato pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
+                  <figure><canvas width="96" height="136" data-guide-art="pot:soup-tomato-3-cooking.png" role="img" aria-label="Full tomato pot still cooking"></canvas><figcaption>Cooking</figcaption></figure>
                   <span class="guide-arrow" aria-hidden="true">→</span>
-                  <figure><canvas width="96" height="124" data-guide-art="pot:soup-tomato-cooked.png" role="img" aria-label="Ready tomato soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
+                  <figure><canvas width="96" height="136" data-guide-art="pot:soup-tomato-cooked.png" role="img" aria-label="Ready tomato soup in a pot"></canvas><figcaption>Ready to plate</figcaption></figure>
                 </div></div>
               </div>
               <p>A full pot is still cooking. Wait until it looks like the <strong>ready pot</strong> above.</p>
             </li>
             <li class="guide-step"><h4><span class="guide-step-number">4</span> Plate the ready soup</h4>
               <div class="guide-visual-row">
-                <figure><canvas width="96" height="124" data-guide-art="terrain:dishes.png" role="img" aria-label="Plate dispenser"></canvas><figcaption>Plate source</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="terrain:dishes.png" role="img" aria-label="Plate dispenser"></canvas><figcaption>Plate source</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
                 <figure><canvas width="96" height="96" data-guide-art="objects:soup-onion-dish.png" role="img" aria-label="Onion soup collected on a plate"></canvas><figcaption>Plated soup</figcaption></figure>
               </div>
@@ -476,7 +476,7 @@
               <div class="guide-visual-row">
                 <figure><canvas width="96" height="96" data-guide-art="chefs:EAST-grayhat-soup-onion.png" role="img" aria-label="Chef carrying plated onion soup"></canvas><figcaption>Carry the soup</figcaption></figure>
                 <span class="guide-arrow" aria-hidden="true">→</span>
-                <figure><canvas width="96" height="124" data-guide-art="serving:serve.png" role="img" aria-label="Serving station"></canvas><figcaption>Serving station</figcaption></figure>
+                <figure><canvas width="96" height="136" data-guide-art="serving:serve.png" role="img" aria-label="Serving station"></canvas><figcaption>Serving station</figcaption></figure>
               </div>
               <p>Deliver the plated soup to the <strong>serving station</strong>. Make sure it matches the order.</p>
             </li>
@@ -488,19 +488,19 @@
           <p><strong>A handoff counter is a counter both chefs can reach from their respective work areas.</strong> One chef places an item on it, and the other chef picks it up. Ingredients, empty plates, and ready soup can be passed this way.</p>
           <div class="guide-map-card">
             <div class="guide-map-heading"><span><i class="hat human"></i> Your work area</span><span><i class="hat ai"></i> AI partner’s work area</span></div>
-            <figure class="guide-kitchen"><canvas id="guide-kitchen" width="448" height="339" role="img" aria-label="Sample kitchen: the gray chef is on the left and the sage green AI chef is on the right. Handoff counters A and B lie between them. Counter C is at the outer edge."></canvas></figure>
+            <figure class="guide-kitchen"><canvas id="guide-kitchen" width="448" height="347" role="img" aria-label="Sample kitchen: the gray chef is on the left and the sage green AI chef is on the right. Handoff counters A and B lie between them. Counter C is at the outer edge."></canvas></figure>
             <div class="guide-map-key"><p><span class="guide-key-badge">A</span><span class="guide-key-badge">B</span> <strong>Handoff counters</strong> — both chefs can reach these.</p><p><span class="guide-key-badge guide-key-ordinary">C</span> <strong>Ordinary counter</strong> — only you can reach this one.</p></div>
           </div>
           <h4 class="guide-subheading">How an exchange works</h4>
           <p>Here, your AI partner passes you an onion using the same counter.</p>
           <ol class="guide-handoff-steps">
-            <li><canvas width="288" height="144" data-guide-exchange="place" role="img" aria-label="You wait on the left while the AI partner on the right holds an onion beside the counter"></canvas><h5>1. AI partner puts it down</h5><p>Your partner places the onion on the counter.</p></li>
-            <li><canvas width="288" height="144" data-guide-exchange="rest" role="img" aria-label="The onion rests on the central counter between two empty-handed chefs"></canvas><h5>2. Item rests on the counter</h5><p>The onion stays there until a chef picks it up.</p></li>
-            <li><canvas width="288" height="144" data-guide-exchange="take" role="img" aria-label="You now hold the onion on the left while the AI partner waits on the right"></canvas><h5>3. You pick it up</h5><p>You need empty hands to pick it up.</p></li>
+            <li><canvas width="288" height="148" data-guide-exchange="place" role="img" aria-label="You wait on the left while the AI partner on the right holds an onion beside the counter"></canvas><h5>1. AI partner puts it down</h5><p>Your partner places the onion on the counter.</p></li>
+            <li><canvas width="288" height="148" data-guide-exchange="rest" role="img" aria-label="The onion rests on the central counter between two empty-handed chefs"></canvas><h5>2. Item rests on the counter</h5><p>The onion stays there until a chef picks it up.</p></li>
+            <li><canvas width="288" height="148" data-guide-exchange="take" role="img" aria-label="You now hold the onion on the left while the AI partner waits on the right"></canvas><h5>3. You pick it up</h5><p>You need empty hands to pick it up.</p></li>
           </ol>
           <div class="guide-access-grid">
             <figure><canvas id="guide-opposite" width="288" height="192" role="img" aria-label="Two chefs face the same counter from opposite sides"></canvas><figcaption><strong>Opposite sides</strong><span>Both chefs reach the same counter from across it.</span></figcaption></figure>
-            <figure><canvas id="guide-corner" width="288" height="192" role="img" aria-label="A tomato rests on a handoff counter reached by the human chef on its left and the AI chef below it"></canvas><figcaption><strong>Adjacent sides</strong><span>Both chefs can also reach a counter around a corner.</span></figcaption></figure>
+            <figure><canvas id="guide-corner" width="288" height="232" role="img" aria-label="A tomato rests on a handoff counter reached by the human chef on its left and the AI chef below it"></canvas><figcaption><strong>Adjacent sides</strong><span>Both chefs can also reach a counter around a corner.</span></figcaption></figure>
           </div>
           <p class="guide-note">There may be several handoff counters. The <strong>Briefing</strong> tells you which exchange is planned. It may call these “middle” or “shared” counters.</p>
         </section>
@@ -521,12 +521,13 @@
     <script>window.DemoLoading.mount();</script>
     <script src="static/vendor/overcooked-window.js?v=trial-renderer-v14-editor-art"></script>
     <script src="static/js/trial-clock.js?v=readable-previews-v13"></script>
-    <script src="static/js/participant-guide.js?v=uniform-worktops-v2-5"></script>
-    <script src="static/js/presentation.js?v=4e5f78cea114"></script>
-    <script src="static/js/playing.js?v=403ef85aec7e"></script>
+    <script src="static/js/participant-guide.js?v=shallow-counters-low-feet-v5"></script>
+    <script src="static/js/presentation.js?v=310727f28f96"></script>
+    <script src="static/js/playing.js?v=8f927c751b5b"></script>
     <script src="static/js/demo-navigation.js?v=introduction-v1"></script>
-    <script src="static/js/kitchen-style.js?v=uniform-worktops-v2"></script>
+    <script src="static/js/kitchen-style.js?v=shallow-counters-low-feet-v5"></script>
+    <script src="static/js/kitchen-motion.js?v=shared-option2-motion-v6"></script>
     <script src="static/js/static-replay.js?v=461f1ec9450b"></script>
-    <script src="static/js/q-demo.js?v=uniform-worktops-v2-live-reviewed-trials-v1"></script>
+    <script src="static/js/q-demo.js?v=shared-option2-motion-v6-live-layout-stability-v2"></script>
   </body>
 </html>

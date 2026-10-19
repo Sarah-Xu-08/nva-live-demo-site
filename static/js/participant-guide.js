@@ -150,14 +150,14 @@
       const counter = atlas === "pot" || atlas === "serving" || (atlas === "terrain" && name !== "floor.png");
       if (counter)
         KitchenStyle.drawBoard(ctx, ["X"], assets);
-      sprite(ctx, atlas === "pot" ? "objects" : atlas, name, 0, counter ? KitchenStyle.fixtureOffset() : 0);
+      sprite(ctx, atlas === "pot" ? "objects" : atlas, name, 0, counter ? KitchenStyle.gridOffset(96) + KitchenStyle.fixtureOffset() : 0);
     });
     const kitchen = get("guide-kitchen"), ctx = kitchen.getContext("2d");
     ctx.clearRect(0, 0, kitchen.width, kitchen.height);
     const grid = ["XXOXTXX", "X  X  X", "X  X  X", "X  D  X", "XXPXPSX"];
-    KitchenStyle.drawBoard(ctx, grid, assets, {tileSize: 64});
-    sprite(ctx, "chefs", "EAST-grayhat.png", 128, 64, 64);
-    sprite(ctx, "chefs", "WEST-sagehat.png", 256, 64, 64);
+    KitchenStyle.drawBoard(ctx, grid, assets, {tileSize: 64, actors: [
+      {position: [2, 1], frame: "EAST-grayhat.png"}, {position: [4, 1], frame: "WEST-sagehat.png"}
+    ]});
     const markCounter = (x, y, label, color) => {
       ctx.strokeStyle = color; ctx.lineWidth = 4;
       ctx.strokeRect(x + 3, y + 3, 58, 58);
@@ -171,10 +171,10 @@
     markCounter(0, 192, "C", "#626a73");
     const exchange = (c, step, y) => {
       const grid = [" X "];
-      KitchenStyle.drawBoard(c, grid, assets, {y});
-      sprite(c, "chefs", step === "take" ? "EAST-grayhat-onion.png" : "EAST-grayhat.png", 0, y);
-      sprite(c, "chefs", step === "place" ? "WEST-sagehat-onion.png" : "WEST-sagehat.png", 192, y);
-      if (step === "rest") sprite(c, "objects", "onion.png", 96, y);
+      KitchenStyle.drawBoard(c, grid, assets, {y, actors: [
+        {position: [0, 0], frame: step === "take" ? "EAST-grayhat-onion.png" : "EAST-grayhat.png"},
+        {position: [2, 0], frame: step === "place" ? "WEST-sagehat-onion.png" : "WEST-sagehat.png"}
+      ], objects: step === "rest" ? [{position: [1, 0], frame: "onion.png"}] : []});
       c.strokeStyle = "#237455"; c.lineWidth = 4;
       c.strokeRect(99, y + 3, 90, 90);
     };
@@ -187,12 +187,11 @@
     opposite.clearRect(0, 0, 288, 192);
     exchange(opposite, "rest", 48);
     const corner = get("guide-corner").getContext("2d");
-    corner.clearRect(0, 0, 288, 192);
+    corner.clearRect(0, 0, 288, 232);
     const cornerGrid = [" X", "  "];
-    KitchenStyle.drawBoard(corner, cornerGrid, assets);
-    sprite(corner, "objects", "tomato.png", 96, 0);
-    sprite(corner, "chefs", "EAST-grayhat.png", 0, 0);
-    sprite(corner, "chefs", "NORTH-sagehat.png", 96, 96);
+    KitchenStyle.drawBoard(corner, cornerGrid, assets, {actors: [
+      {position: [0, 0], frame: "EAST-grayhat.png"}, {position: [1, 1], frame: "NORTH-sagehat.png"}
+    ], objects: [{position: [1, 0], frame: "tomato.png"}]});
     corner.strokeStyle = "#237455"; corner.lineWidth = 4; corner.strokeRect(99, 3, 90, 90);
     get("guide-art-status").hidden = true;
   }

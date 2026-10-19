@@ -32,7 +32,7 @@
 #nva-project .nv-navigation-state-key .nv-navigation-goal-marker { border: 1.5px solid var(--nv-ink); border-radius: 4px; color: var(--nv-ink); background: var(--nv-soft); }
 #nva-project .nv-navigation-controls h3 { font-size: 13px; font-weight: 500; margin: 0 0 5px; }
 #nva-project .nv-navigation-controls p { color: var(--nv-muted); font-size: 11px; line-height: 1.6; }
-#nva-project .nv-navigation-route-actions { display: flex; gap: 8px; margin-top: 8px; }
+#nva-project .nv-navigation-route-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 #nva-project .nv-navigation button.nv-navigation-button { padding: 8px 10px; border: 1px solid var(--nv-line); border-radius: 4px; font-size: 11px; text-align: center; }
 #nva-project .nv-navigation button.nv-navigation-confirm { background: var(--nv-nav-selected); color: var(--nv-nav-on); border-color: var(--nv-nav-selected); }
 #nva-project .nv-navigation button:disabled { cursor: default; }
@@ -55,23 +55,20 @@
 @media (max-width: 680px) {
   #nva-project .nv-navigation-layout { grid-template-columns: 1fr; gap: 23px; }
   #nva-project .nv-navigation { padding: 18px; }
-  #nva-project .nv-navigation-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  #nva-project .nv-navigation-controls { display: grid; grid-template-columns: minmax(0,1fr); gap: 14px; }
   #nva-project .nv-navigation-drawing, #nva-project .nv-navigation-movement { margin: 0; padding: 0; border: 0; }
   #nva-project .nv-navigation-placement { grid-column: 1 / -1; padding-bottom: 14px; border-bottom: 1px solid var(--nv-line); }
+  #nva-project .nv-navigation-movement { padding-top: 14px; border-top: 1px solid var(--nv-line); }
   #nva-project .nv-navigation-reset-actions { grid-column: 1 / -1; margin-top: 0; }
-  #nva-project .nv-navigation-route-actions { flex-wrap: wrap; }
   #nva-project .nv-navigation-results { gap: 17px; }
 }
 @media (max-width: 380px) {
   #nva-project .nv-navigation { padding: 14px 12px; }
-  #nva-project .nv-navigation-controls { grid-template-columns: 1fr; }
-  #nva-project .nv-navigation-movement { padding-top: 14px; border-top: 1px solid var(--nv-line); }
 }
 @media (pointer: coarse) {
   #nva-project .nv-navigation button.nv-navigation-button { min-height: 44px; }
 }
 
-#nva-project .nv-navigation-placement > button { margin-top: 8px; }
 #nva-project .nv-navigation-board[data-placing=true] [data-endpoint=start],
 #nva-project .nv-navigation-board[data-placing=true] [data-endpoint=goal] { cursor: grab; }
 #nva-project .nv-navigation-board[data-dragging=true],

@@ -1,4 +1,4 @@
-/* Approved Option 2 motion. Attached only to each Trial Editor's own scene. */
+/* Approved Option 2 motion shared by all Demo modes and source-clock replay. */
 (() => {
   "use strict";
   const SIZE = 196;
@@ -6,6 +6,13 @@
   const CLEAN_POSES = "editor-chef-poses";
   const clamp = value => Math.max(0, Math.min(1, value));
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
+  function fraction(progress, wasMoving = false, continues = false) {
+    const p = clamp(progress);
+    if (!wasMoving && !continues) return p * p * (3 - 2 * p);
+    if (!wasMoving) return p * p * (2 - p);
+    if (!continues) return p + p * p - p * p * p;
+    return p;
+  }
 
   function cleanPose(art) {
     const ctx = art.getContext("2d"), pixels = ctx.getImageData(0, 0, SIZE, SIZE);
@@ -98,14 +105,15 @@
     ctx.putImageData(pose.patch, 0, startY);
   }
 
-  function attach(game, { tileSize }) {
+  function attach(game, { tileSize, actionMs = 0 }) {
+    if (game.motion) return game.motion;
     const prototype = game.scene.prototype;
     const originalDraw = prototype._drawState;
     const originalUpdate = prototype.update;
     const originalSnapshot = game.drawSnapshot.bind(game);
     const originalClose = game.close.bind(game);
     const poses = new Map();
-    let scene = null, pending = null;
+    let scene = null, pending = null, sourceFrame = null;
 
     function prepareAtlas() {
       if (scene.textures.exists(CLEAN_POSES)) return;
@@ -139,6 +147,23 @@
         hat.setTexture(CLEAN_POSES, rendered.editorWalk.frame);
         hat.setDisplaySize(tileSize, tileSize);
       }
+      KitchenStyle.anchorActor(hat, tileSize);
+    }
+
+    function renderPose(rendered, player, phase) {
+      const progress = clamp(phase.progress);
+      const strength = Math.min(phase.wasMoving ? 1 : clamp(progress * 6), phase.continues ? 1 : clamp((1 - progress) * 6));
+      if (!strength) { restore(rendered); return false; }
+      const walk = rendered.editorWalk;
+      const position = fraction(progress, phase.wasMoving, phase.continues);
+      paint(walk.texture.getContext(), poseFor(walk.frame, Number(player)), walk.orientation, phase.distance + position, strength);
+      walk.texture.refresh();
+      if (rendered.hatsprite.texture !== walk.texture) {
+        rendered.hatsprite.setTexture(walk.texture.key);
+        rendered.hatsprite.setDisplaySize(tileSize, tileSize * HEIGHT / SIZE);
+      }
+      KitchenStyle.anchorActor(rendered.hatsprite, tileSize);
+      return true;
     }
 
     function settle() {
@@ -149,14 +174,36 @@
         rendered.chefsprite.setPosition(rendered.tileX, rendered.tileY);
         rendered.hatsprite.setPosition(rendered.tileX, rendered.tileY);
         restore(rendered);
-        if (rendered.editorWalk) rendered.editorWalk.motion = null;
+        if (rendered.editorWalk) rendered.editorWalk.motion = rendered.editorWalk.clock = null;
       });
     }
 
     const controller = {
       drawState(state, { actions, nextState, nextActions } = {}) {
+        sourceFrame = null;
         pending = { state, actions, nextState, nextActions };
         game.drawState(state);
+      },
+      drawAt(state, {before, actions, progress = 1, gaitProgress = progress, motion = []} = {}) {
+        // A saved/source-clock view is a display copy. Its gait and easing are
+        // deterministic at the selected source time, including paused seeks;
+        // no wall-clock tween may advance it independently of the EEG.
+        const display = JSON.parse(JSON.stringify(state)), phases = [];
+        display.players.forEach((player, index) => {
+          const from = before?.players[index]?.position, to = player.position;
+          const distance = from ? Math.abs(to[0] - from[0]) + Math.abs(to[1] - from[1]) : 0;
+          const cardinal = from && (from[0] === to[0] || from[1] === to[1]) && distance <= 1;
+          const phase = {...motion[index], progress: gaitProgress, distance: motion[index]?.distance || 0};
+          const active = actions?.[index] !== undefined && actions[index] !== 'STAY';
+          phases[index] = cardinal && active ? phase : null;
+          if (cardinal) {
+            const amount = fraction(progress, phase.wasMoving, phase.continues);
+            player.position = to.map((value, axis) => from[axis] + (value - from[axis]) * amount);
+            if (player.held_object) player.held_object.position = [...player.position];
+          }
+        });
+        const value = window.Overcooked.OvercookedMDP.OvercookedState.from_object(display);
+        game.drawSnapshot(value, phases);
       },
       finish() {
         // Pause can arrive before Phaser consumes a queued state. Show that
@@ -165,7 +212,7 @@
           originalSnapshot(game.state_to_draw);
           delete game.state_to_draw;
         }
-        pending = null; settle();
+        pending = sourceFrame = null; settle();
       }
     };
 
@@ -174,14 +221,15 @@
       prepareAtlas();
       const existing = sprites?.chefs || {};
       const previous = Object.fromEntries(Object.entries(existing).map(([index, rendered]) => {
-        // The shared renderer selects its own named frame before this editor
+        // The shared renderer selects its own named frame before this motion
         // wrapper switches back to the cleaned pose or the walking surface.
         rendered.hatsprite.setTexture("chefs", rendered.editorWalk.frame);
         rendered.hatsprite.setDisplaySize(tileSize, tileSize);
         return [index, { x: rendered.tileX, y: rendered.tileY, motion: rendered.editorWalk?.motion }];
       }));
       const queued = pending?.state === state ? pending : null;
-      pending = null;
+      const clocked = sourceFrame?.state === state ? sourceFrame : null;
+      pending = sourceFrame = null;
       originalDraw.call(this, state, sprites, instant);
       state.players.forEach((player, index) => {
         const rendered = this.sprites.chefs[index];
@@ -191,6 +239,8 @@
         const walk = rendered.editorWalk;
         walk.frame = rendered.hatsprite.frame.name;
         walk.orientation = player.orientation;
+        walk.clock = clocked?.phases[index] || null;
+        if (clocked) { walk.motion = null; restore(rendered); return; }
         const from = previous[index];
         const dx = from ? rendered.tileX - from.x : 0, dy = from ? rendered.tileY - from.y : 0;
         const isStep = from && Math.abs(dx) + Math.abs(dy) === tileSize && (dx === 0 || dy === 0);
@@ -206,7 +256,7 @@
         const nextAction = queued?.nextActions?.[index];
         const continues = nextAction === undefined ? Math.abs(nextDx) + Math.abs(nextDy) === 1 : nextAction !== "STAY";
         const wasMoving = Boolean(from.motion?.continues);
-        walk.motion = { x: from.x, y: from.y, dx, dy, wasMoving, continues,
+        walk.motion = { x: from.x, y: from.y, dx, dy, wasMoving, continues, started: this.time.now,
           distance: wasMoving ? from.motion.distance + 1 : 0 };
       });
     };
@@ -215,39 +265,35 @@
       originalUpdate.apply(this, args);
       for (const [index, rendered] of Object.entries(this.sprites.chefs || {})) {
         const walk = rendered.editorWalk, motion = walk?.motion;
+        if (walk?.clock) { renderPose(rendered, index, walk.clock); continue; }
         if (!motion) continue;
         const progress = rendered.movement ? clamp(rendered.movement.progress) : 1;
         // Ease only when a route starts or ends. Every cardinal tile finishes
         // on the original action boundary before the next direction begins.
-        let fraction = progress;
-        if (!motion.wasMoving && !motion.continues) fraction = progress * progress * (3 - 2 * progress);
-        else if (!motion.wasMoving) fraction = progress * progress * (2 - progress);
-        else if (!motion.continues) fraction = progress + progress * progress - progress * progress * progress;
-        rendered.chefsprite.setPosition(motion.x + motion.dx * fraction, motion.y + motion.dy * fraction);
-        rendered.hatsprite.setPosition(motion.x + motion.dx * fraction, motion.y + motion.dy * fraction);
-        const strength = Math.min(motion.wasMoving ? 1 : clamp(progress * 6), motion.continues ? 1 : clamp((1 - progress) * 6));
-        if (!strength) {
-          restore(rendered);
-          if (progress === 1) walk.motion = null;
-          continue;
-        }
-        paint(walk.texture.getContext(), poseFor(walk.frame, Number(index)), walk.orientation, motion.distance + fraction, strength);
-        walk.texture.refresh();
-        if (rendered.hatsprite.texture !== walk.texture) {
-          rendered.hatsprite.setTexture(walk.texture.key);
-          rendered.hatsprite.setDisplaySize(tileSize, tileSize * HEIGHT / SIZE);
-        }
+        const amount = fraction(progress, motion.wasMoving, motion.continues);
+        rendered.chefsprite.setPosition(motion.x + motion.dx * amount, motion.y + motion.dy * amount);
+        rendered.hatsprite.setPosition(motion.x + motion.dx * amount, motion.y + motion.dy * amount);
+        const gaitProgress = actionMs ? clamp((this.time.now - motion.started) / actionMs) : progress;
+        if (!renderPose(rendered, index, {...motion, progress: gaitProgress}) && gaitProgress === 1) walk.motion = null;
       }
     };
 
-    game.drawSnapshot = state => {
-      pending = null; settle(); originalSnapshot(state);
+    game.drawSnapshot = (state, phases = null) => {
+      pending = null;
+      // Clocked snapshots are consumed atomically by the next Phaser update.
+      // Keep the current pose until then, rather than flashing idle artwork
+      // between two published source frames or repeated history selections.
+      if (!phases) settle();
+      sourceFrame = phases ? {state, phases} : null;
+      originalSnapshot(state);
     };
     game.close = (...args) => {
       controller.finish(); poses.clear(); scene = null; originalClose(...args);
     };
+    game.motion = controller;
     return controller;
   }
 
-  window.TrialEditorWalking = { attach };
+  window.KitchenMotion = {attach, fraction};
+  window.TrialEditorWalking = window.KitchenMotion;
 })();

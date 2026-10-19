@@ -33,7 +33,7 @@
   }
   const samePage = (a, b) => a.pathname === b.pathname && a.search === b.search;
   const active = () => Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-  let pending = false, navigation = null, transition = null, restoring = false;
+  let pending = false, navigation = null, transition = null, restoring = false, scrollSaveTimer = null;
   const status = document.createElement('p');
   status.id = 'site-navigation-status';
   status.setAttribute('role', 'status');
@@ -55,7 +55,20 @@
   }
   function saveScroll(source = frame.contentWindow) {
     if (source !== frame.contentWindow || canonical(source.location.href).href !== location.href) return;
-    history.replaceState({...history.state, siteScroll: [source.scrollX, source.scrollY]}, '', location.href);
+    clearTimeout(scrollSaveTimer);
+    scrollSaveTimer = null;
+    const scroll = [source.scrollX, source.scrollY];
+    if (history.state?.siteScroll?.every((value, index) => value === scroll[index])) return;
+    history.replaceState({...history.state, siteScroll: scroll}, '', location.href);
+  }
+  function scheduleScroll(source) {
+    if (source !== frame.contentWindow || scrollSaveTimer !== null) return;
+    // Scroll events arrive every frame. Persist at most four times a second so
+    // reading a page cannot exhaust Chrome's history/navigation rate limit.
+    scrollSaveTimer = setTimeout(() => {
+      scrollSaveTimer = null;
+      saveScroll(source);
+    }, 250);
   }
   function updatePage(value, title, source, push = false) {
     // A page preparing offscreen must not change the URL/title of the visible one.
@@ -170,7 +183,7 @@
     // Replace about:blank so preparing a page creates no phantom history entry.
     next.contentWindow.location.replace(contentURL(url).href);
   }
-  window.SiteShell = {active, setFullscreen, updatePage, saveScroll, navigate, get pending() { return pending; }};
+  window.SiteShell = {active, setFullscreen, updatePage, saveScroll, scheduleScroll, navigate, get pending() { return pending; }};
   history.scrollRestoration = 'manual';
   window.addEventListener('popstate', event => navigate(location.href,
     {push: false, scroll: event.state?.siteScroll || [0, 0], state: event.state?.pageState || null}));
