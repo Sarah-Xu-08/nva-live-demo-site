@@ -154,6 +154,12 @@ twice. Page query strings and trial interactions are not collected as page
 identities or custom events. Country estimates use GoatCounter's normal visitor
 analytics. Collection starts only after this export is published.
 
+The fullscreen navigation shell displays content inside an iframe, so the
+tracker must set `allow_frame: true`. Use `no_onload: true` and count each content
+document once it becomes the visible `site-page`, including after a navigation
+swap. Do not count offscreen or cancelled page preparations. Retain GoatCounter's
+normal owner exclusion and keep all verification requests intercepted.
+
 To exclude your browser, open the published Overview with
 `#toggle-goatcounter` appended and check that the popup says tracking is disabled.
 Do this once per browser/profile/device; opening the toggle again re-enables
